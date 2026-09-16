@@ -11,6 +11,7 @@ type NetlifyEvent = {
   body: string | null
   headers: Record<string, string | undefined>
   httpMethod: string
+  queryStringParameters?: Record<string, string | undefined> | null
 }
 
 const emptyData: BlogData = {
@@ -31,6 +32,14 @@ const json = (statusCode: number, body: unknown) => ({
 
 export async function handler(event: NetlifyEvent) {
   try {
+    if (event.httpMethod === 'GET' && event.queryStringParameters?.debug === 'env') {
+      return json(200, {
+        hasBlogAdminToken: Boolean(process.env.BLOG_ADMIN_TOKEN),
+        hasSupabaseServiceRoleKey: Boolean(readSupabaseServiceRoleKey()),
+        hasSupabaseUrl: Boolean(readSupabaseUrl()),
+      })
+    }
+
     if (event.httpMethod === 'GET') {
       return json(200, await readSupabaseData())
     }
@@ -97,11 +106,13 @@ async function writeSupabaseData(data: BlogData) {
 }
 
 function supabaseFetch(path: string, init?: RequestInit) {
-  const url = process.env.SUPABASE_URL
-  const serviceRoleKey = process.env.SUPABASE_SERVICE_ROLE_KEY
+  const url = readSupabaseUrl()
+  const serviceRoleKey = readSupabaseServiceRoleKey()
 
   if (!url || !serviceRoleKey) {
-    throw new Error('SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY 환경변수가 필요합니다.')
+    throw new Error(
+      `Supabase 환경변수가 필요합니다. SUPABASE_URL=${url ? 'ok' : 'missing'}, SUPABASE_SERVICE_ROLE_KEY=${serviceRoleKey ? 'ok' : 'missing'}`,
+    )
   }
 
   return fetch(`${url}${path}`, {
@@ -113,4 +124,12 @@ function supabaseFetch(path: string, init?: RequestInit) {
       ...init?.headers,
     },
   })
+}
+
+function readSupabaseUrl() {
+  return process.env.SUPABASE_URL || process.env.VITE_SUPABASE_URL || process.env.NEXT_PUBLIC_SUPABASE_URL || ''
+}
+
+function readSupabaseServiceRoleKey() {
+  return process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.SUPABASE_SERVICE_KEY || process.env.SERVICE_ROLE_KEY || ''
 }
