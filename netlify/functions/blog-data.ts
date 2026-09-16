@@ -1,4 +1,4 @@
-import { getStore } from '@netlify/blobs'
+import { connectLambda, getStore } from '@netlify/blobs'
 
 const STORE_NAME = 'blog-studio'
 const DATA_KEY = 'content'
@@ -26,6 +26,8 @@ const json = (statusCode: number, body: unknown) => ({
 })
 
 export async function handler(event: NetlifyEvent) {
+  connectLambda(event)
+
   const store = getStore(STORE_NAME)
 
   if (event.httpMethod === 'GET') {
