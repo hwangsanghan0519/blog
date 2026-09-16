@@ -122,6 +122,8 @@ export function useBlogStudio() {
   const activePost = posts.find((post) => post.id === activeId) ?? posts[0]
 
   const syncCloudData = useCallback(async (signal?: AbortSignal) => {
+    if (isViteDevServer()) return false
+
     const response = await fetch(`${CLOUD_DATA_ENDPOINT}?t=${Date.now()}`, {
       cache: 'no-store',
       headers: { accept: 'application/json' },
@@ -329,10 +331,11 @@ export function useBlogStudio() {
   }
 
   const createPost = (template: Partial<Post> = {}) => {
+    const safeTemplate = isPostTemplate(template) ? template : {}
     const next = {
       ...createEmptyPost(),
       category: categoryFilter === 'all' ? visibleCategories[0] ?? UNCATEGORIZED : categoryFilter,
-      ...template,
+      ...safeTemplate,
       id: crypto.randomUUID(),
       createdAt: new Date().toISOString(),
       updatedAt: new Date().toISOString(),
@@ -620,6 +623,19 @@ function isHostedRuntime() {
   if (typeof window === 'undefined') return false
 
   return !['localhost', '127.0.0.1'].includes(window.location.hostname)
+}
+
+function isViteDevServer() {
+  if (typeof window === 'undefined') return false
+
+  return ['localhost', '127.0.0.1'].includes(window.location.hostname) && window.location.port === '5173'
+}
+
+function isPostTemplate(value: unknown): value is Partial<Post> {
+  if (!value || typeof value !== 'object') return true
+  if ('nativeEvent' in value || 'currentTarget' in value || 'target' in value) return false
+
+  return true
 }
 
 function normalizeAdBanners(banners: Partial<AdBannerSettings>[]) {

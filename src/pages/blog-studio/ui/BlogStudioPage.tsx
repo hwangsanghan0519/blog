@@ -48,7 +48,7 @@ export function BlogStudioPage() {
   }
 
   if (!activePost) {
-    return <EmptyState onCreate={studio.createPost} />
+    return <EmptyState onCreate={() => studio.createPost()} />
   }
 
   return (
@@ -62,7 +62,7 @@ export function BlogStudioPage() {
         query={studio.query}
         statusFilter={studio.statusFilter}
         onCategoryFilterChange={studio.setCategoryFilter}
-        onCreate={studio.createPost}
+        onCreate={() => studio.createPost()}
         onCreateCategory={studio.createCategory}
         onDeleteCategory={studio.deleteCategory}
         onQueryChange={studio.setQuery}
@@ -135,7 +135,7 @@ export function BlogStudioPage() {
 
         <FloatingActionMenu
           onBackup={studio.exportBackup}
-          onCreate={studio.createPost}
+          onCreate={(template) => studio.createPost(template)}
           onToggleTheme={() => studio.setDarkMode((value) => !value)}
           onWrite={() => studio.setView('editor')}
         />
