@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef, useState } from 'react'
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import type { ChangeEvent } from 'react'
 import { createEmptyPost, starterPosts } from '../../../entities/post/model/factory'
 import type { Post, PostStatus, PostStatusFilter } from '../../../entities/post/model/types'
@@ -119,6 +119,26 @@ export function useBlogStudio() {
 
   const activePost = posts.find((post) => post.id === activeId) ?? posts[0]
 
+  const syncCloudData = useCallback(async (signal?: AbortSignal) => {
+    const response = await fetch(`${CLOUD_DATA_ENDPOINT}?t=${Date.now()}`, {
+      cache: 'no-store',
+      headers: { accept: 'application/json' },
+      signal,
+    })
+    if (!response.ok) return
+
+    const data = (await response.json()) as CloudBlogData
+    if (signal?.aborted) return
+
+    const cloudPosts = Array.isArray(data.posts) ? data.posts : []
+    const cloudCategories = data.categories?.length ? data.categories : uniqueCategories(cloudPosts)
+
+    setPosts(cloudPosts)
+    setCategories(cloudCategories)
+    setAdBanners(data.adBanners?.length ? normalizeAdBanners(data.adBanners) : DEFAULT_AD_BANNERS)
+    setActiveId((current) => (cloudPosts.some((post) => post.id === current) ? current : cloudPosts[0]?.id ?? ''))
+  }, [])
+
   // localStorage는 서버 저장 실패나 로컬 개발 상황을 위한 임시 캐시로만 사용합니다.
   // 배포 환경에서는 Netlify Function이 내려주는 Supabase 데이터를 우선합니다.
   useEffect(() => {
@@ -135,36 +155,44 @@ export function useBlogStudio() {
   }, [adBanners, darkMode])
 
   useEffect(() => {
-    let mounted = true
+    const controller = new AbortController()
 
     const loadCloudData = async () => {
       try {
-        const response = await fetch(CLOUD_DATA_ENDPOINT, { headers: { accept: 'application/json' } })
-        if (!response.ok) return
-
-        const data = (await response.json()) as CloudBlogData
-        if (!mounted) return
-
-        const cloudPosts = Array.isArray(data.posts) ? data.posts : []
-        const cloudCategories = data.categories?.length ? data.categories : uniqueCategories(cloudPosts)
-
-        setPosts(cloudPosts)
-        setCategories(cloudCategories)
-        setAdBanners(data.adBanners?.length ? normalizeAdBanners(data.adBanners) : DEFAULT_AD_BANNERS)
-        setActiveId(cloudPosts[0]?.id ?? '')
+        await syncCloudData(controller.signal)
       } catch {
         // 로컬 개발이나 서버 연결 실패 상황에서는 기존 localStorage 캐시를 그대로 사용합니다.
       } finally {
-        if (mounted) setCloudReady(true)
+        if (!controller.signal.aborted) setCloudReady(true)
       }
     }
 
     void loadCloudData()
 
     return () => {
-      mounted = false
+      controller.abort()
     }
-  }, [])
+  }, [syncCloudData])
+
+  useEffect(() => {
+    if (ownerMode) return undefined
+
+    const refreshPublicData = () => {
+      if (document.visibilityState === 'visible') {
+        void syncCloudData()
+      }
+    }
+
+    const timer = window.setInterval(refreshPublicData, 15_000)
+    window.addEventListener('focus', refreshPublicData)
+    document.addEventListener('visibilitychange', refreshPublicData)
+
+    return () => {
+      window.clearInterval(timer)
+      window.removeEventListener('focus', refreshPublicData)
+      document.removeEventListener('visibilitychange', refreshPublicData)
+    }
+  }, [ownerMode, syncCloudData])
 
   useEffect(() => {
     if (!cloudReady || !ownerMode) return undefined
