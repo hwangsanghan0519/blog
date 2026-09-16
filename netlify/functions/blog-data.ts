@@ -1,22 +1,10 @@
-import { Buffer } from 'node:buffer'
-
-const DEFAULT_OWNER = 'hwangsanghan0519'
-const DEFAULT_REPO = 'blog'
-const DEFAULT_BRANCH = 'main'
-const DATA_PATH = 'data/blog-data.json'
-const GITHUB_API = 'https://api.github.com'
-const GITHUB_RAW = 'https://raw.githubusercontent.com'
+const ROW_ID = 'main'
 
 type BlogData = {
   adBanners: unknown[]
   categories: string[]
   posts: unknown[]
-  savedAt?: string
-}
-
-type GitHubContent = {
-  content: string
-  sha: string
+  savedAt?: string | null
 }
 
 type NetlifyEvent = {
@@ -29,6 +17,7 @@ const emptyData: BlogData = {
   adBanners: [],
   categories: [],
   posts: [],
+  savedAt: null,
 }
 
 const json = (statusCode: number, body: unknown) => ({
@@ -43,8 +32,7 @@ const json = (statusCode: number, body: unknown) => ({
 export async function handler(event: NetlifyEvent) {
   try {
     if (event.httpMethod === 'GET') {
-      const data = await readGitHubData()
-      return json(200, data)
+      return json(200, await readSupabaseData())
     }
 
     if (event.httpMethod !== 'PUT') {
@@ -71,7 +59,7 @@ export async function handler(event: NetlifyEvent) {
       savedAt: new Date().toISOString(),
     }
 
-    await writeGitHubData(data)
+    await writeSupabaseData(data)
 
     return json(200, data)
   } catch (error) {
@@ -79,79 +67,50 @@ export async function handler(event: NetlifyEvent) {
   }
 }
 
-async function readGitHubData() {
-  const token = process.env.GITHUB_CONTENT_TOKEN
-  const response = token ? await githubFetch({ ref: true }) : await githubRawFetch()
+async function readSupabaseData() {
+  const response = await supabaseFetch(`/rest/v1/blog_content?id=eq.${ROW_ID}&select=data`)
 
-  if (response.status === 404) return emptyData
-  if (!response.ok) return emptyData
-
-  const content = token
-    ? Buffer.from(((await response.json()) as GitHubContent).content, 'base64').toString('utf8')
-    : await response.text()
-
-  return JSON.parse(content) as BlogData
-}
-
-async function writeGitHubData(data: BlogData) {
-  const current = await githubFetch({ ref: true })
-  const currentFile = current.ok ? ((await current.json()) as GitHubContent) : undefined
-  const body = {
-    branch: githubBranch(),
-    content: Buffer.from(`${JSON.stringify(data, null, 2)}\n`, 'utf8').toString('base64'),
-    message: `Update blog content ${new Date().toISOString()}`,
-    sha: currentFile?.sha,
+  if (!response.ok) {
+    throw new Error(await response.text())
   }
 
-  const response = await githubFetch({
-    body: JSON.stringify(body),
-    method: 'PUT',
+  const rows = (await response.json()) as Array<{ data?: BlogData }>
+  return rows[0]?.data ?? emptyData
+}
+
+async function writeSupabaseData(data: BlogData) {
+  const response = await supabaseFetch('/rest/v1/blog_content?on_conflict=id', {
+    body: JSON.stringify({
+      data,
+      id: ROW_ID,
+      updated_at: new Date().toISOString(),
+    }),
+    headers: {
+      Prefer: 'resolution=merge-duplicates,return=minimal',
+    },
+    method: 'POST',
   })
 
   if (!response.ok) {
-    const error = await response.text()
-    throw new Error(`GitHub content save failed: ${error}`)
+    throw new Error(await response.text())
   }
 }
 
-function githubFetch(init?: RequestInit & { ref?: boolean }) {
-  const token = process.env.GITHUB_CONTENT_TOKEN
+function supabaseFetch(path: string, init?: RequestInit) {
+  const url = process.env.SUPABASE_URL
+  const serviceRoleKey = process.env.SUPABASE_SERVICE_ROLE_KEY
 
-  if (!token) {
-    throw new Error('GITHUB_CONTENT_TOKEN 환경변수가 필요합니다.')
+  if (!url || !serviceRoleKey) {
+    throw new Error('SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY 환경변수가 필요합니다.')
   }
 
-  const { ref, ...requestInit } = init ?? {}
-  const url = `${GITHUB_API}/repos/${githubOwner()}/${githubRepo()}/contents/${DATA_PATH}${ref ? `?ref=${githubBranch()}` : ''}`
-
-  return fetch(url, {
-    ...requestInit,
+  return fetch(`${url}${path}`, {
+    ...init,
     headers: {
-      accept: 'application/vnd.github+json',
-      authorization: `Bearer ${token}`,
+      apikey: serviceRoleKey,
+      authorization: `Bearer ${serviceRoleKey}`,
       'content-type': 'application/json',
-      'x-github-api-version': '2022-11-28',
-      ...requestInit.headers,
+      ...init?.headers,
     },
   })
-}
-
-function githubRawFetch() {
-  return fetch(`${GITHUB_RAW}/${githubOwner()}/${githubRepo()}/${githubBranch()}/${DATA_PATH}`, {
-    headers: {
-      accept: 'application/json',
-    },
-  })
-}
-
-function githubOwner() {
-  return process.env.GITHUB_OWNER || DEFAULT_OWNER
-}
-
-function githubRepo() {
-  return process.env.GITHUB_REPO || DEFAULT_REPO
-}
-
-function githubBranch() {
-  return process.env.GITHUB_BRANCH || DEFAULT_BRANCH
 }
