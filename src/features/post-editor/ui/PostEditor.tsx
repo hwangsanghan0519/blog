@@ -36,7 +36,7 @@ import {
 } from 'lucide-react'
 import type { ChangeEvent } from 'react'
 import type { ReactNode } from 'react'
-import { useEffect, useRef } from 'react'
+import { useEffect, useMemo, useRef } from 'react'
 import { normalizeEditorContent } from '../../../entities/post/lib/content'
 import { slugify } from '../../../entities/post/lib/formatters'
 import type { Post, PostStatus } from '../../../entities/post/model/types'
@@ -51,6 +51,13 @@ type PostEditorProps = {
 
 export function PostEditor({ categories, post, onCoverUpload, onUpdate }: PostEditorProps) {
   const inlineImageRef = useRef<HTMLInputElement>(null)
+  const categoryOptions = useMemo(() => {
+    const names = [post.category, ...categories]
+      .map((category) => category.trim())
+      .filter(Boolean)
+
+    return Array.from(new Set(names.length ? names : ['분류 없음'])).sort((a, b) => a.localeCompare(b, 'ko'))
+  }, [categories, post.category])
 
   const editor = useEditor({
     extensions: [
@@ -263,7 +270,12 @@ export function PostEditor({ categories, post, onCoverUpload, onUpdate }: PostEd
         <label>
           카테고리
           <select value={post.category} onChange={(event) => onUpdate({ category: event.target.value })}>
-            {categories.map((category) => (
+            {!post.category && (
+              <option value="" disabled>
+                카테고리 선택
+              </option>
+            )}
+            {categoryOptions.map((category) => (
               <option key={category} value={category}>
                 {category}
               </option>

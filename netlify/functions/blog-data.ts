@@ -30,6 +30,9 @@ const emptyData: BlogData = {
 const json = (statusCode: number, body: unknown) => ({
   statusCode,
   headers: {
+    'access-control-allow-headers': 'content-type, x-blog-admin-token',
+    'access-control-allow-methods': 'GET, PUT, DELETE, OPTIONS',
+    'access-control-allow-origin': '*',
     'cache-control': 'no-store',
     'content-type': 'application/json; charset=utf-8',
   },
@@ -38,6 +41,10 @@ const json = (statusCode: number, body: unknown) => ({
 
 export async function handler(event: NetlifyEvent) {
   try {
+    if (event.httpMethod === 'OPTIONS') {
+      return json(204, null)
+    }
+
     if (event.httpMethod === 'GET' && event.queryStringParameters?.debug === 'env') {
       const source = await readSupabaseSourceDebug()
 

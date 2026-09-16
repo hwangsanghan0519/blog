@@ -13,6 +13,7 @@ const CATEGORIES_KEY = 'solo-commerce-blog-categories'
 const OWNER_PASSWORD_KEY = 'solo-commerce-blog-owner-password'
 const ADMIN_TOKEN_KEY = 'solo-commerce-blog-admin-token'
 const CLOUD_DATA_ENDPOINT = '/.netlify/functions/blog-data'
+const PRODUCTION_CLOUD_DATA_ENDPOINT = 'https://unique-rabanadas-3f0f48.netlify.app/.netlify/functions/blog-data'
 const UNCATEGORIZED = '분류 없음'
 
 export type AdBannerSettings = {
@@ -122,9 +123,8 @@ export function useBlogStudio() {
   const activePost = posts.find((post) => post.id === activeId) ?? posts[0]
 
   const syncCloudData = useCallback(async (signal?: AbortSignal) => {
-    if (isViteDevServer()) return false
-
-    const response = await fetch(`${CLOUD_DATA_ENDPOINT}?t=${Date.now()}`, {
+    const endpoint = getCloudDataEndpoint()
+    const response = await fetch(`${endpoint}?t=${Date.now()}`, {
       cache: 'no-store',
       headers: { accept: 'application/json' },
       signal,
@@ -545,7 +545,7 @@ async function saveCloudData(data: Required<Pick<CloudBlogData, 'adBanners' | 'c
   if (!token) return
 
   try {
-    const response = await fetch(CLOUD_DATA_ENDPOINT, {
+    const response = await fetch(getCloudDataEndpoint(), {
       method: 'PUT',
       headers: {
         'content-type': 'application/json',
@@ -625,10 +625,12 @@ function isHostedRuntime() {
   return !['localhost', '127.0.0.1'].includes(window.location.hostname)
 }
 
-function isViteDevServer() {
-  if (typeof window === 'undefined') return false
+function getCloudDataEndpoint() {
+  if (typeof window === 'undefined') return CLOUD_DATA_ENDPOINT
 
   return ['localhost', '127.0.0.1'].includes(window.location.hostname) && window.location.port === '5173'
+    ? PRODUCTION_CLOUD_DATA_ENDPOINT
+    : CLOUD_DATA_ENDPOINT
 }
 
 function isPostTemplate(value: unknown): value is Partial<Post> {
