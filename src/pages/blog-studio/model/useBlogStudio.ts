@@ -100,10 +100,11 @@ const DEFAULT_SETTINGS: BlogSettings = {
 }
 
 export function useBlogStudio() {
-  const initialSettings = readSettings()
-  const [posts, setPosts] = useState<Post[]>(() => loadJson(STORAGE_KEY, starterPosts))
+  const hostedRuntime = isHostedRuntime()
+  const initialSettings = hostedRuntime ? DEFAULT_SETTINGS : readSettings()
+  const [posts, setPosts] = useState<Post[]>(() => (hostedRuntime ? [] : loadJson(STORAGE_KEY, starterPosts)))
   const [categories, setCategories] = useState<string[]>(() =>
-    loadJson(CATEGORIES_KEY, uniqueCategories(posts)),
+    hostedRuntime ? [] : loadJson(CATEGORIES_KEY, uniqueCategories(posts)),
   )
   const [activeId, setActiveId] = useState(posts[0]?.id ?? '')
   const [query, setQuery] = useState('')
@@ -115,6 +116,7 @@ export function useBlogStudio() {
   const [adBanners, setAdBanners] = useState<AdBannerSettings[]>(initialSettings.adBanners)
   const [ownerMode, setOwnerMode] = useState(false)
   const [cloudReady, setCloudReady] = useState(false)
+  const [cloudSynced, setCloudSynced] = useState(false)
   const importRef = useRef<HTMLInputElement>(null)
 
   const activePost = posts.find((post) => post.id === activeId) ?? posts[0]
@@ -125,10 +127,10 @@ export function useBlogStudio() {
       headers: { accept: 'application/json' },
       signal,
     })
-    if (!response.ok) return
+    if (!response.ok) return false
 
     const data = (await response.json()) as CloudBlogData
-    if (signal?.aborted) return
+    if (signal?.aborted) return false
 
     const cloudPosts = Array.isArray(data.posts) ? data.posts : []
     const cloudCategories = data.categories?.length ? data.categories : uniqueCategories(cloudPosts)
@@ -137,6 +139,8 @@ export function useBlogStudio() {
     setCategories(cloudCategories)
     setAdBanners(data.adBanners?.length ? normalizeAdBanners(data.adBanners) : DEFAULT_AD_BANNERS)
     setActiveId((current) => (cloudPosts.some((post) => post.id === current) ? current : cloudPosts[0]?.id ?? ''))
+    setCloudSynced(true)
+    return true
   }, [])
 
   // localStorage는 서버 저장 실패나 로컬 개발 상황을 위한 임시 캐시로만 사용합니다.
@@ -159,9 +163,21 @@ export function useBlogStudio() {
 
     const loadCloudData = async () => {
       try {
-        await syncCloudData(controller.signal)
+        const synced = await syncCloudData(controller.signal)
+        if (!synced && hostedRuntime) {
+          setPosts([])
+          setCategories([])
+          setAdBanners(DEFAULT_AD_BANNERS)
+          setActiveId('')
+        }
       } catch {
         // 로컬 개발이나 서버 연결 실패 상황에서는 기존 localStorage 캐시를 그대로 사용합니다.
+        if (hostedRuntime) {
+          setPosts([])
+          setCategories([])
+          setAdBanners(DEFAULT_AD_BANNERS)
+          setActiveId('')
+        }
       } finally {
         if (!controller.signal.aborted) setCloudReady(true)
       }
@@ -172,7 +188,7 @@ export function useBlogStudio() {
     return () => {
       controller.abort()
     }
-  }, [syncCloudData])
+  }, [hostedRuntime, syncCloudData])
 
   useEffect(() => {
     if (ownerMode) return undefined
@@ -195,14 +211,14 @@ export function useBlogStudio() {
   }, [ownerMode, syncCloudData])
 
   useEffect(() => {
-    if (!cloudReady || !ownerMode) return undefined
+    if (!cloudReady || !cloudSynced || !ownerMode) return undefined
 
     const timer = window.setTimeout(() => {
       void saveCloudData({ adBanners, categories, posts })
     }, 800)
 
     return () => window.clearTimeout(timer)
-  }, [adBanners, categories, cloudReady, ownerMode, posts])
+  }, [adBanners, categories, cloudReady, cloudSynced, ownerMode, posts])
 
   const visibleCategories = useMemo(
     () => Array.from(new Set([...categories, ...uniqueCategories(posts)])).sort((a, b) => a.localeCompare(b, 'ko')),
@@ -464,6 +480,8 @@ export function useBlogStudio() {
     categoryCounts,
     categoryFilter,
     categories: visibleCategories,
+    cloudReady,
+    cloudSynced,
     createPost,
     createCategory,
     darkMode,
@@ -596,6 +614,12 @@ function readSettings(): BlogSettings {
     darkMode: stored.darkMode ?? DEFAULT_SETTINGS.darkMode,
     adBanners: stored.adBanners?.length ? normalizeAdBanners(stored.adBanners) : normalizeAdBanners(stored.adBanner ? [stored.adBanner] : []),
   }
+}
+
+function isHostedRuntime() {
+  if (typeof window === 'undefined') return false
+
+  return !['localhost', '127.0.0.1'].includes(window.location.hostname)
 }
 
 function normalizeAdBanners(banners: Partial<AdBannerSettings>[]) {

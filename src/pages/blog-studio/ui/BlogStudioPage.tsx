@@ -25,6 +25,16 @@ export function BlogStudioPage() {
     }
   }, [isSecretAdminPath, studio])
 
+  if (!studio.cloudReady) {
+    return (
+      <main className="blog-loading-screen">
+        <span aria-hidden="true" />
+        <strong>Supabase에서 글을 불러오는 중입니다.</strong>
+        <p>방문자 화면과 관리자 화면 모두 같은 서버 데이터를 사용합니다.</p>
+      </main>
+    )
+  }
+
   if (!studio.ownerMode) {
     return (
       <PublicBlogHome
