@@ -119,8 +119,8 @@ export function useBlogStudio() {
 
   const activePost = posts.find((post) => post.id === activeId) ?? posts[0]
 
-  // 로컬-first 앱이라 글 변경은 즉시 localStorage에 저장합니다.
-  // 서버를 붙일 경우 이 effect 자리를 API sync 레이어로 교체하면 됩니다.
+  // localStorage는 서버 저장 실패나 로컬 개발 상황을 위한 임시 캐시로만 사용합니다.
+  // 배포 환경에서는 Netlify Function이 내려주는 Supabase 데이터를 우선합니다.
   useEffect(() => {
     saveJson(STORAGE_KEY, posts)
   }, [posts])
@@ -143,14 +143,17 @@ export function useBlogStudio() {
         if (!response.ok) return
 
         const data = (await response.json()) as CloudBlogData
-        if (!mounted || !data.posts?.length) return
+        if (!mounted) return
 
-        setPosts(data.posts)
-        setCategories(data.categories?.length ? data.categories : uniqueCategories(data.posts))
+        const cloudPosts = Array.isArray(data.posts) ? data.posts : []
+        const cloudCategories = data.categories?.length ? data.categories : uniqueCategories(cloudPosts)
+
+        setPosts(cloudPosts)
+        setCategories(cloudCategories)
         setAdBanners(data.adBanners?.length ? normalizeAdBanners(data.adBanners) : DEFAULT_AD_BANNERS)
-        setActiveId(data.posts[0]?.id ?? '')
+        setActiveId(cloudPosts[0]?.id ?? '')
       } catch {
-        // 로컬 개발이나 Netlify 함수가 아직 없을 때는 localStorage 데이터를 그대로 사용합니다.
+        // 로컬 개발이나 서버 연결 실패 상황에서는 기존 localStorage 캐시를 그대로 사용합니다.
       } finally {
         if (mounted) setCloudReady(true)
       }
