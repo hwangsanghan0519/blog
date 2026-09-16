@@ -1,4 +1,4 @@
-import { Check, Download, Menu, Moon, Upload } from 'lucide-react'
+import { Check, Download, Menu, Upload } from 'lucide-react'
 import type { ChangeEvent, RefObject } from 'react'
 
 type TopbarProps = {
@@ -7,10 +7,9 @@ type TopbarProps = {
   onBackup: () => void
   onImport: (event: ChangeEvent<HTMLInputElement>) => void
   onOpenSidebar: () => void
-  onToggleTheme: () => void
 }
 
-export function Topbar({ importRef, title, onBackup, onImport, onOpenSidebar, onToggleTheme }: TopbarProps) {
+export function Topbar({ importRef, title, onBackup, onImport, onOpenSidebar }: TopbarProps) {
   return (
     <header className="topbar">
       <button className="icon-button mobile-only" type="button" onClick={onOpenSidebar}>
@@ -24,9 +23,6 @@ export function Topbar({ importRef, title, onBackup, onImport, onOpenSidebar, on
         <span className="save-pill">
           <Check size={15} /> 자동 저장
         </span>
-        <button className="icon-button" type="button" onClick={onToggleTheme} title="테마 전환">
-          <Moon size={18} />
-        </button>
         <button className="ghost-action" type="button" onClick={onBackup}>
           <Download size={17} /> 백업
         </button>

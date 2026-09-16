@@ -42,8 +42,8 @@ export function BlogSidebar({
       <div className="brand">
         <div className="brand-mark">B</div>
         <div>
-          <strong>Blog Home</strong>
-          <span>My writing interior</span>
+          <strong>블로그 관리</strong>
+          <span>콘텐츠 작성과 분류</span>
         </div>
       </div>
 

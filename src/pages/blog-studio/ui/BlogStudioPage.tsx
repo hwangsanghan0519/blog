@@ -1,10 +1,9 @@
-import { Eye, ImagePlus, Lock, PenLine, Plus, Trash2, X } from 'lucide-react'
+import { Eye, ImagePlus, Lock, PenLine, Plus, Settings2, Trash2, X } from 'lucide-react'
 import type { ChangeEvent } from 'react'
 import { useEffect, useRef } from 'react'
 import { PostEditor } from '../../../features/post-editor/ui/PostEditor'
 import { EmptyState } from '../../../shared/ui/EmptyState'
 import { BlogSidebar } from '../../../widgets/blog-sidebar/ui/BlogSidebar'
-import { FloatingActionMenu } from '../../../widgets/floating-actions/ui/FloatingActionMenu'
 import { PostPreview } from '../../../widgets/post-preview/ui/PostPreview'
 import { Topbar } from '../../../widgets/topbar/ui/Topbar'
 import type { AdBannerSettings } from '../model/useBlogStudio'
@@ -82,33 +81,47 @@ export function BlogStudioPage() {
           onBackup={studio.exportBackup}
           onImport={studio.importBackup}
           onOpenSidebar={() => studio.setSidebarOpen(true)}
-          onToggleTheme={() => studio.setDarkMode((value) => !value)}
         />
 
-        <button className="owner-mode-pill" type="button" onClick={() => leaveOwnerMode(studio.lockOwnerMode)}>
-          <Lock size={16} /> 읽기 화면으로
-        </button>
+        <section className="admin-command-bar" aria-label="관리자 작업">
+          <nav className="view-tabs compact-view-tabs" aria-label="작성 화면">
+            <button className={studio.view === 'editor' ? 'is-active' : ''} type="button" onClick={() => studio.setView('editor')}>
+              <PenLine size={16} /> 쓰기
+            </button>
+            <button className={studio.view === 'preview' ? 'is-active' : ''} type="button" onClick={() => studio.setView('preview')}>
+              <Eye size={16} /> 미리보기
+            </button>
+          </nav>
 
-        <nav className="view-tabs compact-view-tabs" aria-label="작성 화면">
-          <button className={studio.view === 'editor' ? 'is-active' : ''} type="button" onClick={() => studio.setView('editor')}>
-            쓰기
-          </button>
-          <button className={studio.view === 'preview' ? 'is-active' : ''} type="button" onClick={() => studio.setView('preview')}>
-            미리보기
-          </button>
-        </nav>
+          <div className="admin-command-actions">
+            <button className="ghost-action" type="button" onClick={() => studio.createPost()}>
+              <Plus size={17} /> 새 글
+            </button>
+            <button className="ghost-action" type="button" onClick={() => leaveOwnerMode(studio.lockOwnerMode)}>
+              <Lock size={16} /> 읽기 화면
+            </button>
+          </div>
+        </section>
 
-        <div className="ad-admin-stack">
-          {studio.adBanners.map((banner, index) => (
-            <AdBannerAdminPanel
-              banner={banner}
-              index={index}
-              key={banner.id}
-              onImageUpload={studio.handleAdBannerImageUpload}
-              onUpdate={studio.updateAdBanner}
-            />
-          ))}
-        </div>
+        <details className="admin-settings-panel">
+          <summary>
+            <span>
+              <Settings2 size={17} /> 광고 띠배너 설정
+            </span>
+            <small>최대 2개 배너, 위치/이미지/링크 관리</small>
+          </summary>
+          <div className="ad-admin-stack">
+            {studio.adBanners.map((banner, index) => (
+              <AdBannerAdminPanel
+                banner={banner}
+                index={index}
+                key={banner.id}
+                onImageUpload={studio.handleAdBannerImageUpload}
+                onUpdate={studio.updateAdBanner}
+              />
+            ))}
+          </div>
+        </details>
 
         {studio.view !== 'preview' && (
           <PostEditor
@@ -121,24 +134,6 @@ export function BlogStudioPage() {
 
         {studio.view === 'preview' && <PostPreview post={activePost} />}
 
-        <nav className="app-dock" aria-label="빠른 이동">
-          <button className={studio.view === 'editor' ? 'is-active' : ''} type="button" onClick={() => studio.setView('editor')}>
-            <PenLine size={18} /> 쓰기
-          </button>
-          <button className={studio.view === 'preview' ? 'is-active' : ''} type="button" onClick={() => studio.setView('preview')}>
-            <Eye size={18} /> 미리보기
-          </button>
-          <button type="button" onClick={() => studio.createPost()}>
-            <Plus size={18} /> 새 글
-          </button>
-        </nav>
-
-        <FloatingActionMenu
-          onBackup={studio.exportBackup}
-          onCreate={(template) => studio.createPost(template)}
-          onToggleTheme={() => studio.setDarkMode((value) => !value)}
-          onWrite={() => studio.setView('editor')}
-        />
       </main>
 
       {studio.sidebarOpen && (
