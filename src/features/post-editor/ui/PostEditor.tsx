@@ -262,7 +262,9 @@ export function PostEditor({ categories, post, onCoverUpload, onUpdate }: PostEd
           카테고리
           <select value={post.category} onChange={(event) => onUpdate({ category: event.target.value })}>
             {categories.map((category) => (
-              <option key={category} value={category} />
+              <option key={category} value={category}>
+                {category}
+              </option>
             ))}
           </select>
         </label>

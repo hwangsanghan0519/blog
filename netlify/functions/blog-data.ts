@@ -7,6 +7,12 @@ type BlogData = {
   savedAt?: string | null
 }
 
+type BlogContentRow = {
+  data?: Partial<BlogData> | null
+  id?: string
+  updated_at?: string
+}
+
 type NetlifyEvent = {
   body: string | null
   headers: Record<string, string | undefined>
@@ -59,7 +65,7 @@ export async function handler(event: NetlifyEvent) {
     }
 
     if (event.httpMethod === 'DELETE') {
-      await writeSupabaseData(emptyData)
+      await clearSupabaseData()
       return json(200, emptyData)
     }
 
@@ -85,40 +91,95 @@ export async function handler(event: NetlifyEvent) {
 }
 
 async function readSupabaseData() {
-  const response = await supabaseFetch(`/rest/v1/blog_content?id=eq.${ROW_ID}&select=data`)
+  const rows = await readSupabaseRows()
+  return mergeBlogRows(rows)
+}
+
+async function readSupabaseRows() {
+  const response = await supabaseFetch('/rest/v1/blog_content?select=id,updated_at,data&order=updated_at.desc')
 
   if (!response.ok) {
     throw new Error(await response.text())
   }
 
-  const rows = (await response.json()) as Array<{ data?: BlogData }>
-  return rows[0]?.data ?? emptyData
+  return (await response.json()) as BlogContentRow[]
 }
 
 async function readSupabaseSourceDebug() {
-  const response = await supabaseFetch(`/rest/v1/blog_content?id=eq.${ROW_ID}&select=id,updated_at,data`)
-
-  if (!response.ok) {
-    return {
-      supabaseReadError: await response.text(),
-    }
-  }
-
-  const rows = (await response.json()) as Array<{ data?: BlogData; id?: string; updated_at?: string }>
-  const row = rows[0]
+  const rows = await readSupabaseRows()
+  const merged = mergeBlogRows(rows)
+  const mainRow = rows.find((row) => row.id === ROW_ID)
 
   return {
-    rowExists: Boolean(row),
-    rowId: row?.id ?? null,
-    rowUpdatedAt: row?.updated_at ?? null,
+    rowCount: rows.length,
+    rowIds: rows.map((row) => row.id ?? 'unknown'),
+    mainRowExists: Boolean(mainRow),
+    mainRowUpdatedAt: mainRow?.updated_at ?? null,
     sourceProjectRef: readSupabaseProjectRef(),
     sourceSupabaseHost: readSupabaseHost(),
-    storedCategories: row?.data?.categories ?? [],
-    storedPostCount: row?.data?.posts?.length ?? 0,
-    storedPostTitles: row?.data?.posts?.map((post) =>
+    storedCategories: merged.categories,
+    storedPostCount: merged.posts.length,
+    storedPostTitles: merged.posts.map((post) =>
       typeof post === 'object' && post !== null && 'title' in post ? String(post.title) : '제목 없음',
-    ) ?? [],
+    ),
   }
+}
+
+function mergeBlogRows(rows: BlogContentRow[]): BlogData {
+  const categories = new Set<string>()
+  const posts = new Map<string, unknown>()
+  let adBanners: unknown[] = []
+  let savedAt: string | null = null
+
+  rows.forEach((row, rowIndex) => {
+    const data = row.data
+    if (!data) return
+
+    if (!adBanners.length && Array.isArray(data.adBanners) && data.adBanners.length) {
+      adBanners = data.adBanners
+    }
+
+    if (Array.isArray(data.categories)) {
+      data.categories.forEach((category) => {
+        if (typeof category === 'string' && category.trim()) {
+          categories.add(category.trim())
+        }
+      })
+    }
+
+    if (Array.isArray(data.posts)) {
+      data.posts.forEach((post, postIndex) => {
+        if (typeof post !== 'object' || post === null) return
+
+        const postKey = readPostKey(post, row.id ?? `row-${rowIndex}`, postIndex)
+        if (!posts.has(postKey)) {
+          posts.set(postKey, post)
+        }
+
+        if ('category' in post && typeof post.category === 'string' && post.category.trim()) {
+          categories.add(post.category.trim())
+        }
+      })
+    }
+
+    const rowSavedAt = typeof data.savedAt === 'string' ? data.savedAt : row.updated_at
+    if (rowSavedAt && (!savedAt || Date.parse(rowSavedAt) > Date.parse(savedAt))) {
+      savedAt = rowSavedAt
+    }
+  })
+
+  return {
+    adBanners,
+    categories: Array.from(categories).sort((a, b) => a.localeCompare(b, 'ko')),
+    posts: Array.from(posts.values()),
+    savedAt,
+  }
+}
+
+function readPostKey(post: object, rowId: string, index: number) {
+  if ('id' in post && typeof post.id === 'string' && post.id) return post.id
+  if ('slug' in post && typeof post.slug === 'string' && post.slug) return `slug:${post.slug}`
+  return `${rowId}:${index}`
 }
 
 async function writeSupabaseData(data: BlogData) {
@@ -137,6 +198,21 @@ async function writeSupabaseData(data: BlogData) {
   if (!response.ok) {
     throw new Error(await response.text())
   }
+}
+
+async function clearSupabaseData() {
+  const deleteResponse = await supabaseFetch('/rest/v1/blog_content?id=neq.__never__', {
+    headers: {
+      Prefer: 'return=minimal',
+    },
+    method: 'DELETE',
+  })
+
+  if (!deleteResponse.ok) {
+    throw new Error(await deleteResponse.text())
+  }
+
+  await writeSupabaseData(emptyData)
 }
 
 function supabaseFetch(path: string, init?: RequestInit) {
