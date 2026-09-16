@@ -52,7 +52,7 @@
   color: var(--text);
   background: var(--canvas);
   font-family: var(--sans);
-  font-synthesis: none;
+  font-synthesis: weight style;
   text-rendering: optimizeLegibility;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;

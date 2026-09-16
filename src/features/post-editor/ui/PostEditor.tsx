@@ -3,6 +3,7 @@ import { BackgroundColor } from '@tiptap/extension-text-style/background-color'
 import { FontSize } from '@tiptap/extension-text-style/font-size'
 import Highlight from '@tiptap/extension-highlight'
 import Image from '@tiptap/extension-image'
+import { Italic as ItalicExtension } from '@tiptap/extension-italic'
 import LinkExtension from '@tiptap/extension-link'
 import Placeholder from '@tiptap/extension-placeholder'
 import { Table } from '@tiptap/extension-table'
@@ -81,8 +82,14 @@ export function PostEditor({ categories, post, onCoverUpload, onUpdate }: PostEd
     extensions: [
       StarterKit.configure({
         heading: { levels: [1, 2, 3] },
+        italic: false,
         link: false,
         underline: false,
+      }),
+      ItalicExtension.configure({
+        HTMLAttributes: {
+          class: 'text-italic',
+        },
       }),
       Underline,
       TextStyle,

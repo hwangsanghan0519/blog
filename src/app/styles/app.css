@@ -935,6 +935,18 @@ button.category-row.is-selected {
   text-underline-offset: 3px;
 }
 
+.rich-editor-surface em,
+.rich-editor-surface i,
+.rich-editor-surface .text-italic,
+.rendered-content em,
+.rendered-content i,
+.rendered-content .text-italic {
+  display: inline-block;
+  font-style: italic;
+  transform: skewX(-7deg);
+  transform-origin: center;
+}
+
 .rich-editor-surface img {
   max-width: 100%;
   height: auto;
