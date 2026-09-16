@@ -11,6 +11,8 @@ const STORAGE_KEY = 'solo-commerce-blog-posts'
 const SETTINGS_KEY = 'solo-commerce-blog-settings'
 const CATEGORIES_KEY = 'solo-commerce-blog-categories'
 const OWNER_PASSWORD_KEY = 'solo-commerce-blog-owner-password'
+const ADMIN_TOKEN_KEY = 'solo-commerce-blog-admin-token'
+const CLOUD_DATA_ENDPOINT = '/.netlify/functions/blog-data'
 const UNCATEGORIZED = '분류 없음'
 
 export type AdBannerSettings = {
@@ -29,6 +31,13 @@ export type AdBannerSettings = {
 type BlogSettings = {
   darkMode: boolean
   adBanners: AdBannerSettings[]
+}
+
+type CloudBlogData = {
+  adBanners?: AdBannerSettings[]
+  categories?: string[]
+  posts?: Post[]
+  savedAt?: string
 }
 
 export const GMARKET_SAMPLE_BANNER_IMAGE = `data:image/svg+xml,${encodeURIComponent(`
@@ -105,6 +114,7 @@ export function useBlogStudio() {
   const [darkMode, setDarkMode] = useState(initialSettings.darkMode)
   const [adBanners, setAdBanners] = useState<AdBannerSettings[]>(initialSettings.adBanners)
   const [ownerMode, setOwnerMode] = useState(false)
+  const [cloudReady, setCloudReady] = useState(false)
   const importRef = useRef<HTMLInputElement>(null)
 
   const activePost = posts.find((post) => post.id === activeId) ?? posts[0]
@@ -123,6 +133,45 @@ export function useBlogStudio() {
     saveJson(SETTINGS_KEY, { darkMode, adBanners })
     document.documentElement.dataset.theme = darkMode ? 'dark' : 'light'
   }, [adBanners, darkMode])
+
+  useEffect(() => {
+    let mounted = true
+
+    const loadCloudData = async () => {
+      try {
+        const response = await fetch(CLOUD_DATA_ENDPOINT, { headers: { accept: 'application/json' } })
+        if (!response.ok) return
+
+        const data = (await response.json()) as CloudBlogData
+        if (!mounted || !data.posts?.length) return
+
+        setPosts(data.posts)
+        setCategories(data.categories?.length ? data.categories : uniqueCategories(data.posts))
+        setAdBanners(data.adBanners?.length ? normalizeAdBanners(data.adBanners) : DEFAULT_AD_BANNERS)
+        setActiveId(data.posts[0]?.id ?? '')
+      } catch {
+        // 로컬 개발이나 Netlify 함수가 아직 없을 때는 localStorage 데이터를 그대로 사용합니다.
+      } finally {
+        if (mounted) setCloudReady(true)
+      }
+    }
+
+    void loadCloudData()
+
+    return () => {
+      mounted = false
+    }
+  }, [])
+
+  useEffect(() => {
+    if (!cloudReady || !ownerMode) return undefined
+
+    const timer = window.setTimeout(() => {
+      void saveCloudData({ adBanners, categories, posts })
+    }, 800)
+
+    return () => window.clearTimeout(timer)
+  }, [adBanners, categories, cloudReady, ownerMode, posts])
 
   const visibleCategories = useMemo(
     () => Array.from(new Set([...categories, ...uniqueCategories(posts)])).sort((a, b) => a.localeCompare(b, 'ko')),
@@ -311,6 +360,7 @@ export function useBlogStudio() {
       if (!nextPassword?.trim()) return
 
       window.localStorage.setItem(OWNER_PASSWORD_KEY, nextPassword.trim())
+      ensureAdminToken()
       setOwnerMode(true)
       setView('editor')
       return
@@ -318,6 +368,7 @@ export function useBlogStudio() {
 
     const password = window.prompt('작성 모드 비밀번호를 입력하세요.')
     if (password === savedPassword) {
+      ensureAdminToken()
       setOwnerMode(true)
       setView('editor')
       return
@@ -352,17 +403,27 @@ export function useBlogStudio() {
 
     if (!imported?.length) return
 
+    const nextCategories = Array.isArray(parsed) ? uniqueCategories(imported) : parsed.categories?.length ? parsed.categories : uniqueCategories(imported)
+    const nextAdBanners = Array.isArray(parsed)
+      ? adBanners
+      : parsed.adBanners?.length
+        ? normalizeAdBanners(parsed.adBanners)
+        : parsed.adBanner
+          ? normalizeAdBanners([parsed.adBanner])
+          : adBanners
+
     setPosts(imported)
-    setCategories(Array.isArray(parsed) ? uniqueCategories(imported) : parsed.categories?.length ? parsed.categories : uniqueCategories(imported))
+    setCategories(nextCategories)
     if (!Array.isArray(parsed)) {
-      if (parsed.adBanners?.length) {
-        setAdBanners(normalizeAdBanners(parsed.adBanners))
-      } else if (parsed.adBanner) {
-        setAdBanners(normalizeAdBanners([parsed.adBanner]))
-      }
+      setAdBanners(nextAdBanners)
     }
     setActiveId(imported[0].id)
     setView('editor')
+    void saveCloudData({
+      adBanners: nextAdBanners,
+      categories: nextCategories,
+      posts: imported,
+    })
     event.target.value = ''
   }
 
@@ -410,6 +471,48 @@ export function useBlogStudio() {
 export type BlogStudioModel = ReturnType<typeof useBlogStudio>
 export type UpdatePost = (patch: Partial<Post>) => void
 export type ChangeStatus = (status: PostStatus) => void
+
+let cloudSaveWarningShown = false
+
+function ensureAdminToken() {
+  const savedToken = window.localStorage.getItem(ADMIN_TOKEN_KEY)
+  if (savedToken) return savedToken
+
+  const nextToken = window.prompt('Netlify 환경변수 BLOG_ADMIN_TOKEN에 등록한 저장 토큰을 입력하세요.')
+  if (!nextToken?.trim()) {
+    window.alert('저장 토큰이 없으면 이 브라우저에는 저장되지만 Netlify 서버에는 저장되지 않습니다.')
+    return ''
+  }
+
+  window.localStorage.setItem(ADMIN_TOKEN_KEY, nextToken.trim())
+  return nextToken.trim()
+}
+
+async function saveCloudData(data: Required<Pick<CloudBlogData, 'adBanners' | 'categories' | 'posts'>>) {
+  const token = window.localStorage.getItem(ADMIN_TOKEN_KEY)
+  if (!token) return
+
+  try {
+    const response = await fetch(CLOUD_DATA_ENDPOINT, {
+      method: 'PUT',
+      headers: {
+        'content-type': 'application/json',
+        'x-blog-admin-token': token,
+      },
+      body: JSON.stringify(data),
+    })
+
+    if (response.status === 401) {
+      window.localStorage.removeItem(ADMIN_TOKEN_KEY)
+      if (!cloudSaveWarningShown) {
+        cloudSaveWarningShown = true
+        window.alert('Netlify 저장 토큰이 맞지 않아 서버 저장에 실패했습니다. 글쓰기 모드에 다시 들어가 토큰을 확인해 주세요.')
+      }
+    }
+  } catch {
+    // 네트워크가 없거나 로컬 개발 서버에서는 서버 저장만 건너뜁니다.
+  }
+}
 
 function fileToOptimizedBannerDataUrl(file: File) {
   return new Promise<string>((resolve, reject) => {
