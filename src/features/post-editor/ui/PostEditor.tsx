@@ -1,4 +1,6 @@
 import Color from '@tiptap/extension-color'
+import { BackgroundColor } from '@tiptap/extension-text-style/background-color'
+import { FontSize } from '@tiptap/extension-text-style/font-size'
 import Highlight from '@tiptap/extension-highlight'
 import Image from '@tiptap/extension-image'
 import LinkExtension from '@tiptap/extension-link'
@@ -18,6 +20,7 @@ import {
   AlignRight,
   Bold,
   Code2,
+  Eraser,
   Heading1,
   Heading2,
   Highlighter,
@@ -35,7 +38,7 @@ import {
   Undo2,
 } from 'lucide-react'
 import type { ChangeEvent } from 'react'
-import type { ReactNode } from 'react'
+import type { CSSProperties, ReactNode } from 'react'
 import { useEffect, useMemo, useRef } from 'react'
 import { normalizeEditorContent } from '../../../entities/post/lib/content'
 import { slugify } from '../../../entities/post/lib/formatters'
@@ -48,6 +51,20 @@ type PostEditorProps = {
   onCoverUpload: (event: ChangeEvent<HTMLInputElement>) => void
   onUpdate: (patch: Partial<Post>) => void
 }
+
+const FONT_SIZES = [
+  { label: '기본', value: '' },
+  { label: '14', value: '14px' },
+  { label: '16', value: '16px' },
+  { label: '18', value: '18px' },
+  { label: '20', value: '20px' },
+  { label: '24', value: '24px' },
+  { label: '28', value: '28px' },
+  { label: '32', value: '32px' },
+]
+
+const TEXT_COLORS = ['#111827', '#475569', '#ef4444', '#f97316', '#f59e0b', '#10b981', '#0ea5e9', '#6366f1', '#a855f7']
+const HIGHLIGHT_COLORS = ['#fff3bf', '#fde68a', '#fecdd3', '#bbf7d0', '#bae6fd', '#ddd6fe']
 
 export function PostEditor({ categories, post, onCoverUpload, onUpdate }: PostEditorProps) {
   const inlineImageRef = useRef<HTMLInputElement>(null)
@@ -69,7 +86,9 @@ export function PostEditor({ categories, post, onCoverUpload, onUpdate }: PostEd
       }),
       Underline,
       TextStyle,
+      FontSize,
       Color,
+      BackgroundColor,
       Highlight.configure({ multicolor: true }),
       Image.configure({
         allowBase64: true,
@@ -140,6 +159,32 @@ export function PostEditor({ categories, post, onCoverUpload, onUpdate }: PostEd
 
   const addTable = () => {
     editor?.chain().focus().insertTable({ rows: 3, cols: 3, withHeaderRow: true }).run()
+  }
+
+  const currentFontSize = (editor?.getAttributes('textStyle').fontSize as string | undefined) ?? ''
+
+  const setFontSize = (fontSize: string) => {
+    const chain = editor?.chain().focus()
+    if (!chain) return
+
+    if (fontSize) {
+      chain.setFontSize(fontSize).run()
+      return
+    }
+
+    chain.unsetFontSize().run()
+  }
+
+  const setTextColor = (color: string) => {
+    editor?.chain().focus().setColor(color).run()
+  }
+
+  const setHighlightColor = (color: string) => {
+    editor?.chain().focus().setHighlight({ color }).run()
+  }
+
+  const clearFormatting = () => {
+    editor?.chain().focus().unsetColor().unsetBackgroundColor().unsetHighlight().unsetFontSize().unsetAllMarks().clearNodes().run()
   }
 
   return (
@@ -229,12 +274,33 @@ export function PostEditor({ categories, post, onCoverUpload, onUpdate }: PostEd
             <Table2 size={16} />
           </ToolbarButton>
 
-          <label className="color-control" title="글자 색상">
-            <Palette size={16} />
-            <input type="color" defaultValue="#ff6a00" onChange={(event) => editor?.chain().focus().setColor(event.target.value).run()} />
+          <label className="font-size-control" title="글자 크기">
+            <span>크기</span>
+            <select value={currentFontSize} onChange={(event) => setFontSize(event.target.value)}>
+              {FONT_SIZES.map((item) => (
+                <option key={item.label} value={item.value}>
+                  {item.label}
+                </option>
+              ))}
+            </select>
           </label>
-          <ToolbarButton label="하이라이트" onClick={() => editor?.chain().focus().toggleHighlight({ color: '#fff3bf' }).run()}>
-            <Highlighter size={16} />
+
+          <ColorSwatches
+            colors={TEXT_COLORS}
+            icon={<Palette size={15} />}
+            label="글자색"
+            onSelect={setTextColor}
+          />
+
+          <ColorSwatches
+            colors={HIGHLIGHT_COLORS}
+            icon={<Highlighter size={15} />}
+            label="형광펜"
+            onSelect={setHighlightColor}
+          />
+
+          <ToolbarButton label="서식 제거" onClick={clearFormatting}>
+            <Eraser size={16} />
           </ToolbarButton>
 
           <span className="toolbar-divider" />
@@ -300,6 +366,36 @@ export function PostEditor({ categories, post, onCoverUpload, onUpdate }: PostEd
         </label>
       </aside>
     </section>
+  )
+}
+
+function ColorSwatches({
+  colors,
+  icon,
+  label,
+  onSelect,
+}: {
+  colors: string[]
+  icon: ReactNode
+  label: string
+  onSelect: (color: string) => void
+}) {
+  return (
+    <div className="color-swatch-group" aria-label={label}>
+      <span>{icon}</span>
+      {colors.map((color) => (
+        <button
+          aria-label={`${label} ${color}`}
+          key={color}
+          style={{ '--swatch-color': color } as CSSProperties}
+          type="button"
+          onClick={() => onSelect(color)}
+        />
+      ))}
+      <label title={`${label} 직접 선택`}>
+        <input type="color" onChange={(event) => onSelect(event.target.value)} />
+      </label>
+    </div>
   )
 }
 
