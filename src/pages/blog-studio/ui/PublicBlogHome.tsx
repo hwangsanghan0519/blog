@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
 import type { CSSProperties, UIEvent } from 'react'
 import * as Dialog from '@radix-ui/react-dialog'
-import { CalendarDays, ChevronLeft, ChevronRight, LockKeyhole, Mail, Search, Trophy, X } from 'lucide-react'
+import { CalendarDays, ChevronLeft, ChevronRight, Mail, Search, Trophy, X } from 'lucide-react'
 import { useKeenSlider } from 'keen-slider/react'
 import 'keen-slider/keen-slider.min.css'
 import { normalizeEditorContent } from '../../../entities/post/lib/content'
@@ -15,7 +15,6 @@ type PublicBlogHomeProps = {
   categoryFilter: string
   adBanners: AdBannerSettings[]
   onCategoryFilterChange: (category: string) => void
-  onEnterOwnerMode: () => void
 }
 
 export function PublicBlogHome({
@@ -24,7 +23,6 @@ export function PublicBlogHome({
   categoryFilter,
   adBanners,
   onCategoryFilterChange,
-  onEnterOwnerMode,
 }: PublicBlogHomeProps) {
   const [query, setQuery] = useState('')
   const [selectedId, setSelectedId] = useState('')
@@ -198,9 +196,6 @@ export function PublicBlogHome({
           <input value={query} placeholder="검색" onChange={(event) => setQuery(event.target.value)} />
         </label>
 
-        <button className="public-owner-button" type="button" onClick={onEnterOwnerMode}>
-          <LockKeyhole size={16} /> 글쓰기 모드
-        </button>
       </header>
 
       <AdStripBanners banners={adBanners} />
@@ -286,7 +281,7 @@ export function PublicBlogHome({
           ) : (
             <div className="public-empty public-hero-empty">
               <strong>아직 공개된 글이 없습니다.</strong>
-              <p>글쓰기 모드에서 글을 발행하면 이곳에 방문자용 홈이 채워집니다.</p>
+              <p>곧 새로운 기록이 이곳에 채워질 예정입니다.</p>
             </div>
           )}
         </section>

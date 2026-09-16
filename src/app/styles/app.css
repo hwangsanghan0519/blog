@@ -2933,7 +2933,6 @@ button.category-row.is-selected {
 }
 
 .public-brand,
-.public-owner-button,
 .public-category-nav button,
 .public-slide button,
 .public-post-card,
@@ -3222,22 +3221,6 @@ button.category-row.is-selected {
     inset 0 0 0 1px color-mix(in srgb, var(--category-accent, var(--blue)) 38%, transparent),
     0 8px 18px rgba(31, 42, 51, 0.08);
   transform: translateY(-1px);
-}
-
-.public-owner-button {
-  min-height: 38px;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  gap: 7px;
-  padding: 0 13px;
-  border: 1px solid var(--line);
-  border-radius: 14px;
-  color: var(--text);
-  background: #ffffff;
-  box-shadow: var(--soft-shadow);
-  font-size: 13px;
-  font-weight: 850;
 }
 
 .public-header-search {

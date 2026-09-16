@@ -1,5 +1,6 @@
 import { Eye, ImagePlus, Lock, PenLine, Plus, Trash2, X } from 'lucide-react'
 import type { ChangeEvent } from 'react'
+import { useEffect, useRef } from 'react'
 import { PostEditor } from '../../../features/post-editor/ui/PostEditor'
 import { EmptyState } from '../../../shared/ui/EmptyState'
 import { BlogSidebar } from '../../../widgets/blog-sidebar/ui/BlogSidebar'
@@ -14,6 +15,15 @@ import { PublicBlogHome } from './PublicBlogHome'
 export function BlogStudioPage() {
   const studio = useBlogStudio()
   const { activePost } = studio
+  const isSecretAdminPath = isSecretPath(window.location.pathname)
+  const secretUnlockAttemptedRef = useRef(false)
+
+  useEffect(() => {
+    if (isSecretAdminPath && !studio.ownerMode && !secretUnlockAttemptedRef.current) {
+      secretUnlockAttemptedRef.current = true
+      studio.unlockOwnerMode()
+    }
+  }, [isSecretAdminPath, studio])
 
   if (!studio.ownerMode) {
     return (
@@ -23,7 +33,6 @@ export function BlogStudioPage() {
         categoryFilter={studio.categoryFilter}
         posts={studio.posts}
         onCategoryFilterChange={studio.setCategoryFilter}
-        onEnterOwnerMode={studio.unlockOwnerMode}
       />
     )
   }
@@ -66,7 +75,7 @@ export function BlogStudioPage() {
           onToggleTheme={() => studio.setDarkMode((value) => !value)}
         />
 
-        <button className="owner-mode-pill" type="button" onClick={studio.lockOwnerMode}>
+        <button className="owner-mode-pill" type="button" onClick={() => leaveOwnerMode(studio.lockOwnerMode)}>
           <Lock size={16} /> 읽기 화면으로
         </button>
 
@@ -129,6 +138,15 @@ export function BlogStudioPage() {
       )}
     </div>
   )
+}
+
+function isSecretPath(pathname: string) {
+  return pathname === '/secret/sanghan' || pathname === '/blog/secret/sanghan'
+}
+
+function leaveOwnerMode(lockOwnerMode: () => void) {
+  lockOwnerMode()
+  window.history.pushState(null, '', window.location.pathname.startsWith('/blog') ? '/blog/' : '/')
 }
 
 function AdBannerAdminPanel({
