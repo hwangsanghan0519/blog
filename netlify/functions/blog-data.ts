@@ -5,6 +5,7 @@ const DEFAULT_REPO = 'blog'
 const DEFAULT_BRANCH = 'main'
 const DATA_PATH = 'data/blog-data.json'
 const GITHUB_API = 'https://api.github.com'
+const GITHUB_RAW = 'https://raw.githubusercontent.com'
 
 type BlogData = {
   adBanners: unknown[]
@@ -79,13 +80,15 @@ export async function handler(event: NetlifyEvent) {
 }
 
 async function readGitHubData() {
-  const response = await githubFetch({ ref: true })
+  const token = process.env.GITHUB_CONTENT_TOKEN
+  const response = token ? await githubFetch({ ref: true }) : await githubRawFetch()
 
   if (response.status === 404) return emptyData
   if (!response.ok) return emptyData
 
-  const file = (await response.json()) as GitHubContent
-  const content = Buffer.from(file.content, 'base64').toString('utf8')
+  const content = token
+    ? Buffer.from(((await response.json()) as GitHubContent).content, 'base64').toString('utf8')
+    : await response.text()
 
   return JSON.parse(content) as BlogData
 }
@@ -129,6 +132,14 @@ function githubFetch(init?: RequestInit & { ref?: boolean }) {
       'content-type': 'application/json',
       'x-github-api-version': '2022-11-28',
       ...requestInit.headers,
+    },
+  })
+}
+
+function githubRawFetch() {
+  return fetch(`${GITHUB_RAW}/${githubOwner()}/${githubRepo()}/${githubBranch()}/${DATA_PATH}`, {
+    headers: {
+      accept: 'application/json',
     },
   })
 }
