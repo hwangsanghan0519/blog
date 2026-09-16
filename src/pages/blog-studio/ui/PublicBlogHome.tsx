@@ -42,8 +42,8 @@ export function PublicBlogHome({
 
   const topPosts = useMemo(() => getTopPosts(publishedPosts), [publishedPosts])
   const publicCategories = useMemo(
-    () => categories.filter((category) => publishedPosts.some((post) => post.category === category)),
-    [categories, publishedPosts],
+    () => categories.filter((category) => category.trim()),
+    [categories],
   )
 
   const filteredPosts = useMemo(() => {
