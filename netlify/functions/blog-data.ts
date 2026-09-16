@@ -33,10 +33,13 @@ const json = (statusCode: number, body: unknown) => ({
 export async function handler(event: NetlifyEvent) {
   try {
     if (event.httpMethod === 'GET' && event.queryStringParameters?.debug === 'env') {
+      const source = await readSupabaseSourceDebug()
+
       return json(200, {
         hasBlogAdminToken: Boolean(process.env.BLOG_ADMIN_TOKEN),
         hasSupabaseServiceRoleKey: Boolean(readSupabaseServiceRoleKey()),
         hasSupabaseUrl: Boolean(readSupabaseUrl()),
+        ...source,
       })
     }
 
@@ -44,7 +47,7 @@ export async function handler(event: NetlifyEvent) {
       return json(200, await readSupabaseData())
     }
 
-    if (event.httpMethod !== 'PUT') {
+    if (event.httpMethod !== 'PUT' && event.httpMethod !== 'DELETE') {
       return json(405, { message: 'Method not allowed' })
     }
 
@@ -53,6 +56,11 @@ export async function handler(event: NetlifyEvent) {
 
     if (!adminToken || requestToken !== adminToken) {
       return json(401, { message: '관리자 저장 토큰이 필요합니다.' })
+    }
+
+    if (event.httpMethod === 'DELETE') {
+      await writeSupabaseData(emptyData)
+      return json(200, emptyData)
     }
 
     const payload = JSON.parse(event.body ?? '{}') as BlogData
@@ -85,6 +93,32 @@ async function readSupabaseData() {
 
   const rows = (await response.json()) as Array<{ data?: BlogData }>
   return rows[0]?.data ?? emptyData
+}
+
+async function readSupabaseSourceDebug() {
+  const response = await supabaseFetch(`/rest/v1/blog_content?id=eq.${ROW_ID}&select=id,updated_at,data`)
+
+  if (!response.ok) {
+    return {
+      supabaseReadError: await response.text(),
+    }
+  }
+
+  const rows = (await response.json()) as Array<{ data?: BlogData; id?: string; updated_at?: string }>
+  const row = rows[0]
+
+  return {
+    rowExists: Boolean(row),
+    rowId: row?.id ?? null,
+    rowUpdatedAt: row?.updated_at ?? null,
+    sourceProjectRef: readSupabaseProjectRef(),
+    sourceSupabaseHost: readSupabaseHost(),
+    storedCategories: row?.data?.categories ?? [],
+    storedPostCount: row?.data?.posts?.length ?? 0,
+    storedPostTitles: row?.data?.posts?.map((post) =>
+      typeof post === 'object' && post !== null && 'title' in post ? String(post.title) : '제목 없음',
+    ) ?? [],
+  }
 }
 
 async function writeSupabaseData(data: BlogData) {
@@ -128,6 +162,20 @@ function supabaseFetch(path: string, init?: RequestInit) {
 
 function readSupabaseUrl() {
   return process.env.SUPABASE_URL || process.env.VITE_SUPABASE_URL || process.env.NEXT_PUBLIC_SUPABASE_URL || ''
+}
+
+function readSupabaseHost() {
+  const url = readSupabaseUrl()
+
+  try {
+    return new URL(url).host
+  } catch {
+    return ''
+  }
+}
+
+function readSupabaseProjectRef() {
+  return readSupabaseHost().replace('.supabase.co', '')
 }
 
 function readSupabaseServiceRoleKey() {
