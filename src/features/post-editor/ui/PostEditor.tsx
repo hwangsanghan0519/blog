@@ -51,13 +51,14 @@ type PostEditorProps = {
 
 export function PostEditor({ categories, post, onCoverUpload, onUpdate }: PostEditorProps) {
   const inlineImageRef = useRef<HTMLInputElement>(null)
+  const selectedCategory = post.category.trim()
   const categoryOptions = useMemo(() => {
-    const names = [post.category, ...categories]
+    const names = [selectedCategory, ...categories]
       .map((category) => category.trim())
       .filter(Boolean)
 
     return Array.from(new Set(names.length ? names : ['분류 없음'])).sort((a, b) => a.localeCompare(b, 'ko'))
-  }, [categories, post.category])
+  }, [categories, selectedCategory])
 
   const editor = useEditor({
     extensions: [
@@ -269,8 +270,8 @@ export function PostEditor({ categories, post, onCoverUpload, onUpdate }: PostEd
         </label>
         <label>
           카테고리
-          <select value={post.category} onChange={(event) => onUpdate({ category: event.target.value })}>
-            {!post.category && (
+          <select value={selectedCategory} onChange={(event) => onUpdate({ category: event.target.value })}>
+            {!selectedCategory && (
               <option value="" disabled>
                 카테고리 선택
               </option>

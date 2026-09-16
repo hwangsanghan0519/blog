@@ -103,9 +103,11 @@ const DEFAULT_SETTINGS: BlogSettings = {
 export function useBlogStudio() {
   const hostedRuntime = isHostedRuntime()
   const initialSettings = hostedRuntime ? DEFAULT_SETTINGS : readSettings()
-  const [posts, setPosts] = useState<Post[]>(() => (hostedRuntime ? [] : loadJson(STORAGE_KEY, starterPosts)))
+  const [posts, setPosts] = useState<Post[]>(() =>
+    hostedRuntime ? [] : normalizePosts(loadJson<unknown>(STORAGE_KEY, starterPosts), uniqueCategories(starterPosts)),
+  )
   const [categories, setCategories] = useState<string[]>(() =>
-    hostedRuntime ? [] : loadJson(CATEGORIES_KEY, uniqueCategories(posts)),
+    hostedRuntime ? [] : normalizeCategories(loadJson<unknown>(CATEGORIES_KEY, uniqueCategories(posts))),
   )
   const [activeId, setActiveId] = useState(posts[0]?.id ?? '')
   const [query, setQuery] = useState('')
@@ -134,11 +136,12 @@ export function useBlogStudio() {
     const data = (await response.json()) as CloudBlogData
     if (signal?.aborted) return false
 
-    const cloudPosts = Array.isArray(data.posts) ? data.posts : []
-    const cloudCategories = data.categories?.length ? data.categories : uniqueCategories(cloudPosts)
+    const cloudCategories = normalizeCategories(data.categories)
+    const cloudPosts = normalizePosts(data.posts, cloudCategories)
+    const nextCategories = normalizeCategories([...cloudCategories, ...uniqueCategories(cloudPosts)])
 
     setPosts(cloudPosts)
-    setCategories(cloudCategories)
+    setCategories(nextCategories)
     setAdBanners(data.adBanners?.length ? normalizeAdBanners(data.adBanners) : DEFAULT_AD_BANNERS)
     setActiveId((current) => (cloudPosts.some((post) => post.id === current) ? current : cloudPosts[0]?.id ?? ''))
     setCloudSynced(true)
@@ -223,7 +226,7 @@ export function useBlogStudio() {
   }, [adBanners, categories, cloudReady, cloudSynced, ownerMode, posts])
 
   const visibleCategories = useMemo(
-    () => Array.from(new Set([...categories, ...uniqueCategories(posts)])).sort((a, b) => a.localeCompare(b, 'ko')),
+    () => normalizeCategories([...categories, ...uniqueCategories(posts)]),
     [categories, posts],
   )
 
@@ -266,6 +269,8 @@ export function useBlogStudio() {
   const updatePost = (patch: Partial<Post>) => {
     if (!activePost) return
 
+    const normalizedPatch = patch.category ? { ...patch, category: normalizeCategoryName(patch.category) } : patch
+
     if (patch.category) {
       const category = normalizeCategoryName(patch.category)
       if (category && !categories.includes(category)) {
@@ -275,7 +280,7 @@ export function useBlogStudio() {
 
     setPosts((current) =>
       current.map((post) =>
-        post.id === activePost.id ? { ...post, ...patch, updatedAt: new Date().toISOString() } : post,
+        post.id === activePost.id ? { ...post, ...normalizedPatch, updatedAt: new Date().toISOString() } : post,
       ),
     )
   }
@@ -332,10 +337,11 @@ export function useBlogStudio() {
 
   const createPost = (template: Partial<Post> = {}) => {
     const safeTemplate = isPostTemplate(template) ? template : {}
+    const selectedCategory = normalizeCategoryName(categoryFilter === 'all' ? visibleCategories[0] ?? UNCATEGORIZED : categoryFilter)
     const next = {
       ...createEmptyPost(),
-      category: categoryFilter === 'all' ? visibleCategories[0] ?? UNCATEGORIZED : categoryFilter,
       ...safeTemplate,
+      category: normalizeCategoryName(safeTemplate.category ?? selectedCategory) || UNCATEGORIZED,
       id: crypto.randomUUID(),
       createdAt: new Date().toISOString(),
       updatedAt: new Date().toISOString(),
@@ -605,9 +611,58 @@ function normalizeCategoryName(value: string | null) {
   return value?.trim().replace(/\s+/g, ' ') ?? ''
 }
 
+function normalizeCategories(values: unknown) {
+  if (!Array.isArray(values)) return []
+
+  return Array.from(
+    new Set(
+      values
+        .filter((value): value is string => typeof value === 'string')
+        .map((value) => normalizeCategoryName(value))
+        .filter(Boolean),
+    ),
+  ).sort((a, b) => a.localeCompare(b, 'ko'))
+}
+
 function uniqueCategories(posts: Post[]) {
-  const names = posts.map((post) => post.category || UNCATEGORIZED)
-  return Array.from(new Set(names.length ? names : [UNCATEGORIZED])).sort((a, b) => a.localeCompare(b, 'ko'))
+  const names = posts.map((post) => normalizeCategoryName(post.category) || UNCATEGORIZED)
+  return normalizeCategories(names.length ? names : [UNCATEGORIZED])
+}
+
+function normalizePosts(values: unknown, categoryHints: unknown = []): Post[] {
+  if (!Array.isArray(values)) return []
+
+  const fallbackCategory = normalizeCategories(categoryHints)[0] ?? UNCATEGORIZED
+
+  return values
+    .filter((value): value is Record<string, unknown> => Boolean(value) && typeof value === 'object')
+    .map((value, index) => {
+      const category = normalizeCategoryName(readString(value.category, fallbackCategory)) || fallbackCategory
+
+      return {
+        id: readString(value.id, `post-${Date.now()}-${index}`),
+        title: readString(value.title, '제목 없는 글'),
+        slug: readString(value.slug, `post-${Date.now()}-${index}`),
+        excerpt: readString(value.excerpt, ''),
+        category,
+        tags: Array.isArray(value.tags)
+          ? value.tags.filter((tag): tag is string => typeof tag === 'string').map((tag) => tag.trim()).filter(Boolean)
+          : [],
+        content: readString(value.content, '<h1>새 글</h1><p></p>'),
+        coverImage: readString(value.coverImage, ''),
+        status: normalizePostStatus(value.status),
+        createdAt: readString(value.createdAt, new Date().toISOString()),
+        updatedAt: readString(value.updatedAt, new Date().toISOString()),
+      }
+    })
+}
+
+function readString(value: unknown, fallback: string) {
+  return typeof value === 'string' ? value : fallback
+}
+
+function normalizePostStatus(value: unknown): PostStatus {
+  return value === 'draft' || value === 'published' || value === 'archived' ? value : 'draft'
 }
 
 function readSettings(): BlogSettings {

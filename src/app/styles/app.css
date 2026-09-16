@@ -701,6 +701,11 @@ button.category-row.is-selected {
   background: var(--surface);
 }
 
+.editor-side select option {
+  color: #111827;
+  background: #ffffff;
+}
+
 .editor-main input {
   font-size: 30px;
   font-weight: 900;
