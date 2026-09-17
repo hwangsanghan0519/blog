@@ -34,6 +34,7 @@ export function PublicBlogHome({
   const latestHeadRef = useRef<HTMLDivElement>(null)
   const categoryTrackRef = useRef<HTMLDivElement>(null)
   const categoryDragRef = useRef({ active: false, moved: false, pointerId: -1, scrollLeft: 0, startX: 0 })
+  const pendingCategoryScrollRef = useRef<'top' | 'latest' | null>(null)
   const sliderPausedRef = useRef(false)
 
   const publishedPosts = useMemo(
@@ -101,6 +102,25 @@ export function PublicBlogHome({
 
     return () => window.removeEventListener('popstate', syncViewFromUrl)
   }, [onCategoryFilterChange, publicCategories, publishedPosts])
+
+  useEffect(() => {
+    const pendingScroll = pendingCategoryScrollRef.current
+    if (!pendingScroll) return undefined
+
+    pendingCategoryScrollRef.current = null
+
+    // 필터링된 상품 목록이 화면에 반영된 다음 정확한 위치로 이동합니다.
+    const timer = window.setTimeout(() => {
+      if (pendingScroll === 'top') {
+        window.scrollTo({ left: 0, top: 0, behavior: 'smooth' })
+        return
+      }
+
+      scrollToHeaderEdge(latestHeadRef.current, headerRef.current)
+    }, 40)
+
+    return () => window.clearTimeout(timer)
+  }, [categoryFilter, filteredPosts.length])
 
   const selectPost = (postId: string) => {
     const post = publishedPosts.find((item) => item.id === postId)
@@ -177,21 +197,29 @@ export function PublicBlogHome({
     syncCategoryParam(category === 'all' ? '' : category)
 
     if (category === 'all') {
-      window.requestAnimationFrame(() => {
-        window.scrollTo({ left: 0, top: 0, behavior: 'smooth' })
-      })
+      pendingCategoryScrollRef.current = 'top'
+      window.setTimeout(() => {
+        if (pendingCategoryScrollRef.current === 'top') {
+          pendingCategoryScrollRef.current = null
+          window.scrollTo({ left: 0, top: 0, behavior: 'smooth' })
+        }
+      }, 40)
       return
     }
 
-    window.requestAnimationFrame(() => {
-      scrollToHeaderEdge(latestHeadRef.current, headerRef.current)
-    })
+    pendingCategoryScrollRef.current = 'latest'
+    window.setTimeout(() => {
+      if (pendingCategoryScrollRef.current === 'latest') {
+        pendingCategoryScrollRef.current = null
+        scrollToHeaderEdge(latestHeadRef.current, headerRef.current)
+      }
+    }, 40)
   }
 
   // 셀럽 사진 레일은 데스크톱에서도 손으로 넘기는 감각이 나도록 직접 드래그 스크롤을 처리합니다.
   const startCategoryDrag = (event: PointerEvent<HTMLDivElement>) => {
     const track = categoryTrackRef.current
-    if (!track) return
+    if (!track || (event.pointerType === 'mouse' && event.button !== 0)) return
 
     categoryDragRef.current = {
       active: true,
@@ -209,7 +237,7 @@ export function PublicBlogHome({
     if (!track || !drag.active || drag.pointerId !== event.pointerId) return
 
     const deltaX = event.clientX - drag.startX
-    if (Math.abs(deltaX) > 3) {
+    if (Math.abs(deltaX) > 12) {
       drag.moved = true
       track.scrollLeft = drag.scrollLeft - deltaX
       event.preventDefault()
