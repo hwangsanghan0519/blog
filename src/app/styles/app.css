@@ -8557,7 +8557,8 @@ button.category-row.is-selected,
 /* Swipeable celeb rail: full-bleed photos instead of framed category cards. */
 .public-category-nav {
   min-width: 0;
-  padding: 0 0 20px !important;
+  position: relative;
+  padding: 0 78px 20px 0 !important;
   overflow: hidden !important;
 }
 
@@ -8568,12 +8569,19 @@ button.category-row.is-selected,
 
 .public-category-track {
   min-width: 0;
-  overflow: visible !important;
+  width: 100%;
+  overflow: hidden !important;
+  cursor: grab;
+}
+
+.public-category-track:active {
+  cursor: grabbing;
 }
 
 .public-category-slide {
   flex: 0 0 clamp(126px, 11vw, 176px) !important;
   width: clamp(126px, 11vw, 176px) !important;
+  max-width: clamp(126px, 11vw, 176px) !important;
   min-width: 0 !important;
   min-height: clamp(142px, 13vw, 202px) !important;
   display: grid !important;
@@ -8588,6 +8596,33 @@ button.category-row.is-selected,
   background: #111111 !important;
   box-shadow: none !important;
   transform: none !important;
+}
+
+.public-category-controls {
+  position: absolute;
+  right: 0;
+  bottom: 20px;
+  z-index: 4;
+  display: grid;
+  gap: 7px;
+}
+
+.public-category-controls button {
+  display: grid;
+  width: 34px;
+  height: 34px;
+  place-items: center;
+  border: 1px solid rgba(255, 255, 255, 0.24) !important;
+  border-radius: 50% !important;
+  color: #ffffff !important;
+  background: rgba(0, 0, 0, 0.36) !important;
+  box-shadow: none !important;
+  backdrop-filter: blur(12px);
+}
+
+.public-category-controls button:hover {
+  background: var(--ssen-red) !important;
+  transform: translateY(-1px);
 }
 
 .public-category-slide::after {
@@ -8690,9 +8725,18 @@ button.category-row.is-selected,
 }
 
 @media (max-width: 720px) {
+  .public-category-nav {
+    padding-right: 0 !important;
+  }
+
   .public-category-slide {
     flex-basis: 122px !important;
     width: 122px !important;
+    max-width: 122px !important;
     min-height: 150px !important;
+  }
+
+  .public-category-controls {
+    display: none;
   }
 }

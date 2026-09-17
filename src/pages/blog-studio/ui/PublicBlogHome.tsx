@@ -61,6 +61,8 @@ export function PublicBlogHome({
 
   const selectedPost = publishedPosts.find((post) => post.id === selectedId)
   const selectedPostIndex = selectedPost ? publishedPosts.findIndex((post) => post.id === selectedPost.id) : -1
+  const activeCategoryIndex = categoryFilter === 'all' ? 0 : Math.max(0, publicCategories.indexOf(categoryFilter) + 1)
+  const categorySlideCount = publicCategories.length + 1
 
   const [sliderRef, slider] = useKeenSlider<HTMLDivElement>({
     loop: topPosts.length > 1,
@@ -77,7 +79,8 @@ export function PublicBlogHome({
 
   useEffect(() => {
     categorySlider.current?.update()
-  }, [categoryFilter, categoryImages, categorySlider, publicCategories.length])
+    categorySlider.current?.moveToIdx(activeCategoryIndex)
+  }, [activeCategoryIndex, categoryImages, categorySlider, publicCategories.length])
 
   useEffect(() => {
     if (topPosts.length < 2) return undefined
@@ -150,6 +153,17 @@ export function PublicBlogHome({
     event.preventDefault()
     event.stopPropagation()
     slider.current?.moveToIdx(index)
+  }
+
+  const moveCategorySlider = (event: MouseEvent<HTMLButtonElement>, direction: -1 | 1) => {
+    event.preventDefault()
+    event.stopPropagation()
+    if (direction < 0) {
+      categorySlider.current?.prev()
+      return
+    }
+
+    categorySlider.current?.next()
   }
 
   const stopReaderControlEvent = (event: MouseEvent<HTMLButtonElement> | PointerEvent<HTMLButtonElement>) => {
@@ -233,6 +247,16 @@ export function PublicBlogHome({
               </button>
             ))}
           </div>
+          {categorySlideCount > 2 && (
+            <div className="public-category-controls" aria-label="셀럽 목록 이동">
+              <button type="button" aria-label="이전 셀럽" onClick={(event) => moveCategorySlider(event, -1)}>
+                <ChevronLeft size={17} />
+              </button>
+              <button type="button" aria-label="다음 셀럽" onClick={(event) => moveCategorySlider(event, 1)}>
+                <ChevronRight size={17} />
+              </button>
+            </div>
+          )}
         </nav>
 
       </header>
