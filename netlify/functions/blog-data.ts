@@ -4,6 +4,7 @@ type BlogData = {
   adBanners: unknown[]
   categories: string[]
   categoryImages: Record<string, string>
+  heroVideo: Record<string, unknown> | null
   posts: unknown[]
   savedAt?: string | null
 }
@@ -25,6 +26,7 @@ const emptyData: BlogData = {
   adBanners: [],
   categories: [],
   categoryImages: {},
+  heroVideo: null,
   posts: [],
   savedAt: null,
 }
@@ -84,7 +86,8 @@ export async function handler(event: NetlifyEvent) {
       !Array.isArray(payload.posts) ||
       !Array.isArray(payload.categories) ||
       !Array.isArray(payload.adBanners) ||
-      !isStringRecord(payload.categoryImages)
+      !isStringRecord(payload.categoryImages) ||
+      !isOptionalRecord(payload.heroVideo)
     ) {
       return json(400, { message: '저장 데이터 형식이 올바르지 않습니다.' })
     }
@@ -93,6 +96,7 @@ export async function handler(event: NetlifyEvent) {
       adBanners: payload.adBanners,
       categories: payload.categories,
       categoryImages: payload.categoryImages,
+      heroVideo: payload.heroVideo ?? null,
       posts: payload.posts,
       savedAt: new Date().toISOString(),
     }
@@ -146,6 +150,7 @@ function mergeBlogRows(rows: BlogContentRow[]): BlogData {
   const categoryImages: Record<string, string> = {}
   const posts = new Map<string, unknown>()
   let adBanners: unknown[] = []
+  let heroVideo: Record<string, unknown> | null = null
   let savedAt: string | null = null
 
   rows.forEach((row, rowIndex) => {
@@ -154,6 +159,10 @@ function mergeBlogRows(rows: BlogContentRow[]): BlogData {
 
     if (!adBanners.length && Array.isArray(data.adBanners) && data.adBanners.length) {
       adBanners = data.adBanners
+    }
+
+    if (!heroVideo && isOptionalRecord(data.heroVideo) && data.heroVideo) {
+      heroVideo = data.heroVideo
     }
 
     if (Array.isArray(data.categories)) {
@@ -199,6 +208,7 @@ function mergeBlogRows(rows: BlogContentRow[]): BlogData {
     adBanners,
     categories: Array.from(categories).sort((a, b) => a.localeCompare(b, 'ko')),
     categoryImages,
+    heroVideo,
     posts: Array.from(posts.values()),
     savedAt,
   }
@@ -206,6 +216,10 @@ function mergeBlogRows(rows: BlogContentRow[]): BlogData {
 
 function isStringRecord(value: unknown): value is Record<string, string> {
   return value !== null && typeof value === 'object' && !Array.isArray(value) && Object.values(value).every((item) => typeof item === 'string')
+}
+
+function isOptionalRecord(value: unknown): value is Record<string, unknown> | null | undefined {
+  return value === undefined || value === null || (typeof value === 'object' && !Array.isArray(value))
 }
 
 function readPostKey(post: object, rowId: string, index: number) {

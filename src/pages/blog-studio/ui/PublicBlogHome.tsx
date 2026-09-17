@@ -8,47 +8,35 @@ import { countWords, formatDate } from '../../../entities/post/lib/formatters'
 import type { Post } from '../../../entities/post/model/types'
 import { RenderedContent } from '../../../shared/ui/RenderedContent'
 import ssenLogoImage from '../../../assets/ssen-logo.svg'
-import type { AdBannerSettings } from '../model/useBlogStudio'
+import type { AdBannerSettings, HeroVideoSettings } from '../model/useBlogStudio'
 
 type PublicBlogHomeProps = {
   posts: Post[]
   categories: string[]
   categoryImages: Record<string, string>
   categoryFilter: string
+  heroVideo: HeroVideoSettings
   adBanners: AdBannerSettings[]
   onCategoryFilterChange: (category: string) => void
 }
 
-const CATEGORY_PAGE_SIZE = 14
+const CATEGORY_COLUMN_SIZE = 2
 
 export function PublicBlogHome({
   posts,
   categories,
   categoryImages,
   categoryFilter,
+  heroVideo,
   adBanners,
   onCategoryFilterChange,
 }: PublicBlogHomeProps) {
   const [selectedId, setSelectedId] = useState('')
   const [currentSlide, setCurrentSlide] = useState(0)
-  const [categoryStepIndex, setCategoryStepIndex] = useState(0)
-  const [categoryDragOffset, setCategoryDragOffset] = useState(0)
-  const [isCategoryDragging, setIsCategoryDragging] = useState(false)
   const [readingProgress, setReadingProgress] = useState(0)
   const headerRef = useRef<HTMLElement>(null)
   const latestHeadRef = useRef<HTMLDivElement>(null)
   const pendingCategoryScrollRef = useRef<'top' | 'latest' | null>(null)
-  const categorySwipeRef = useRef({
-    active: false,
-    blockClick: false,
-    moved: false,
-    pointerId: -1,
-    startTime: 0,
-    startX: 0,
-    startY: 0,
-    targetCategory: '',
-    x: 0,
-  })
   const sliderPausedRef = useRef(false)
 
   const publishedPosts = useMemo(
@@ -64,16 +52,15 @@ export function PublicBlogHome({
     () => categories.filter((category) => category.trim()),
     [categories],
   )
-  const categoryPages = useMemo(() => {
-    const pages: string[][] = []
+  const categoryColumns = useMemo(() => {
+    const columns: string[][] = []
 
-    for (let index = 0; index < publicCategories.length; index += CATEGORY_PAGE_SIZE) {
-      pages.push(publicCategories.slice(index, index + CATEGORY_PAGE_SIZE))
+    for (let index = 0; index < publicCategories.length; index += CATEGORY_COLUMN_SIZE) {
+      columns.push(publicCategories.slice(index, index + CATEGORY_COLUMN_SIZE))
     }
 
-    return pages
+    return columns
   }, [publicCategories])
-  const maxCategoryStep = Math.max(0, categoryPages.length - 1)
   const categoryCounts = useMemo(() => {
     return publishedPosts.reduce<Record<string, number>>((counts, post) => {
       counts[post.category] = (counts[post.category] ?? 0) + 1
@@ -95,6 +82,13 @@ export function PublicBlogHome({
       setCurrentSlide(instance.track.details.rel)
     },
   })
+  const [categorySliderRef, categorySlider] = useKeenSlider<HTMLDivElement>({
+    dragSpeed: 0.5,
+    mode: 'free',
+    range: { align: true },
+    rubberband: false,
+    slides: { perView: 'auto', spacing: 1 },
+  })
   useEffect(() => {
     if (topPosts.length < 2) return undefined
 
@@ -108,12 +102,10 @@ export function PublicBlogHome({
   }, [slider, topPosts.length])
 
   useEffect(() => {
-    const timer = window.setTimeout(() => {
-      setCategoryStepIndex((currentIndex) => Math.min(currentIndex, maxCategoryStep))
-    }, 0)
+    const frame = window.requestAnimationFrame(() => categorySlider.current?.update())
 
-    return () => window.clearTimeout(timer)
-  }, [maxCategoryStep])
+    return () => window.cancelAnimationFrame(frame)
+  }, [categoryColumns.length, categorySlider])
 
   useEffect(() => {
     if (categoryFilter === 'all') return undefined
@@ -122,11 +114,11 @@ export function PublicBlogHome({
     if (categoryIndex < 0) return undefined
 
     const timer = window.setTimeout(() => {
-      setCategoryStepIndex(Math.floor(categoryIndex / CATEGORY_PAGE_SIZE))
+      categorySlider.current?.moveToIdx(Math.floor(categoryIndex / CATEGORY_COLUMN_SIZE), true)
     }, 0)
 
     return () => window.clearTimeout(timer)
-  }, [categoryFilter, publicCategories])
+  }, [categoryFilter, categorySlider, publicCategories])
 
   useEffect(() => {
     const syncViewFromUrl = () => {
@@ -237,11 +229,6 @@ export function PublicBlogHome({
   }
 
   const selectCategory = (category: string) => {
-    const categoryIndex = publicCategories.indexOf(category)
-    if (categoryIndex >= 0) {
-      setCategoryStepIndex(Math.floor(categoryIndex / CATEGORY_PAGE_SIZE))
-    }
-
     onCategoryFilterChange(category)
     syncCategoryParam(category === 'all' ? '' : category)
 
@@ -265,123 +252,29 @@ export function PublicBlogHome({
     }, 40)
   }
 
-  const moveCategoryStep = (direction: -1 | 1) => {
-    setCategoryStepIndex((currentIndex) => clamp(currentIndex + direction, 0, maxCategoryStep))
-  }
-
-  const startCategorySwipe = (event: PointerEvent<HTMLDivElement>) => {
-    if (event.pointerType === 'mouse' && event.button !== 0) return
-
-    const targetCategory = event.target instanceof Element
-      ? event.target.closest<HTMLButtonElement>('[data-category]')?.dataset.category ?? ''
-      : ''
-
-    categorySwipeRef.current = {
-      active: true,
-      blockClick: false,
-      moved: false,
-      pointerId: event.pointerId,
-      startTime: performance.now(),
-      startX: event.clientX,
-      startY: event.clientY,
-      targetCategory,
-      x: event.clientX,
-    }
-    setCategoryDragOffset(0)
-    setIsCategoryDragging(true)
-    event.currentTarget.setPointerCapture(event.pointerId)
-  }
-
-  const moveCategorySwipe = (event: PointerEvent<HTMLDivElement>) => {
-    const swipe = categorySwipeRef.current
-    if (!swipe.active || swipe.pointerId !== event.pointerId) return
-
-    const deltaX = event.clientX - swipe.startX
-    const deltaY = event.clientY - swipe.startY
-    swipe.x = event.clientX
-
-    if (Math.abs(deltaX) > 12 && Math.abs(deltaX) > Math.abs(deltaY)) {
-      swipe.moved = true
-      const isPullingPastStart = categoryStepIndex === 0 && deltaX > 0
-      const isPullingPastEnd = categoryStepIndex === maxCategoryStep && deltaX < 0
-      const maxDragOffset = event.currentTarget.clientWidth * 0.24
-      const boundedOffset = clamp(deltaX, -maxDragOffset, maxDragOffset)
-      setCategoryDragOffset((isPullingPastStart || isPullingPastEnd) ? boundedOffset * 0.22 : boundedOffset)
-      event.preventDefault()
-    }
-  }
-
-  const stopCategorySwipe = (event: PointerEvent<HTMLDivElement>) => {
-    const swipe = categorySwipeRef.current
-    if (!swipe.active || swipe.pointerId !== event.pointerId) return
-
-    if (event.currentTarget.hasPointerCapture(event.pointerId)) {
-      event.currentTarget.releasePointerCapture(event.pointerId)
-    }
-
-    const deltaX = swipe.x - swipe.startX
-    const swipeVelocity = Math.abs(deltaX) / Math.max(performance.now() - swipe.startTime, 1)
-    const shouldChangePage = Math.abs(deltaX) > 48 || (Math.abs(deltaX) > 18 && swipeVelocity > 0.42)
-
-    if (event.type !== 'pointercancel' && swipe.moved && shouldChangePage) {
-      moveCategoryStep(deltaX < 0 ? 1 : -1)
-    }
-
-    if (!swipe.moved && swipe.targetCategory) {
-      selectCategory(swipe.targetCategory)
-    }
-
-    categorySwipeRef.current.active = false
-    categorySwipeRef.current.blockClick = swipe.moved || Boolean(swipe.targetCategory)
-    setCategoryDragOffset(0)
-    setIsCategoryDragging(false)
-    window.setTimeout(() => {
-      categorySwipeRef.current.blockClick = false
-      categorySwipeRef.current.moved = false
-    }, 120)
-  }
-
-  const blockCategoryClickAfterSwipe = (event: MouseEvent<HTMLDivElement>) => {
-    if (!categorySwipeRef.current.blockClick) return
-
-    event.preventDefault()
-    event.stopPropagation()
-  }
-
   return (
     <div className="public-blog">
       <header ref={headerRef} className="public-header">
-        <button className="public-brand" type="button" aria-label="SSEN 홈" onClick={() => selectCategory('all')}>
+        <button className="public-brand" type="button" aria-label="전체 상품 보기" onClick={() => selectCategory('all')}>
           <span className="public-ssen-logo" aria-hidden="true">
             <img src={ssenLogoImage} alt="" />
+          </span>
+          <span className="public-brand-message" aria-hidden="true">
+            <span className="public-brand-kicker">SSEN CURATED PICKS</span>
+            <span className="public-brand-title">
+              <em>쎈놈들이</em>
+              <b>선택한 아이템</b>
+            </span>
+            <span className="public-brand-caption">SSEN</span>
           </span>
         </button>
 
         <nav className="public-category-nav" aria-label="셀럽별 광고 상품">
-          <button
-            className={`public-category-all ${categoryFilter === 'all' ? 'is-active' : ''}`}
-            style={getCategoryStyle('전체')}
-            type="button"
-            onClick={() => selectCategory('all')}
-          >
-            전체
-            <small>{publishedPosts.length}</small>
-          </button>
-          <div
-            className={`public-category-carousel ${isCategoryDragging ? 'is-dragging' : ''}`}
-            onClickCapture={blockCategoryClickAfterSwipe}
-            onPointerCancel={stopCategorySwipe}
-            onPointerDown={startCategorySwipe}
-            onPointerMove={moveCategorySwipe}
-            onPointerUp={stopCategorySwipe}
-          >
-            <div
-              className="public-category-page-strip"
-              style={{ transform: `translate3d(calc(-${categoryStepIndex * 100}% + ${categoryDragOffset}px), 0, 0)` }}
-            >
-            {categoryPages.map((page, pageIndex) => (
-              <div className="public-category-page" key={`category-page-${pageIndex}`}>
-                {page.map((category) => (
+          <div className="public-category-carousel">
+            <div ref={categorySliderRef} className="keen-slider public-category-page-strip">
+            {categoryColumns.map((column, columnIndex) => (
+              <div className="keen-slider__slide public-category-column" key={`category-column-${columnIndex}`}>
+                {column.map((category) => (
                   <button
                     className={`public-category-slide ${categoryFilter === category ? 'is-active' : ''}`}
                     data-category={category}
@@ -405,6 +298,7 @@ export function PublicBlogHome({
       </header>
 
       <AdStripBanners banners={adBanners} />
+      <TrendVideo settings={heroVideo} />
 
       <main className="public-main">
         <section className="public-hero" aria-label="실시간 상품 TOP 10">
@@ -658,6 +552,70 @@ function CategoryVisual({ image, label }: { image?: string; label: string }) {
   )
 }
 
+function TrendVideo({ settings }: { settings: HeroVideoSettings }) {
+  const videoId = getYoutubeVideoId(settings.youtubeUrl)
+  if (!settings.enabled || !videoId) return null
+
+  const playerUrl = new URL(`https://www.youtube.com/embed/${videoId}`)
+  playerUrl.searchParams.set('autoplay', '1')
+  playerUrl.searchParams.set('mute', '1')
+  playerUrl.searchParams.set('controls', '0')
+  playerUrl.searchParams.set('loop', '1')
+  playerUrl.searchParams.set('playlist', videoId)
+  playerUrl.searchParams.set('playsinline', '1')
+  playerUrl.searchParams.set('rel', '0')
+  playerUrl.searchParams.set('modestbranding', '1')
+  playerUrl.searchParams.set('disablekb', '1')
+
+  return (
+    <section className="public-trend-video" aria-label={settings.title || '자동재생 추천 영상'}>
+      <iframe
+        allow="autoplay; encrypted-media; picture-in-picture"
+        allowFullScreen={false}
+        loading="eager"
+        src={playerUrl.toString()}
+        title={settings.title || 'SSEN 추천 영상'}
+      />
+      <div className="public-trend-video-shade" aria-hidden="true" />
+      <div className="public-trend-video-copy">
+        <span>{settings.eyebrow || 'NOW PLAYING'}</span>
+        <strong>{settings.title || 'SSEN VIDEO PICK'}</strong>
+      </div>
+      <div className="public-trend-video-status" aria-hidden="true">
+        <i /> MUTED · AUTO PLAY
+      </div>
+    </section>
+  )
+}
+
+function getYoutubeVideoId(value: string) {
+  const source = value.trim()
+  if (!source) return ''
+  const isVideoId = (candidate: string) => /^[\w-]{11}$/.test(candidate)
+  if (isVideoId(source)) return source
+
+  try {
+    const url = new URL(source)
+    const hostname = url.hostname.replace(/^www\./, '')
+    let candidate = ''
+
+    if (hostname === 'youtu.be') {
+      candidate = url.pathname.split('/').filter(Boolean)[0] ?? ''
+    } else if (hostname === 'youtube.com' || hostname.endsWith('.youtube.com')) {
+      if (url.pathname === '/watch') {
+        candidate = url.searchParams.get('v') ?? ''
+      } else {
+        const [, route, id] = url.pathname.split('/')
+        candidate = ['embed', 'shorts', 'live'].includes(route) ? id ?? '' : ''
+      }
+    }
+
+    return isVideoId(candidate) ? candidate : ''
+  } catch {
+    return ''
+  }
+}
+
 function AdStripBanners({ banners, variant = 'header' }: { banners: AdBannerSettings[]; variant?: 'header' | 'footer' }) {
   const visibleBanners = banners.filter((banner) => banner.enabled && (banner.placement === 'both' || banner.placement === variant))
 
@@ -827,10 +785,6 @@ function scrollToHeaderEdge(target: HTMLElement | null, header: HTMLElement | nu
     top: Math.max(0, targetTop - headerHeight),
     behavior: 'smooth',
   })
-}
-
-function clamp(value: number, min: number, max: number) {
-  return Math.min(Math.max(value, min), max)
 }
 
 function syncPostParam(slug: string) {

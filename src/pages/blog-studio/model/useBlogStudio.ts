@@ -30,15 +30,24 @@ export type AdBannerSettings = {
   placement: 'both' | 'header' | 'footer'
 }
 
+export type HeroVideoSettings = {
+  enabled: boolean
+  youtubeUrl: string
+  eyebrow: string
+  title: string
+}
+
 type BlogSettings = {
   darkMode: boolean
   adBanners: AdBannerSettings[]
+  heroVideo: HeroVideoSettings
 }
 
 type CloudBlogData = {
   adBanners?: AdBannerSettings[]
   categories?: string[]
   categoryImages?: Record<string, string>
+  heroVideo?: Partial<HeroVideoSettings>
   posts?: Post[]
   savedAt?: string
 }
@@ -97,9 +106,17 @@ const createDefaultAdBanner = (index: number): AdBannerSettings => ({
 
 const DEFAULT_AD_BANNERS = [createDefaultAdBanner(0), createDefaultAdBanner(1)]
 
+const DEFAULT_HERO_VIDEO: HeroVideoSettings = {
+  enabled: false,
+  youtubeUrl: '',
+  eyebrow: 'NOW PLAYING',
+  title: 'SSEN VIDEO PICK',
+}
+
 const DEFAULT_SETTINGS: BlogSettings = {
   darkMode: false,
   adBanners: DEFAULT_AD_BANNERS,
+  heroVideo: DEFAULT_HERO_VIDEO,
 }
 
 export function useBlogStudio() {
@@ -122,6 +139,7 @@ export function useBlogStudio() {
   const [sidebarOpen, setSidebarOpen] = useState(false)
   const [darkMode, setDarkMode] = useState(initialSettings.darkMode)
   const [adBanners, setAdBanners] = useState<AdBannerSettings[]>(initialSettings.adBanners)
+  const [heroVideo, setHeroVideo] = useState<HeroVideoSettings>(initialSettings.heroVideo)
   const [ownerMode, setOwnerMode] = useState(false)
   const [cloudReady, setCloudReady] = useState(false)
   const [cloudSynced, setCloudSynced] = useState(false)
@@ -149,6 +167,7 @@ export function useBlogStudio() {
     setCategories(nextCategories)
     setCategoryImages(normalizeCategoryImages(data.categoryImages))
     setAdBanners(data.adBanners?.length ? normalizeAdBanners(data.adBanners) : DEFAULT_AD_BANNERS)
+    setHeroVideo(normalizeHeroVideo(data.heroVideo))
     setActiveId((current) => (cloudPosts.some((post) => post.id === current) ? current : cloudPosts[0]?.id ?? ''))
     setCloudSynced(true)
     return true
@@ -169,9 +188,9 @@ export function useBlogStudio() {
   }, [categoryImages])
 
   useEffect(() => {
-    saveJson(SETTINGS_KEY, { darkMode, adBanners })
+    saveJson(SETTINGS_KEY, { darkMode, adBanners, heroVideo })
     document.documentElement.dataset.theme = darkMode ? 'dark' : 'light'
-  }, [adBanners, darkMode])
+  }, [adBanners, darkMode, heroVideo])
 
   useEffect(() => {
     const controller = new AbortController()
@@ -184,6 +203,7 @@ export function useBlogStudio() {
           setCategories([])
           setCategoryImages({})
           setAdBanners(DEFAULT_AD_BANNERS)
+          setHeroVideo(DEFAULT_HERO_VIDEO)
           setActiveId('')
         }
       } catch {
@@ -193,6 +213,7 @@ export function useBlogStudio() {
           setCategories([])
           setCategoryImages({})
           setAdBanners(DEFAULT_AD_BANNERS)
+          setHeroVideo(DEFAULT_HERO_VIDEO)
           setActiveId('')
         }
       } finally {
@@ -231,11 +252,11 @@ export function useBlogStudio() {
     if (!cloudReady || !cloudSynced || !ownerMode) return undefined
 
     const timer = window.setTimeout(() => {
-      void saveCloudData({ adBanners, categories, categoryImages, posts })
+      void saveCloudData({ adBanners, categories, categoryImages, heroVideo, posts })
     }, 800)
 
     return () => window.clearTimeout(timer)
-  }, [adBanners, categories, categoryImages, cloudReady, cloudSynced, ownerMode, posts])
+  }, [adBanners, categories, categoryImages, cloudReady, cloudSynced, heroVideo, ownerMode, posts])
 
   const visibleCategories = useMemo(
     () => normalizeCategories([...categories, ...uniqueCategories(posts)]),
@@ -449,6 +470,10 @@ export function useBlogStudio() {
     )
   }
 
+  const updateHeroVideo = (patch: Partial<HeroVideoSettings>) => {
+    setHeroVideo((current) => ({ ...current, ...patch }))
+  }
+
   const unlockOwnerMode = () => {
     const savedPassword = window.localStorage.getItem(OWNER_PASSWORD_KEY)
 
@@ -485,6 +510,7 @@ export function useBlogStudio() {
       categoryImages,
       exportedAt: new Date().toISOString(),
       categories,
+      heroVideo,
       posts,
     })
   }
@@ -495,7 +521,7 @@ export function useBlogStudio() {
 
     const text = await file.text()
     const parsed = JSON.parse(text) as
-      | { adBanner?: AdBannerSettings; adBanners?: AdBannerSettings[]; categories?: string[]; categoryImages?: Record<string, string>; posts?: Post[] }
+      | { adBanner?: AdBannerSettings; adBanners?: AdBannerSettings[]; categories?: string[]; categoryImages?: Record<string, string>; heroVideo?: Partial<HeroVideoSettings>; posts?: Post[] }
       | Post[]
     const imported = Array.isArray(parsed) ? parsed : parsed.posts
 
@@ -509,6 +535,7 @@ export function useBlogStudio() {
         : parsed.adBanner
           ? normalizeAdBanners([parsed.adBanner])
           : adBanners
+    const nextHeroVideo = Array.isArray(parsed) ? heroVideo : normalizeHeroVideo(parsed.heroVideo)
 
     setPosts(imported)
     setCategories(nextCategories)
@@ -517,6 +544,7 @@ export function useBlogStudio() {
     }
     if (!Array.isArray(parsed)) {
       setAdBanners(nextAdBanners)
+      setHeroVideo(nextHeroVideo)
     }
     setActiveId(imported[0].id)
     setView('editor')
@@ -524,6 +552,7 @@ export function useBlogStudio() {
       adBanners: nextAdBanners,
       categories: nextCategories,
       categoryImages: Array.isArray(parsed) ? categoryImages : normalizeCategoryImages(parsed.categoryImages),
+      heroVideo: nextHeroVideo,
       posts: imported,
     })
     event.target.value = ''
@@ -549,6 +578,7 @@ export function useBlogStudio() {
     handleCoverUpload,
     handleAdBannerImageUpload,
     handleCategoryImageUpload,
+    heroVideo,
     importBackup,
     importRef,
     lockOwnerMode,
@@ -568,6 +598,7 @@ export function useBlogStudio() {
     updatePost,
     updatePostById,
     updateAdBanner,
+    updateHeroVideo,
     unlockOwnerMode,
     view,
     renameCategory,
@@ -595,7 +626,7 @@ function ensureAdminToken() {
   return nextToken.trim()
 }
 
-async function saveCloudData(data: Required<Pick<CloudBlogData, 'adBanners' | 'categories' | 'categoryImages' | 'posts'>>) {
+async function saveCloudData(data: Required<Pick<CloudBlogData, 'adBanners' | 'categories' | 'categoryImages' | 'heroVideo' | 'posts'>>) {
   const token = window.localStorage.getItem(ADMIN_TOKEN_KEY)
   if (!token) return
 
@@ -756,6 +787,7 @@ function readSettings(): BlogSettings {
   return {
     darkMode: stored.darkMode ?? DEFAULT_SETTINGS.darkMode,
     adBanners: stored.adBanners?.length ? normalizeAdBanners(stored.adBanners) : normalizeAdBanners(stored.adBanner ? [stored.adBanner] : []),
+    heroVideo: normalizeHeroVideo(stored.heroVideo),
   }
 }
 
@@ -799,4 +831,15 @@ function normalizeAdBanners(banners: Partial<AdBannerSettings>[]) {
   }
 
   return normalized
+}
+
+function normalizeHeroVideo(value?: Partial<HeroVideoSettings>): HeroVideoSettings {
+  return {
+    ...DEFAULT_HERO_VIDEO,
+    ...value,
+    enabled: Boolean(value?.enabled),
+    eyebrow: typeof value?.eyebrow === 'string' ? value.eyebrow : DEFAULT_HERO_VIDEO.eyebrow,
+    title: typeof value?.title === 'string' ? value.title : DEFAULT_HERO_VIDEO.title,
+    youtubeUrl: typeof value?.youtubeUrl === 'string' ? value.youtubeUrl : '',
+  }
 }

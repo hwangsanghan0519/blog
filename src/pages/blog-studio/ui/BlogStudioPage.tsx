@@ -1,4 +1,4 @@
-import { Eye, ImagePlus, Lock, PenLine, Plus, Settings2, Trash2, X } from 'lucide-react'
+import { Eye, ImagePlus, Lock, PenLine, Play, Plus, Settings2, Trash2, X } from 'lucide-react'
 import type { ChangeEvent } from 'react'
 import { useEffect, useRef } from 'react'
 import { PostEditor } from '../../../features/post-editor/ui/PostEditor'
@@ -6,7 +6,7 @@ import { EmptyState } from '../../../shared/ui/EmptyState'
 import { BlogSidebar } from '../../../widgets/blog-sidebar/ui/BlogSidebar'
 import { PostPreview } from '../../../widgets/post-preview/ui/PostPreview'
 import { Topbar } from '../../../widgets/topbar/ui/Topbar'
-import type { AdBannerSettings } from '../model/useBlogStudio'
+import type { AdBannerSettings, HeroVideoSettings } from '../model/useBlogStudio'
 import { GMARKET_SAMPLE_BANNER, GMARKET_SAMPLE_BANNER_IMAGE } from '../model/useBlogStudio'
 import { useBlogStudio } from '../model/useBlogStudio'
 import { PublicBlogHome } from './PublicBlogHome'
@@ -41,6 +41,7 @@ export function BlogStudioPage() {
         categories={studio.categories}
         categoryImages={studio.categoryImages}
         categoryFilter={studio.categoryFilter}
+        heroVideo={studio.heroVideo}
         posts={studio.posts}
         onCategoryFilterChange={studio.setCategoryFilter}
       />
@@ -127,6 +128,16 @@ export function BlogStudioPage() {
           </div>
         </details>
 
+        <details className="admin-settings-panel">
+          <summary>
+            <span>
+              <Play size={17} /> 자동재생 영상 설정
+            </span>
+            <small>유튜브 주소 등록 · 무음 자동재생 · 반복 재생</small>
+          </summary>
+          <HeroVideoAdminPanel settings={studio.heroVideo} onUpdate={studio.updateHeroVideo} />
+        </details>
+
         {studio.view !== 'preview' && (
           <PostEditor
             categories={studio.categories}
@@ -146,6 +157,49 @@ export function BlogStudioPage() {
         </button>
       )}
     </div>
+  )
+}
+
+function HeroVideoAdminPanel({
+  settings,
+  onUpdate,
+}: {
+  settings: HeroVideoSettings
+  onUpdate: (patch: Partial<HeroVideoSettings>) => void
+}) {
+  return (
+    <section className="ad-admin-panel hero-video-admin" aria-label="자동재생 영상 설정">
+      <div>
+        <span>TREND VIDEO</span>
+        <strong>헤더 아래 풀 영상</strong>
+      </div>
+
+      <label className="ad-admin-toggle">
+        <input checked={settings.enabled} type="checkbox" onChange={(event) => onUpdate({ enabled: event.target.checked })} />
+        노출
+      </label>
+
+      <label>
+        영상 라벨
+        <input value={settings.eyebrow} placeholder="NOW PLAYING" onChange={(event) => onUpdate({ eyebrow: event.target.value })} />
+      </label>
+
+      <label>
+        영상 제목
+        <input value={settings.title} placeholder="SSEN VIDEO PICK" onChange={(event) => onUpdate({ title: event.target.value })} />
+      </label>
+
+      <label className="ad-admin-wide hero-video-url-field">
+        유튜브 주소
+        <input
+          inputMode="url"
+          value={settings.youtubeUrl}
+          placeholder="https://www.youtube.com/watch?v=... 또는 https://youtu.be/..."
+          onChange={(event) => onUpdate({ youtubeUrl: event.target.value })}
+        />
+        <small>자동재생 정책에 맞춰 소리는 꺼진 상태로 시작하며 영상은 계속 반복됩니다.</small>
+      </label>
+    </section>
   )
 }
 
