@@ -48,14 +48,14 @@ export function PublicBlogHome({
     () => categories.filter((category) => category.trim()),
     [categories],
   )
-  const categoryColumns = useMemo(() => {
-    const columns: string[][] = []
+  const categoryPages = useMemo(() => {
+    const pages: string[][] = []
 
-    for (let index = 0; index < publicCategories.length; index += 2) {
-      columns.push(publicCategories.slice(index, index + 2))
+    for (let index = 0; index < publicCategories.length; index += 12) {
+      pages.push(publicCategories.slice(index, index + 12))
     }
 
-    return columns
+    return pages
   }, [publicCategories])
   const categoryCounts = useMemo(() => {
     return publishedPosts.reduce<Record<string, number>>((counts, post) => {
@@ -79,17 +79,8 @@ export function PublicBlogHome({
     },
   })
   const [categorySliderRef, categorySlider] = useKeenSlider<HTMLDivElement>({
-    mode: 'free-snap',
     rubberband: true,
-    slides: { perView: 6, spacing: 2 },
-    breakpoints: {
-      '(max-width: 720px)': {
-        slides: { perView: 3.15, spacing: 2 },
-      },
-      '(min-width: 721px) and (max-width: 1100px)': {
-        slides: { perView: 4.4, spacing: 2 },
-      },
-    },
+    slides: { perView: 1, spacing: 0 },
   })
 
   useEffect(() => {
@@ -106,7 +97,7 @@ export function PublicBlogHome({
 
   useEffect(() => {
     categorySlider.current?.update()
-  }, [categoryColumns.length, categorySlider])
+  }, [categoryPages.length, categorySlider])
 
   useEffect(() => {
     const syncViewFromUrl = () => {
@@ -263,9 +254,9 @@ export function PublicBlogHome({
             ref={categorySliderRef}
             className="keen-slider public-category-track"
           >
-            {categoryColumns.map((column) => (
-              <div className="keen-slider__slide public-category-column" key={column.join('|')}>
-                {column.map((category) => (
+            {categoryPages.map((page, pageIndex) => (
+              <div className="keen-slider__slide public-category-page" key={`category-page-${pageIndex}`}>
+                {page.map((category) => (
                   <button
                     className={`public-category-slide ${categoryFilter === category ? 'is-active' : ''}`}
                     key={category}

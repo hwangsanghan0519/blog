@@ -10100,3 +10100,77 @@ button.category-row.is-selected,
     font-size: 9px;
   }
 }
+
+/* Paged category slider: each swipe page is exactly 6 columns by 2 rows. */
+.public-category-nav {
+  grid-template-columns: 44px minmax(0, 1fr) !important;
+}
+
+.public-category-nav::after {
+  display: none !important;
+}
+
+.public-category-track.keen-slider {
+  display: flex !important;
+  overflow: hidden !important;
+  padding: 0 0 8px !important;
+  touch-action: pan-y pinch-zoom !important;
+}
+
+.public-category-track.keen-slider .public-category-page.keen-slider__slide {
+  display: grid !important;
+  grid-template-columns: repeat(6, minmax(0, 1fr));
+  grid-template-rows: repeat(2, 86px);
+  gap: 2px;
+  width: 100% !important;
+  min-width: 100% !important;
+  max-width: 100% !important;
+  height: 174px !important;
+}
+
+.public-category-track.keen-slider .public-category-page.keen-slider__slide + .public-category-page.keen-slider__slide {
+  margin-left: 0 !important;
+}
+
+.public-category-track.keen-slider .public-category-page .public-category-slide {
+  width: 100% !important;
+  min-width: 0 !important;
+  max-width: none !important;
+  height: 86px !important;
+  min-height: 86px !important;
+  margin: 0 !important;
+}
+
+.public-category-track.keen-slider .public-category-page .public-category-slide strong {
+  right: 6px;
+  bottom: 6px;
+  left: 6px;
+  font-size: 10px;
+}
+
+@media (max-width: 720px) {
+  .public-category-nav {
+    grid-template-columns: 38px minmax(0, 1fr) !important;
+  }
+
+  .public-category-track.keen-slider {
+    padding: 0 0 7px !important;
+  }
+
+  .public-category-track.keen-slider .public-category-page.keen-slider__slide {
+    grid-template-rows: repeat(2, 64px);
+    height: 130px !important;
+  }
+
+  .public-category-track.keen-slider .public-category-page .public-category-slide {
+    height: 64px !important;
+    min-height: 64px !important;
+  }
+
+  .public-category-track.keen-slider .public-category-page .public-category-slide strong {
+    right: 4px;
+    bottom: 4px;
+    left: 4px;
+    font-size: 8px;
+  }
+}
