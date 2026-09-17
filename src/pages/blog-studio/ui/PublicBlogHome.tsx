@@ -69,6 +69,15 @@ export function PublicBlogHome({
       setCurrentSlide(instance.track.details.rel)
     },
   })
+  const [categorySliderRef, categorySlider] = useKeenSlider<HTMLDivElement>({
+    mode: 'free-snap',
+    rubberband: true,
+    slides: { perView: 'auto', spacing: 12 },
+  })
+
+  useEffect(() => {
+    categorySlider.current?.update()
+  }, [categoryFilter, categoryImages, categorySlider, publicCategories.length])
 
   useEffect(() => {
     if (topPosts.length < 2) return undefined
@@ -197,31 +206,33 @@ export function PublicBlogHome({
         </button>
 
         <nav className="public-category-nav" aria-label="셀럽별 광고 상품">
-          <button
-            className={categoryFilter === 'all' ? 'is-active' : ''}
-            style={getCategoryStyle('전체')}
-            type="button"
-            onClick={() => selectCategory('all')}
-          >
-            <CategoryVisual image={getAllCategoryImage(publicCategories, categoryImages)} label="전체" />
-            <span>ALL</span>
-            <strong>전체 셀럽</strong>
-            <small>{publishedPosts.length}</small>
-          </button>
-          {publicCategories.map((category) => (
+          <div ref={categorySliderRef} className="keen-slider public-category-track">
             <button
-              className={categoryFilter === category ? 'is-active' : ''}
-              key={category}
-              style={getCategoryStyle(category)}
+              className={`keen-slider__slide public-category-slide ${categoryFilter === 'all' ? 'is-active' : ''}`}
+              style={getCategoryStyle('전체')}
               type="button"
-              onClick={() => selectCategory(category)}
+              onClick={() => selectCategory('all')}
             >
-              <CategoryVisual image={categoryImages[category]} label={category} />
-              <span>CELEB</span>
-              <strong>{category}</strong>
-              <small>{categoryCounts[category] ?? 0}</small>
+              <CategoryVisual image={getAllCategoryImage(publicCategories, categoryImages)} label="전체" />
+              <span>ALL</span>
+              <strong>전체 셀럽</strong>
+              <small>{publishedPosts.length}</small>
             </button>
-          ))}
+            {publicCategories.map((category) => (
+              <button
+                className={`keen-slider__slide public-category-slide ${categoryFilter === category ? 'is-active' : ''}`}
+                key={category}
+                style={getCategoryStyle(category)}
+                type="button"
+                onClick={() => selectCategory(category)}
+              >
+                <CategoryVisual image={categoryImages[category]} label={category} />
+                <span>CELEB</span>
+                <strong>{category}</strong>
+                <small>{categoryCounts[category] ?? 0}</small>
+              </button>
+            ))}
+          </div>
         </nav>
 
       </header>

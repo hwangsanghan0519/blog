@@ -8553,3 +8553,146 @@ button.category-row.is-selected,
     max-height: 92px;
   }
 }
+
+/* Swipeable celeb rail: full-bleed photos instead of framed category cards. */
+.public-category-nav {
+  min-width: 0;
+  padding: 0 0 20px !important;
+  overflow: hidden !important;
+}
+
+.public-category-nav::before {
+  bottom: 0;
+  content: 'SWIPE CELEB PICKS';
+}
+
+.public-category-track {
+  min-width: 0;
+  overflow: visible !important;
+}
+
+.public-category-slide {
+  flex: 0 0 clamp(126px, 11vw, 176px) !important;
+  width: clamp(126px, 11vw, 176px) !important;
+  min-width: 0 !important;
+  min-height: clamp(142px, 13vw, 202px) !important;
+  display: grid !important;
+  grid-template-columns: 1fr auto !important;
+  grid-template-rows: 1fr auto auto !important;
+  align-content: end !important;
+  overflow: hidden !important;
+  padding: 0 !important;
+  border: 0 !important;
+  border-radius: 0 !important;
+  color: #ffffff !important;
+  background: #111111 !important;
+  box-shadow: none !important;
+  transform: none !important;
+}
+
+.public-category-slide::after {
+  content: '';
+  position: absolute;
+  inset: 0 !important;
+  width: auto !important;
+  height: auto !important;
+  background:
+    linear-gradient(180deg, rgba(0, 0, 0, 0) 36%, rgba(0, 0, 0, 0.74) 100%),
+    linear-gradient(90deg, color-mix(in srgb, var(--category-accent, var(--ssen-red)) 34%, transparent), transparent 56%) !important;
+  opacity: 1 !important;
+  transform: none !important;
+}
+
+.public-category-visual {
+  position: absolute !important;
+  inset: 0;
+  z-index: 0 !important;
+  width: 100%;
+  height: 100%;
+  border: 0 !important;
+  background: #151515 !important;
+}
+
+.public-category-visual img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: center top;
+  filter: saturate(1.08) contrast(1.04);
+}
+
+.public-category-visual::after {
+  background: transparent !important;
+}
+
+.public-category-visual.is-fallback {
+  font-size: 52px;
+}
+
+.public-category-nav button span:not(.public-category-visual),
+.public-category-nav button strong,
+.public-category-nav button small {
+  position: relative;
+  z-index: 2;
+}
+
+.public-category-nav button span:not(.public-category-visual) {
+  grid-column: 1 / -1;
+  align-self: end;
+  margin: 0 10px;
+  color: rgba(255, 255, 255, 0.62);
+  font-size: 9px;
+}
+
+.public-category-nav button strong {
+  grid-column: 1 / 2;
+  margin: 0 0 12px 10px;
+  align-self: end;
+  color: #ffffff;
+  font-size: clamp(16px, 1.45vw, 23px);
+  line-height: 0.95;
+  letter-spacing: -0.06em;
+  white-space: normal;
+}
+
+.public-category-nav button small {
+  grid-column: 2 / 3;
+  grid-row: 3 / 4;
+  min-width: 30px;
+  height: 30px;
+  margin: 0 10px 10px 0;
+  border: 1px solid rgba(255, 255, 255, 0.28);
+  color: #ffffff;
+  background: rgba(0, 0, 0, 0.38);
+  backdrop-filter: blur(10px);
+}
+
+.public-category-slide:hover,
+.public-category-slide.is-active {
+  border: 0 !important;
+  box-shadow: 0 20px 42px rgba(240, 0, 47, 0.22) !important;
+  transform: translateY(-4px) !important;
+}
+
+.public-category-slide.is-active::before {
+  content: '';
+  position: absolute;
+  inset: 8px;
+  z-index: 2;
+  border: 2px solid #ffffff;
+  pointer-events: none;
+}
+
+.public-category-slide:hover .public-category-visual img,
+.public-category-slide.is-active .public-category-visual img {
+  filter: saturate(1.2) contrast(1.08);
+  transform: scale(1.06);
+}
+
+@media (max-width: 720px) {
+  .public-category-slide {
+    flex-basis: 122px !important;
+    width: 122px !important;
+    min-height: 150px !important;
+  }
+}
