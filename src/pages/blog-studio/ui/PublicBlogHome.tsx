@@ -239,7 +239,7 @@ export function PublicBlogHome({
               <Trophy size={16} /> 전체글 TOP 10
             </span>
             <h1>꿈을 그림 BEST</h1>
-            <p>실시간으로 가장 많이 읽히고 있는 인기 글을 소개합니다.</p>
+            <p>실시간으로 가장 많이 보고 있는 인기 글을 소개합니다.</p>
 
           </div>
 
