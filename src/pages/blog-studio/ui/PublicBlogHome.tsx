@@ -32,8 +32,6 @@ export function PublicBlogHome({
   const [readingProgress, setReadingProgress] = useState(0)
   const headerRef = useRef<HTMLElement>(null)
   const latestHeadRef = useRef<HTMLDivElement>(null)
-  const categoryTrackRef = useRef<HTMLDivElement>(null)
-  const categoryDragRef = useRef({ active: false, moved: false, pointerId: -1, scrollLeft: 0, startX: 0 })
   const pendingCategoryScrollRef = useRef<'top' | 'latest' | null>(null)
   const sliderPausedRef = useRef(false)
 
@@ -71,6 +69,19 @@ export function PublicBlogHome({
       setCurrentSlide(instance.track.details.rel)
     },
   })
+  const [categorySliderRef, categorySlider] = useKeenSlider<HTMLDivElement>({
+    mode: 'free-snap',
+    rubberband: true,
+    slides: { perView: 6, spacing: 2 },
+    breakpoints: {
+      '(max-width: 720px)': {
+        slides: { perView: 3.15, spacing: 2 },
+      },
+      '(min-width: 721px) and (max-width: 1100px)': {
+        slides: { perView: 4.4, spacing: 2 },
+      },
+    },
+  })
 
   useEffect(() => {
     if (topPosts.length < 2) return undefined
@@ -83,6 +94,10 @@ export function PublicBlogHome({
 
     return () => window.clearInterval(timer)
   }, [slider, topPosts.length])
+
+  useEffect(() => {
+    categorySlider.current?.update()
+  }, [categorySlider, publicCategories.length])
 
   useEffect(() => {
     const syncViewFromUrl = () => {
@@ -216,51 +231,6 @@ export function PublicBlogHome({
     }, 40)
   }
 
-  // 셀럽 사진 레일은 데스크톱에서도 손으로 넘기는 감각이 나도록 직접 드래그 스크롤을 처리합니다.
-  const startCategoryDrag = (event: PointerEvent<HTMLDivElement>) => {
-    const track = categoryTrackRef.current
-    if (!track || (event.pointerType === 'mouse' && event.button !== 0)) return
-
-    categoryDragRef.current = {
-      active: true,
-      moved: false,
-      pointerId: event.pointerId,
-      scrollLeft: track.scrollLeft,
-      startX: event.clientX,
-    }
-    track.setPointerCapture(event.pointerId)
-  }
-
-  const moveCategoryDrag = (event: PointerEvent<HTMLDivElement>) => {
-    const track = categoryTrackRef.current
-    const drag = categoryDragRef.current
-    if (!track || !drag.active || drag.pointerId !== event.pointerId) return
-
-    const deltaX = event.clientX - drag.startX
-    if (Math.abs(deltaX) > 12) {
-      drag.moved = true
-      track.scrollLeft = drag.scrollLeft - deltaX
-      event.preventDefault()
-    }
-  }
-
-  const stopCategoryDrag = (event: PointerEvent<HTMLDivElement>) => {
-    const track = categoryTrackRef.current
-    if (track?.hasPointerCapture(event.pointerId)) {
-      track.releasePointerCapture(event.pointerId)
-    }
-
-    window.setTimeout(() => {
-      categoryDragRef.current.active = false
-      categoryDragRef.current.moved = false
-    }, 80)
-  }
-
-  const selectCategoryFromRail = (category: string) => {
-    if (categoryDragRef.current.moved) return
-    selectCategory(category)
-  }
-
   return (
     <div className="public-blog">
       <header ref={headerRef} className="public-header">
@@ -281,21 +251,16 @@ export function PublicBlogHome({
             <small>{publishedPosts.length}</small>
           </button>
           <div
-            ref={categoryTrackRef}
-            className="public-category-track"
-            onPointerDown={startCategoryDrag}
-            onPointerMove={moveCategoryDrag}
-            onPointerUp={stopCategoryDrag}
-            onPointerCancel={stopCategoryDrag}
-            onPointerLeave={stopCategoryDrag}
+            ref={categorySliderRef}
+            className="keen-slider public-category-track"
           >
             {publicCategories.map((category) => (
               <button
-                className={`public-category-slide ${categoryFilter === category ? 'is-active' : ''}`}
+                className={`keen-slider__slide public-category-slide ${categoryFilter === category ? 'is-active' : ''}`}
                 key={category}
                 style={getCategoryStyle(category)}
                 type="button"
-                onClick={() => selectCategoryFromRail(category)}
+                onClick={() => selectCategory(category)}
               >
                 <CategoryVisual image={categoryImages[category]} label={category} />
                 <span>CELEB</span>
