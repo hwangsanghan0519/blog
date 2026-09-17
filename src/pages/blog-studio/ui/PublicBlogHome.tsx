@@ -34,7 +34,16 @@ export function PublicBlogHome({
   const headerRef = useRef<HTMLElement>(null)
   const latestHeadRef = useRef<HTMLDivElement>(null)
   const pendingCategoryScrollRef = useRef<'top' | 'latest' | null>(null)
-  const categorySwipeRef = useRef({ active: false, blockClick: false, moved: false, pointerId: -1, startX: 0, startY: 0, x: 0 })
+  const categorySwipeRef = useRef({
+    active: false,
+    blockClick: false,
+    moved: false,
+    pointerId: -1,
+    startX: 0,
+    startY: 0,
+    targetCategory: '',
+    x: 0,
+  })
   const sliderPausedRef = useRef(false)
 
   const publishedPosts = useMemo(
@@ -257,6 +266,10 @@ export function PublicBlogHome({
   const startCategorySwipe = (event: PointerEvent<HTMLDivElement>) => {
     if (event.pointerType === 'mouse' && event.button !== 0) return
 
+    const targetCategory = event.target instanceof Element
+      ? event.target.closest<HTMLButtonElement>('[data-category]')?.dataset.category ?? ''
+      : ''
+
     categorySwipeRef.current = {
       active: true,
       blockClick: false,
@@ -264,6 +277,7 @@ export function PublicBlogHome({
       pointerId: event.pointerId,
       startX: event.clientX,
       startY: event.clientY,
+      targetCategory,
       x: event.clientX,
     }
     event.currentTarget.setPointerCapture(event.pointerId)
@@ -296,8 +310,12 @@ export function PublicBlogHome({
       moveCategoryPage(deltaX < 0 ? 1 : -1)
     }
 
+    if (!swipe.moved && swipe.targetCategory) {
+      selectCategory(swipe.targetCategory)
+    }
+
     categorySwipeRef.current.active = false
-    categorySwipeRef.current.blockClick = swipe.moved
+    categorySwipeRef.current.blockClick = swipe.moved || Boolean(swipe.targetCategory)
     window.setTimeout(() => {
       categorySwipeRef.current.blockClick = false
       categorySwipeRef.current.moved = false
@@ -348,6 +366,7 @@ export function PublicBlogHome({
                 {page.map((category) => (
                   <button
                     className={`public-category-slide ${categoryFilter === category ? 'is-active' : ''}`}
+                    data-category={category}
                     key={category}
                     style={getCategoryStyle(category)}
                     type="button"
