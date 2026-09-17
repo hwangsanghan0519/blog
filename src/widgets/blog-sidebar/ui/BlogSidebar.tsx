@@ -1,4 +1,5 @@
-import { FilePlus2, FolderPlus, Pencil, Search, Trash2 } from 'lucide-react'
+import type { ChangeEvent } from 'react'
+import { FilePlus2, FolderPlus, ImagePlus, Pencil, Search, Trash2, X } from 'lucide-react'
 import type { Post, PostStatusFilter } from '../../../entities/post/model/types'
 import { formatDate, statusLabel } from '../../../entities/post/lib/formatters'
 
@@ -6,6 +7,7 @@ type BlogSidebarProps = {
   activePostId: string
   categoryFilter: string
   categoryCounts: Array<{ name: string; count: number }>
+  categoryImages: Record<string, string>
   isOpen: boolean
   posts: Post[]
   query: string
@@ -13,6 +15,8 @@ type BlogSidebarProps = {
   onCategoryFilterChange: (category: string) => void
   onCreate: () => void
   onCreateCategory: () => void
+  onCategoryImageUpload: (category: string, event: ChangeEvent<HTMLInputElement>) => void
+  onClearCategoryImage: (category: string) => void
   onDeleteCategory: (category: string) => void
   onQueryChange: (query: string) => void
   onRenameCategory: (category: string) => void
@@ -24,6 +28,7 @@ export function BlogSidebar({
   activePostId,
   categoryFilter,
   categoryCounts,
+  categoryImages,
   isOpen,
   posts,
   query,
@@ -31,6 +36,8 @@ export function BlogSidebar({
   onCategoryFilterChange,
   onCreate,
   onCreateCategory,
+  onCategoryImageUpload,
+  onClearCategoryImage,
   onDeleteCategory,
   onQueryChange,
   onRenameCategory,
@@ -93,10 +100,22 @@ export function BlogSidebar({
         {categoryCounts.map((category) => (
           <div className={`category-row ${categoryFilter === category.name ? 'is-selected' : ''}`} key={category.name}>
             <button type="button" onClick={() => onCategoryFilterChange(category.name)}>
+              <span className="category-thumb">
+                {categoryImages[category.name] ? <img src={categoryImages[category.name]} alt="" /> : category.name.slice(0, 1)}
+              </span>
               <span>{category.name}</span>
               <small>{category.count}</small>
             </button>
             <div className="category-actions">
+              <label title="카테고리 사진 첨부">
+                <ImagePlus size={13} />
+                <input accept="image/*" type="file" onChange={(event) => onCategoryImageUpload(category.name, event)} />
+              </label>
+              {categoryImages[category.name] && (
+                <button type="button" title="사진 삭제" onClick={() => onClearCategoryImage(category.name)}>
+                  <X size={13} />
+                </button>
+              )}
               <button type="button" title="이름 변경" onClick={() => onRenameCategory(category.name)}>
                 <Pencil size={13} />
               </button>

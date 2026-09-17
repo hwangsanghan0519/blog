@@ -39,6 +39,7 @@ export function BlogStudioPage() {
       <PublicBlogHome
         adBanners={studio.adBanners}
         categories={studio.categories}
+        categoryImages={studio.categoryImages}
         categoryFilter={studio.categoryFilter}
         posts={studio.posts}
         onCategoryFilterChange={studio.setCategoryFilter}
@@ -55,6 +56,7 @@ export function BlogStudioPage() {
       <BlogSidebar
         activePostId={activePost.id}
         categoryCounts={studio.categoryCounts}
+        categoryImages={studio.categoryImages}
         categoryFilter={studio.categoryFilter}
         isOpen={studio.sidebarOpen}
         posts={studio.filteredPosts}
@@ -64,6 +66,8 @@ export function BlogStudioPage() {
         onCreate={() => studio.createPost()}
         onCreateCategory={studio.createCategory}
         onDeleteCategory={studio.deleteCategory}
+        onCategoryImageUpload={studio.handleCategoryImageUpload}
+        onClearCategoryImage={studio.clearCategoryImage}
         onQueryChange={studio.setQuery}
         onRenameCategory={studio.renameCategory}
         onSelectPost={(postId) => {

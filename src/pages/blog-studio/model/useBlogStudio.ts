@@ -10,6 +10,7 @@ import type { ViewMode } from './types'
 const STORAGE_KEY = 'solo-commerce-blog-posts'
 const SETTINGS_KEY = 'solo-commerce-blog-settings'
 const CATEGORIES_KEY = 'solo-commerce-blog-categories'
+const CATEGORY_IMAGES_KEY = 'solo-commerce-blog-category-images'
 const OWNER_PASSWORD_KEY = 'solo-commerce-blog-owner-password'
 const ADMIN_TOKEN_KEY = 'solo-commerce-blog-admin-token'
 const CLOUD_DATA_ENDPOINT = '/.netlify/functions/blog-data'
@@ -37,6 +38,7 @@ type BlogSettings = {
 type CloudBlogData = {
   adBanners?: AdBannerSettings[]
   categories?: string[]
+  categoryImages?: Record<string, string>
   posts?: Post[]
   savedAt?: string
 }
@@ -109,6 +111,9 @@ export function useBlogStudio() {
   const [categories, setCategories] = useState<string[]>(() =>
     hostedRuntime ? [] : normalizeCategories(loadJson<unknown>(CATEGORIES_KEY, uniqueCategories(posts))),
   )
+  const [categoryImages, setCategoryImages] = useState<Record<string, string>>(() =>
+    hostedRuntime ? {} : normalizeCategoryImages(loadJson<unknown>(CATEGORY_IMAGES_KEY, {})),
+  )
   const [activeId, setActiveId] = useState(posts[0]?.id ?? '')
   const [query, setQuery] = useState('')
   const [statusFilter, setStatusFilter] = useState<PostStatusFilter>('all')
@@ -142,6 +147,7 @@ export function useBlogStudio() {
 
     setPosts(cloudPosts)
     setCategories(nextCategories)
+    setCategoryImages(normalizeCategoryImages(data.categoryImages))
     setAdBanners(data.adBanners?.length ? normalizeAdBanners(data.adBanners) : DEFAULT_AD_BANNERS)
     setActiveId((current) => (cloudPosts.some((post) => post.id === current) ? current : cloudPosts[0]?.id ?? ''))
     setCloudSynced(true)
@@ -159,6 +165,10 @@ export function useBlogStudio() {
   }, [categories])
 
   useEffect(() => {
+    saveJson(CATEGORY_IMAGES_KEY, categoryImages)
+  }, [categoryImages])
+
+  useEffect(() => {
     saveJson(SETTINGS_KEY, { darkMode, adBanners })
     document.documentElement.dataset.theme = darkMode ? 'dark' : 'light'
   }, [adBanners, darkMode])
@@ -172,6 +182,7 @@ export function useBlogStudio() {
         if (!synced && hostedRuntime) {
           setPosts([])
           setCategories([])
+          setCategoryImages({})
           setAdBanners(DEFAULT_AD_BANNERS)
           setActiveId('')
         }
@@ -180,6 +191,7 @@ export function useBlogStudio() {
         if (hostedRuntime) {
           setPosts([])
           setCategories([])
+          setCategoryImages({})
           setAdBanners(DEFAULT_AD_BANNERS)
           setActiveId('')
         }
@@ -219,11 +231,11 @@ export function useBlogStudio() {
     if (!cloudReady || !cloudSynced || !ownerMode) return undefined
 
     const timer = window.setTimeout(() => {
-      void saveCloudData({ adBanners, categories, posts })
+      void saveCloudData({ adBanners, categories, categoryImages, posts })
     }, 800)
 
     return () => window.clearTimeout(timer)
-  }, [adBanners, categories, cloudReady, cloudSynced, ownerMode, posts])
+  }, [adBanners, categories, categoryImages, cloudReady, cloudSynced, ownerMode, posts])
 
   const visibleCategories = useMemo(
     () => normalizeCategories([...categories, ...uniqueCategories(posts)]),
@@ -307,6 +319,10 @@ export function useBlogStudio() {
     if (!nextName || nextName === category || categories.includes(nextName)) return
 
     setCategories((current) => current.map((name) => (name === category ? nextName : name)).sort((a, b) => a.localeCompare(b, 'ko')))
+    setCategoryImages((current) => {
+      const { [category]: image, ...rest } = current
+      return image ? { ...rest, [nextName]: image } : rest
+    })
     setPosts((current) =>
       current.map((post) =>
         post.category === category ? { ...post, category: nextName, updatedAt: new Date().toISOString() } : post,
@@ -326,6 +342,10 @@ export function useBlogStudio() {
     setCategories((current) => {
       const remaining = current.filter((name) => name !== category)
       return count && !remaining.includes(UNCATEGORIZED) ? [...remaining, UNCATEGORIZED] : remaining
+    })
+    setCategoryImages((current) => {
+      const { [category]: _removed, ...rest } = current
+      return rest
     })
     setPosts((current) =>
       current.map((post) =>
@@ -402,6 +422,27 @@ export function useBlogStudio() {
     }
   }
 
+  const handleCategoryImageUpload = async (category: string, event: ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0]
+    if (!file) return
+
+    try {
+      const image = await fileToOptimizedCategoryDataUrl(file)
+      setCategoryImages((current) => ({ ...current, [category]: image }))
+    } catch {
+      window.alert('카테고리 이미지를 처리하지 못했습니다. 다른 이미지를 선택해 주세요.')
+    } finally {
+      event.target.value = ''
+    }
+  }
+
+  const clearCategoryImage = (category: string) => {
+    setCategoryImages((current) => {
+      const { [category]: _removed, ...rest } = current
+      return rest
+    })
+  }
+
   const updateAdBanner = (index: number, patch: Partial<AdBannerSettings>) => {
     setAdBanners((current) =>
       current.map((banner, bannerIndex) => (bannerIndex === index ? { ...banner, ...patch } : banner)),
@@ -441,6 +482,7 @@ export function useBlogStudio() {
   const exportBackup = () => {
     downloadJson(`ssen-shopping-backup-${new Date().toISOString().slice(0, 10)}.json`, {
       adBanners,
+      categoryImages,
       exportedAt: new Date().toISOString(),
       categories,
       posts,
@@ -453,7 +495,7 @@ export function useBlogStudio() {
 
     const text = await file.text()
     const parsed = JSON.parse(text) as
-      | { adBanner?: AdBannerSettings; adBanners?: AdBannerSettings[]; categories?: string[]; posts?: Post[] }
+      | { adBanner?: AdBannerSettings; adBanners?: AdBannerSettings[]; categories?: string[]; categoryImages?: Record<string, string>; posts?: Post[] }
       | Post[]
     const imported = Array.isArray(parsed) ? parsed : parsed.posts
 
@@ -471,6 +513,9 @@ export function useBlogStudio() {
     setPosts(imported)
     setCategories(nextCategories)
     if (!Array.isArray(parsed)) {
+      setCategoryImages(normalizeCategoryImages(parsed.categoryImages))
+    }
+    if (!Array.isArray(parsed)) {
       setAdBanners(nextAdBanners)
     }
     setActiveId(imported[0].id)
@@ -478,6 +523,7 @@ export function useBlogStudio() {
     void saveCloudData({
       adBanners: nextAdBanners,
       categories: nextCategories,
+      categoryImages: Array.isArray(parsed) ? categoryImages : normalizeCategoryImages(parsed.categoryImages),
       posts: imported,
     })
     event.target.value = ''
@@ -488,6 +534,7 @@ export function useBlogStudio() {
     adBanners,
     categoryCounts,
     categoryFilter,
+    categoryImages,
     categories: visibleCategories,
     cloudReady,
     cloudSynced,
@@ -501,6 +548,7 @@ export function useBlogStudio() {
     filteredPosts,
     handleCoverUpload,
     handleAdBannerImageUpload,
+    handleCategoryImageUpload,
     importBackup,
     importRef,
     lockOwnerMode,
@@ -523,6 +571,7 @@ export function useBlogStudio() {
     unlockOwnerMode,
     view,
     renameCategory,
+    clearCategoryImage,
   }
 }
 
@@ -546,7 +595,7 @@ function ensureAdminToken() {
   return nextToken.trim()
 }
 
-async function saveCloudData(data: Required<Pick<CloudBlogData, 'adBanners' | 'categories' | 'posts'>>) {
+async function saveCloudData(data: Required<Pick<CloudBlogData, 'adBanners' | 'categories' | 'categoryImages' | 'posts'>>) {
   const token = window.localStorage.getItem(ADMIN_TOKEN_KEY)
   if (!token) return
 
@@ -572,7 +621,15 @@ async function saveCloudData(data: Required<Pick<CloudBlogData, 'adBanners' | 'c
   }
 }
 
+function fileToOptimizedCategoryDataUrl(file: File) {
+  return resizeImageToDataUrl(file, 720, 0.84)
+}
+
 function fileToOptimizedBannerDataUrl(file: File) {
+  return resizeImageToDataUrl(file, 2100, 0.82)
+}
+
+function resizeImageToDataUrl(file: File, maxWidth: number, quality: number) {
   return new Promise<string>((resolve, reject) => {
     const image = new Image()
     const objectUrl = URL.createObjectURL(file)
@@ -580,7 +637,7 @@ function fileToOptimizedBannerDataUrl(file: File) {
     image.onload = () => {
       URL.revokeObjectURL(objectUrl)
 
-      const targetWidth = Math.min(image.width, 2100)
+      const targetWidth = Math.min(image.width, maxWidth)
       const targetHeight = Math.round((targetWidth / image.width) * image.height)
       const canvas = document.createElement('canvas')
       const context = canvas.getContext('2d')
@@ -595,7 +652,7 @@ function fileToOptimizedBannerDataUrl(file: File) {
       context.fillStyle = '#ffffff'
       context.fillRect(0, 0, targetWidth, targetHeight)
       context.drawImage(image, 0, 0, targetWidth, targetHeight)
-      resolve(canvas.toDataURL('image/webp', 0.82))
+      resolve(canvas.toDataURL('image/webp', quality))
     }
 
     image.onerror = () => {
@@ -622,6 +679,16 @@ function normalizeCategories(values: unknown) {
         .filter(Boolean),
     ),
   ).sort((a, b) => a.localeCompare(b, 'ko'))
+}
+
+function normalizeCategoryImages(value: unknown) {
+  if (!value || typeof value !== 'object' || Array.isArray(value)) return {}
+
+  return Object.fromEntries(
+    Object.entries(value)
+      .map(([category, image]) => [normalizeCategoryName(category), typeof image === 'string' ? image : ''] as const)
+      .filter(([category, image]) => category && image),
+  )
 }
 
 function uniqueCategories(posts: Post[]) {

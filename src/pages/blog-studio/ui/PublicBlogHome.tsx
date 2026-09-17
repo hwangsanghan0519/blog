@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
 import type { CSSProperties, MouseEvent, PointerEvent, UIEvent } from 'react'
 import * as Dialog from '@radix-ui/react-dialog'
-import { CalendarDays, ChevronLeft, ChevronRight, ExternalLink, Mail, Search, ShoppingBag, Trophy, X, Zap } from 'lucide-react'
+import { CalendarDays, ChevronLeft, ChevronRight, ExternalLink, Mail, ShoppingBag, Trophy, X, Zap } from 'lucide-react'
 import { useKeenSlider } from 'keen-slider/react'
 import 'keen-slider/keen-slider.min.css'
 import { countWords, formatDate } from '../../../entities/post/lib/formatters'
@@ -12,6 +12,7 @@ import type { AdBannerSettings } from '../model/useBlogStudio'
 type PublicBlogHomeProps = {
   posts: Post[]
   categories: string[]
+  categoryImages: Record<string, string>
   categoryFilter: string
   adBanners: AdBannerSettings[]
   onCategoryFilterChange: (category: string) => void
@@ -20,11 +21,11 @@ type PublicBlogHomeProps = {
 export function PublicBlogHome({
   posts,
   categories,
+  categoryImages,
   categoryFilter,
   adBanners,
   onCategoryFilterChange,
 }: PublicBlogHomeProps) {
-  const [query, setQuery] = useState('')
   const [selectedId, setSelectedId] = useState('')
   const [currentSlide, setCurrentSlide] = useState(0)
   const [readingProgress, setReadingProgress] = useState(0)
@@ -53,19 +54,9 @@ export function PublicBlogHome({
   }, [publishedPosts])
 
   const filteredPosts = useMemo(() => {
-    const keyword = query.trim().toLowerCase()
-
     return publishedPosts
       .filter((post) => categoryFilter === 'all' || post.category === categoryFilter)
-      .filter((post) => {
-        if (!keyword) return true
-
-        return [post.title, post.excerpt, post.category, post.tags.join(' '), post.content]
-          .join(' ')
-          .toLowerCase()
-          .includes(keyword)
-      })
-  }, [categoryFilter, publishedPosts, query])
+  }, [categoryFilter, publishedPosts])
 
   const selectedPost = publishedPosts.find((post) => post.id === selectedId)
   const selectedPostIndex = selectedPost ? publishedPosts.findIndex((post) => post.id === selectedPost.id) : -1
@@ -223,6 +214,7 @@ export function PublicBlogHome({
             type="button"
             onClick={() => selectCategory('all')}
           >
+            <CategoryVisual image={getAllCategoryImage(publicCategories, categoryImages)} label="전체" />
             <span>ALL</span>
             <strong>전체</strong>
             <small>{publishedPosts.length}</small>
@@ -235,17 +227,13 @@ export function PublicBlogHome({
               type="button"
               onClick={() => selectCategory(category)}
             >
+              <CategoryVisual image={categoryImages[category]} label={category} />
               <span>DROP</span>
               <strong>{category}</strong>
               <small>{categoryCounts[category] ?? 0}</small>
             </button>
           ))}
         </nav>
-
-        <label className="public-search public-header-search">
-          <Search size={18} />
-          <input value={query} placeholder="검색" onChange={(event) => setQuery(event.target.value)} />
-        </label>
 
       </header>
 
@@ -364,7 +352,7 @@ export function PublicBlogHome({
           ) : (
             <div className="public-empty">
               <strong>조건에 맞는 상품이 없습니다.</strong>
-              <p>검색어나 카테고리를 바꾸면 다른 상품을 볼 수 있습니다.</p>
+              <p>다른 카테고리를 선택하면 새로운 상품을 볼 수 있습니다.</p>
             </div>
           )}
         </section>
@@ -484,6 +472,22 @@ export function PublicBlogHome({
         </a>
       </div>
     </div>
+  )
+}
+
+function CategoryVisual({ image, label }: { image?: string; label: string }) {
+  if (image) {
+    return (
+      <span className="public-category-visual" aria-hidden="true">
+        <img src={image} alt="" />
+      </span>
+    )
+  }
+
+  return (
+    <span className="public-category-visual is-fallback" aria-hidden="true">
+      {label.slice(0, 1)}
+    </span>
   )
 }
 
@@ -644,6 +648,10 @@ function getTopPosts(posts: Post[]) {
       return score(b) - score(a)
     })
     .slice(0, 10)
+}
+
+function getAllCategoryImage(categories: string[], categoryImages: Record<string, string>) {
+  return categories.map((category) => categoryImages[category]).find(Boolean)
 }
 
 function scrollToHeaderEdge(target: HTMLElement | null, header: HTMLElement | null) {
