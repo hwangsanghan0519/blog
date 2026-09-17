@@ -9796,3 +9796,160 @@ button.category-row.is-selected,
     font-size: 10px;
   }
 }
+
+/* Clean photo strip: no frame, no gimmick, just adjacent celeb photos and names. */
+.public-category-nav {
+  grid-template-columns: 44px minmax(0, 1fr) !important;
+  gap: 8px !important;
+  align-items: center !important;
+}
+
+.public-category-nav::before {
+  content: '' !important;
+}
+
+.public-category-nav::after {
+  top: 0;
+  right: 0;
+  bottom: 8px;
+  width: 72px;
+  background: linear-gradient(90deg, rgba(15, 15, 15, 0), #0f0f0f 90%);
+}
+
+.public-category-all {
+  width: 44px !important;
+  min-width: 44px !important;
+  height: 44px !important;
+  border: 0 !important;
+  border-radius: 0 !important;
+  background: transparent !important;
+  color: rgba(255, 255, 255, 0.72) !important;
+  text-decoration: none !important;
+}
+
+.public-category-all.is-active {
+  color: #ffffff !important;
+  background: #f0002f !important;
+}
+
+.public-category-track {
+  gap: 2px !important;
+  padding: 0 76px 8px 0 !important;
+  align-items: stretch;
+}
+
+.public-category-slide {
+  flex-basis: clamp(86px, 7.5vw, 116px) !important;
+  width: clamp(86px, 7.5vw, 116px) !important;
+  min-width: clamp(86px, 7.5vw, 116px) !important;
+  max-width: clamp(86px, 7.5vw, 116px) !important;
+  min-height: clamp(110px, 8.8vw, 136px) !important;
+  margin-left: 0 !important;
+  overflow: hidden !important;
+  border-radius: 0 !important;
+  background: #111111 !important;
+  opacity: 0.78;
+  transition:
+    opacity 160ms ease,
+    transform 160ms ease;
+}
+
+.public-category-slide::before {
+  display: none !important;
+}
+
+.public-category-slide::after {
+  display: block !important;
+  content: '';
+  position: absolute;
+  inset: auto 0 0 !important;
+  z-index: 1;
+  height: 44%;
+  background: linear-gradient(180deg, transparent, rgba(0, 0, 0, 0.78));
+}
+
+.public-category-visual {
+  inset: 0 !important;
+  overflow: hidden !important;
+  filter: none !important;
+}
+
+.public-category-visual img,
+.public-category-slide:nth-child(even) .public-category-visual img,
+.public-category-slide:nth-child(3n) .public-category-visual img {
+  clip-path: none !important;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: center top;
+  filter: saturate(1.04) contrast(1.04) !important;
+  transform: scale(1.001) !important;
+}
+
+.public-category-visual.is-fallback {
+  inset: 0 !important;
+  clip-path: none !important;
+  filter: none !important;
+}
+
+.public-category-nav button strong {
+  right: 7px;
+  bottom: 7px;
+  left: 7px;
+  z-index: 2;
+  color: #ffffff;
+  font-size: 11px;
+  line-height: 1.05;
+  text-align: left;
+  letter-spacing: -0.04em;
+  text-shadow: 0 2px 12px rgba(0, 0, 0, 0.82);
+}
+
+.public-category-slide:hover,
+.public-category-slide.is-active {
+  z-index: 3;
+  opacity: 1;
+  transform: translateY(-2px) !important;
+}
+
+.public-category-slide:hover .public-category-visual img,
+.public-category-slide.is-active .public-category-visual img {
+  transform: scale(1.045) !important;
+}
+
+.public-category-slide.is-active {
+  box-shadow: inset 0 -4px 0 #f0002f !important;
+}
+
+@media (max-width: 720px) {
+  .public-category-nav {
+    grid-template-columns: 38px minmax(0, 1fr) !important;
+    gap: 6px !important;
+  }
+
+  .public-category-all {
+    width: 38px !important;
+    min-width: 38px !important;
+    height: 38px !important;
+  }
+
+  .public-category-track {
+    gap: 2px !important;
+    padding: 0 56px 7px 0 !important;
+  }
+
+  .public-category-slide {
+    flex-basis: 78px !important;
+    width: 78px !important;
+    min-width: 78px !important;
+    max-width: 78px !important;
+    min-height: 100px !important;
+  }
+
+  .public-category-nav button strong {
+    right: 6px;
+    bottom: 6px;
+    left: 6px;
+    font-size: 10px;
+  }
+}
