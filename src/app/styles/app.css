@@ -8803,3 +8803,119 @@ button.category-row.is-selected,
     min-height: 142px !important;
   }
 }
+
+/* Compact masthead plus swipe affordance for the celeb rail. */
+.public-header {
+  grid-template-columns: minmax(210px, 0.34fr) minmax(0, 1fr) !important;
+  gap: clamp(14px, 2.4vw, 30px) !important;
+  align-items: center !important;
+  padding-block: 12px 18px !important;
+}
+
+.public-brand {
+  padding-bottom: 0 !important;
+}
+
+.public-ssen-logo {
+  width: min(100%, 310px) !important;
+  min-height: 78px !important;
+}
+
+.public-ssen-logo img {
+  width: min(100%, 300px) !important;
+  max-height: 88px !important;
+  filter: drop-shadow(0 12px 22px rgba(240, 0, 47, 0.22));
+}
+
+.public-category-nav {
+  overflow: visible !important;
+  padding: 0 44px 24px 0 !important;
+}
+
+.public-category-nav::after {
+  content: 'DRAG';
+  position: absolute;
+  right: 0;
+  bottom: 48px;
+  z-index: 6;
+  display: grid;
+  width: 38px;
+  height: 38px;
+  place-items: center;
+  border: 1px solid rgba(255, 255, 255, 0.24);
+  border-radius: 50%;
+  color: #ffffff;
+  background: var(--ssen-red);
+  box-shadow: 0 12px 26px rgba(240, 0, 47, 0.28);
+  font-size: 9px;
+  font-weight: 950;
+  letter-spacing: 0.08em;
+  pointer-events: none;
+}
+
+.public-category-track {
+  position: relative;
+  padding-right: 54px;
+  mask-image: linear-gradient(90deg, #000 0 calc(100% - 52px), transparent 100%);
+}
+
+.public-category-track::after {
+  content: '';
+  position: sticky;
+  right: 0;
+  z-index: 5;
+  flex: 0 0 42px;
+  width: 42px;
+  min-width: 42px;
+  height: 1px;
+  pointer-events: none;
+}
+
+.public-category-slide {
+  flex-basis: clamp(104px, 8vw, 132px) !important;
+  width: clamp(104px, 8vw, 132px) !important;
+  min-width: clamp(104px, 8vw, 132px) !important;
+  min-height: clamp(128px, 10.5vw, 168px) !important;
+}
+
+@media (max-width: 1180px) {
+  .public-header {
+    grid-template-columns: 1fr !important;
+  }
+
+  .public-ssen-logo {
+    width: min(100%, 330px) !important;
+    min-height: 82px !important;
+  }
+}
+
+@media (max-width: 720px) {
+  .public-header {
+    padding-block: 10px 16px !important;
+  }
+
+  .public-ssen-logo {
+    min-height: 64px !important;
+  }
+
+  .public-ssen-logo img {
+    width: min(100%, 230px) !important;
+    max-height: 70px !important;
+  }
+
+  .public-category-nav {
+    padding-right: 34px !important;
+  }
+
+  .public-category-nav::after {
+    right: -2px;
+    bottom: 44px;
+    width: 32px;
+    height: 32px;
+    font-size: 8px;
+  }
+
+  .public-category-track {
+    padding-right: 42px;
+  }
+}
