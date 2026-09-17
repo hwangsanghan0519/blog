@@ -19,6 +19,8 @@ type PublicBlogHomeProps = {
   onCategoryFilterChange: (category: string) => void
 }
 
+const CATEGORY_PAGE_SIZE = 14
+
 export function PublicBlogHome({
   posts,
   categories,
@@ -29,7 +31,9 @@ export function PublicBlogHome({
 }: PublicBlogHomeProps) {
   const [selectedId, setSelectedId] = useState('')
   const [currentSlide, setCurrentSlide] = useState(0)
-  const [categoryPageIndex, setCategoryPageIndex] = useState(0)
+  const [categoryStepIndex, setCategoryStepIndex] = useState(0)
+  const [categoryDragOffset, setCategoryDragOffset] = useState(0)
+  const [isCategoryDragging, setIsCategoryDragging] = useState(false)
   const [readingProgress, setReadingProgress] = useState(0)
   const headerRef = useRef<HTMLElement>(null)
   const latestHeadRef = useRef<HTMLDivElement>(null)
@@ -39,6 +43,7 @@ export function PublicBlogHome({
     blockClick: false,
     moved: false,
     pointerId: -1,
+    startTime: 0,
     startX: 0,
     startY: 0,
     targetCategory: '',
@@ -62,12 +67,13 @@ export function PublicBlogHome({
   const categoryPages = useMemo(() => {
     const pages: string[][] = []
 
-    for (let index = 0; index < publicCategories.length; index += 14) {
-      pages.push(publicCategories.slice(index, index + 14))
+    for (let index = 0; index < publicCategories.length; index += CATEGORY_PAGE_SIZE) {
+      pages.push(publicCategories.slice(index, index + CATEGORY_PAGE_SIZE))
     }
 
     return pages
   }, [publicCategories])
+  const maxCategoryStep = Math.max(0, categoryPages.length - 1)
   const categoryCounts = useMemo(() => {
     return publishedPosts.reduce<Record<string, number>>((counts, post) => {
       counts[post.category] = (counts[post.category] ?? 0) + 1
@@ -103,11 +109,11 @@ export function PublicBlogHome({
 
   useEffect(() => {
     const timer = window.setTimeout(() => {
-      setCategoryPageIndex((currentIndex) => Math.min(currentIndex, Math.max(0, categoryPages.length - 1)))
+      setCategoryStepIndex((currentIndex) => Math.min(currentIndex, maxCategoryStep))
     }, 0)
 
     return () => window.clearTimeout(timer)
-  }, [categoryPages.length])
+  }, [maxCategoryStep])
 
   useEffect(() => {
     if (categoryFilter === 'all') return undefined
@@ -116,7 +122,7 @@ export function PublicBlogHome({
     if (categoryIndex < 0) return undefined
 
     const timer = window.setTimeout(() => {
-      setCategoryPageIndex(Math.floor(categoryIndex / 14))
+      setCategoryStepIndex(Math.floor(categoryIndex / CATEGORY_PAGE_SIZE))
     }, 0)
 
     return () => window.clearTimeout(timer)
@@ -233,7 +239,7 @@ export function PublicBlogHome({
   const selectCategory = (category: string) => {
     const categoryIndex = publicCategories.indexOf(category)
     if (categoryIndex >= 0) {
-      setCategoryPageIndex(Math.floor(categoryIndex / 14))
+      setCategoryStepIndex(Math.floor(categoryIndex / CATEGORY_PAGE_SIZE))
     }
 
     onCategoryFilterChange(category)
@@ -259,8 +265,8 @@ export function PublicBlogHome({
     }, 40)
   }
 
-  const moveCategoryPage = (direction: -1 | 1) => {
-    setCategoryPageIndex((currentIndex) => clamp(currentIndex + direction, 0, Math.max(0, categoryPages.length - 1)))
+  const moveCategoryStep = (direction: -1 | 1) => {
+    setCategoryStepIndex((currentIndex) => clamp(currentIndex + direction, 0, maxCategoryStep))
   }
 
   const startCategorySwipe = (event: PointerEvent<HTMLDivElement>) => {
@@ -275,11 +281,14 @@ export function PublicBlogHome({
       blockClick: false,
       moved: false,
       pointerId: event.pointerId,
+      startTime: performance.now(),
       startX: event.clientX,
       startY: event.clientY,
       targetCategory,
       x: event.clientX,
     }
+    setCategoryDragOffset(0)
+    setIsCategoryDragging(true)
     event.currentTarget.setPointerCapture(event.pointerId)
   }
 
@@ -293,6 +302,11 @@ export function PublicBlogHome({
 
     if (Math.abs(deltaX) > 12 && Math.abs(deltaX) > Math.abs(deltaY)) {
       swipe.moved = true
+      const isPullingPastStart = categoryStepIndex === 0 && deltaX > 0
+      const isPullingPastEnd = categoryStepIndex === maxCategoryStep && deltaX < 0
+      const maxDragOffset = event.currentTarget.clientWidth * 0.24
+      const boundedOffset = clamp(deltaX, -maxDragOffset, maxDragOffset)
+      setCategoryDragOffset((isPullingPastStart || isPullingPastEnd) ? boundedOffset * 0.22 : boundedOffset)
       event.preventDefault()
     }
   }
@@ -306,8 +320,11 @@ export function PublicBlogHome({
     }
 
     const deltaX = swipe.x - swipe.startX
-    if (swipe.moved && Math.abs(deltaX) > 44) {
-      moveCategoryPage(deltaX < 0 ? 1 : -1)
+    const swipeVelocity = Math.abs(deltaX) / Math.max(performance.now() - swipe.startTime, 1)
+    const shouldChangePage = Math.abs(deltaX) > 48 || (Math.abs(deltaX) > 18 && swipeVelocity > 0.42)
+
+    if (event.type !== 'pointercancel' && swipe.moved && shouldChangePage) {
+      moveCategoryStep(deltaX < 0 ? 1 : -1)
     }
 
     if (!swipe.moved && swipe.targetCategory) {
@@ -316,6 +333,8 @@ export function PublicBlogHome({
 
     categorySwipeRef.current.active = false
     categorySwipeRef.current.blockClick = swipe.moved || Boolean(swipe.targetCategory)
+    setCategoryDragOffset(0)
+    setIsCategoryDragging(false)
     window.setTimeout(() => {
       categorySwipeRef.current.blockClick = false
       categorySwipeRef.current.moved = false
@@ -349,17 +368,16 @@ export function PublicBlogHome({
             <small>{publishedPosts.length}</small>
           </button>
           <div
-            className="public-category-carousel"
+            className={`public-category-carousel ${isCategoryDragging ? 'is-dragging' : ''}`}
             onClickCapture={blockCategoryClickAfterSwipe}
             onPointerCancel={stopCategorySwipe}
             onPointerDown={startCategorySwipe}
-            onPointerLeave={stopCategorySwipe}
             onPointerMove={moveCategorySwipe}
             onPointerUp={stopCategorySwipe}
           >
             <div
               className="public-category-page-strip"
-              style={{ transform: `translate3d(-${categoryPageIndex * 100}%, 0, 0)` }}
+              style={{ transform: `translate3d(calc(-${categoryStepIndex * 100}% + ${categoryDragOffset}px), 0, 0)` }}
             >
             {categoryPages.map((page, pageIndex) => (
               <div className="public-category-page" key={`category-page-${pageIndex}`}>

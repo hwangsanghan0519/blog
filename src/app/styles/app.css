@@ -10553,3 +10553,60 @@ button.category-row.is-selected,
     font-size: 8px;
   }
 }
+
+/* Final override: exact 7 columns x 2 rows, balanced column-first fill, full-page swipe. */
+.public-category-page-strip {
+  gap: 0 !important;
+}
+
+.public-category-page {
+  flex: 0 0 100% !important;
+  grid-auto-flow: column;
+  grid-template-columns: repeat(7, minmax(0, 1fr)) !important;
+  grid-template-rows: repeat(2, 136px) !important;
+  gap: 8px 3px;
+  width: 100% !important;
+  min-width: 100% !important;
+  height: 280px !important;
+}
+
+.public-category-all {
+  min-height: 280px !important;
+}
+
+.public-category-page .public-category-slide {
+  height: 136px !important;
+  min-height: 136px !important;
+}
+
+@media (max-width: 899px) and (min-width: 721px) {
+  .public-category-page {
+    grid-template-rows: repeat(2, 124px) !important;
+    height: 256px !important;
+  }
+
+  .public-category-all {
+    min-height: 256px !important;
+  }
+
+  .public-category-page .public-category-slide {
+    height: 124px !important;
+    min-height: 124px !important;
+  }
+}
+
+@media (max-width: 720px) {
+  .public-category-page {
+    grid-template-rows: repeat(2, 98px) !important;
+    height: 204px !important;
+  }
+
+  .public-category-all {
+    min-height: 204px !important;
+  }
+
+  .public-category-page .public-category-slide {
+    height: 98px !important;
+    min-height: 98px !important;
+  }
+}
