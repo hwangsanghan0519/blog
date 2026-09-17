@@ -32,6 +32,8 @@ export function PublicBlogHome({
   const [readingProgress, setReadingProgress] = useState(0)
   const headerRef = useRef<HTMLElement>(null)
   const latestHeadRef = useRef<HTMLDivElement>(null)
+  const categoryTrackRef = useRef<HTMLDivElement>(null)
+  const categoryDragRef = useRef({ dragging: false, moved: false, scrollLeft: 0, startX: 0 })
   const sliderPausedRef = useRef(false)
 
   const publishedPosts = useMemo(
@@ -61,8 +63,6 @@ export function PublicBlogHome({
 
   const selectedPost = publishedPosts.find((post) => post.id === selectedId)
   const selectedPostIndex = selectedPost ? publishedPosts.findIndex((post) => post.id === selectedPost.id) : -1
-  const activeCategoryIndex = Math.max(0, publicCategories.indexOf(categoryFilter))
-
   const [sliderRef, slider] = useKeenSlider<HTMLDivElement>({
     loop: topPosts.length > 1,
     slides: { perView: 1, spacing: 18 },
@@ -70,34 +70,6 @@ export function PublicBlogHome({
       setCurrentSlide(instance.track.details.rel)
     },
   })
-  const categoryDraggingRef = useRef(false)
-  const [categorySliderRef, categorySlider] = useKeenSlider<HTMLDivElement>({
-    drag: true,
-    mode: 'free-snap',
-    rubberband: true,
-    slides: { perView: 4.6, spacing: 12 },
-    breakpoints: {
-      '(max-width: 1180px)': {
-        slides: { perView: 4.2, spacing: 10 },
-      },
-      '(max-width: 720px)': {
-        slides: { perView: 2.6, spacing: 8 },
-      },
-    },
-    dragStarted() {
-      categoryDraggingRef.current = true
-    },
-    dragEnded() {
-      window.setTimeout(() => {
-        categoryDraggingRef.current = false
-      }, 120)
-    },
-  })
-
-  useEffect(() => {
-    categorySlider.current?.update()
-    categorySlider.current?.moveToIdx(activeCategoryIndex)
-  }, [activeCategoryIndex, categoryImages, categorySlider, publicCategories.length])
 
   useEffect(() => {
     if (topPosts.length < 2) return undefined
@@ -172,8 +144,44 @@ export function PublicBlogHome({
     slider.current?.moveToIdx(index)
   }
 
+  const startCategoryDrag = (event: PointerEvent<HTMLDivElement>) => {
+    const track = categoryTrackRef.current
+    if (!track) return
+
+    categoryDragRef.current = {
+      dragging: true,
+      moved: false,
+      scrollLeft: track.scrollLeft,
+      startX: event.clientX,
+    }
+    track.setPointerCapture(event.pointerId)
+  }
+
+  const moveCategoryDrag = (event: PointerEvent<HTMLDivElement>) => {
+    const track = categoryTrackRef.current
+    const drag = categoryDragRef.current
+    if (!track || !drag.dragging) return
+
+    const deltaX = event.clientX - drag.startX
+    if (Math.abs(deltaX) > 4) {
+      drag.moved = true
+      track.scrollLeft = drag.scrollLeft - deltaX
+    }
+  }
+
+  const stopCategoryDrag = (event: PointerEvent<HTMLDivElement>) => {
+    const track = categoryTrackRef.current
+    if (track?.hasPointerCapture(event.pointerId)) {
+      track.releasePointerCapture(event.pointerId)
+    }
+    window.setTimeout(() => {
+      categoryDragRef.current.dragging = false
+      categoryDragRef.current.moved = false
+    }, 80)
+  }
+
   const selectCategoryFromSlide = (category: string) => {
-    if (categoryDraggingRef.current) return
+    if (categoryDragRef.current.moved) return
     selectCategory(category)
   }
 
@@ -240,10 +248,17 @@ export function PublicBlogHome({
             전체
             <small>{publishedPosts.length}</small>
           </button>
-          <div ref={categorySliderRef} className="keen-slider public-category-track">
+          <div
+            ref={categoryTrackRef}
+            className="public-category-track"
+            onPointerDown={startCategoryDrag}
+            onPointerLeave={stopCategoryDrag}
+            onPointerMove={moveCategoryDrag}
+            onPointerUp={stopCategoryDrag}
+          >
             {publicCategories.map((category) => (
               <button
-                className={`keen-slider__slide public-category-slide ${categoryFilter === category ? 'is-active' : ''}`}
+                className={`public-category-slide ${categoryFilter === category ? 'is-active' : ''}`}
                 key={category}
                 style={getCategoryStyle(category)}
                 type="button"
