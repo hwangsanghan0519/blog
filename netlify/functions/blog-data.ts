@@ -3,6 +3,7 @@ const ROW_ID = 'main'
 type BlogData = {
   adBanners: unknown[]
   categories: string[]
+  categoryImages: Record<string, string>
   posts: unknown[]
   savedAt?: string | null
 }
@@ -23,6 +24,7 @@ type NetlifyEvent = {
 const emptyData: BlogData = {
   adBanners: [],
   categories: [],
+  categoryImages: {},
   posts: [],
   savedAt: null,
 }
@@ -78,13 +80,19 @@ export async function handler(event: NetlifyEvent) {
 
     const payload = JSON.parse(event.body ?? '{}') as BlogData
 
-    if (!Array.isArray(payload.posts) || !Array.isArray(payload.categories) || !Array.isArray(payload.adBanners)) {
+    if (
+      !Array.isArray(payload.posts) ||
+      !Array.isArray(payload.categories) ||
+      !Array.isArray(payload.adBanners) ||
+      !isStringRecord(payload.categoryImages)
+    ) {
       return json(400, { message: '저장 데이터 형식이 올바르지 않습니다.' })
     }
 
     const data: BlogData = {
       adBanners: payload.adBanners,
       categories: payload.categories,
+      categoryImages: payload.categoryImages,
       posts: payload.posts,
       savedAt: new Date().toISOString(),
     }
@@ -125,6 +133,7 @@ async function readSupabaseSourceDebug() {
     sourceProjectRef: readSupabaseProjectRef(),
     sourceSupabaseHost: readSupabaseHost(),
     storedCategories: merged.categories,
+    storedCategoryImageCount: Object.keys(merged.categoryImages).length,
     storedPostCount: merged.posts.length,
     storedPostTitles: merged.posts.map((post) =>
       typeof post === 'object' && post !== null && 'title' in post ? String(post.title) : '제목 없음',
@@ -134,6 +143,7 @@ async function readSupabaseSourceDebug() {
 
 function mergeBlogRows(rows: BlogContentRow[]): BlogData {
   const categories = new Set<string>()
+  const categoryImages: Record<string, string> = {}
   const posts = new Map<string, unknown>()
   let adBanners: unknown[] = []
   let savedAt: string | null = null
@@ -150,6 +160,16 @@ function mergeBlogRows(rows: BlogContentRow[]): BlogData {
       data.categories.forEach((category) => {
         if (typeof category === 'string' && category.trim()) {
           categories.add(category.trim())
+        }
+      })
+    }
+
+    if (isStringRecord(data.categoryImages)) {
+      Object.entries(data.categoryImages).forEach(([category, image]) => {
+        const categoryName = category.trim()
+        if (categoryName && image && !categoryImages[categoryName]) {
+          categoryImages[categoryName] = image
+          categories.add(categoryName)
         }
       })
     }
@@ -178,9 +198,14 @@ function mergeBlogRows(rows: BlogContentRow[]): BlogData {
   return {
     adBanners,
     categories: Array.from(categories).sort((a, b) => a.localeCompare(b, 'ko')),
+    categoryImages,
     posts: Array.from(posts.values()),
     savedAt,
   }
+}
+
+function isStringRecord(value: unknown): value is Record<string, string> {
+  return value !== null && typeof value === 'object' && !Array.isArray(value) && Object.values(value).every((item) => typeof item === 'string')
 }
 
 function readPostKey(post: object, rowId: string, index: number) {
