@@ -8717,3 +8717,82 @@ button.category-row.is-selected,
     min-height: 150px !important;
   }
 }
+
+/* Final celeb rail sizing: keep "all" compact and show multiple celeb photos at once. */
+.public-category-nav {
+  display: grid !important;
+  grid-template-columns: auto minmax(0, 1fr);
+  gap: 12px !important;
+  align-items: end;
+}
+
+.public-category-all {
+  display: grid !important;
+  width: 72px !important;
+  min-width: 72px !important;
+  height: 72px !important;
+  place-items: center;
+  align-self: end;
+  padding: 9px !important;
+  border: 1px solid rgba(255, 255, 255, 0.18) !important;
+  border-radius: 50% !important;
+  color: #ffffff !important;
+  background: rgba(255, 255, 255, 0.08) !important;
+  box-shadow: none !important;
+  font-size: 14px;
+  font-weight: 950;
+  line-height: 1;
+}
+
+.public-category-all small {
+  display: grid;
+  width: 24px;
+  height: 24px;
+  place-items: center;
+  border-radius: 50%;
+  color: #ffffff;
+  background: var(--ssen-red);
+  font-size: 11px;
+}
+
+.public-category-all.is-active,
+.public-category-all:hover {
+  border-color: var(--ssen-red) !important;
+  background: var(--ssen-red) !important;
+  transform: translateY(-2px);
+}
+
+.public-category-track {
+  min-width: 0;
+  width: 100%;
+}
+
+.public-category-slide {
+  flex-basis: clamp(108px, 8.8vw, 144px) !important;
+  width: clamp(108px, 8.8vw, 144px) !important;
+  max-width: clamp(108px, 8.8vw, 144px) !important;
+  min-width: clamp(108px, 8.8vw, 144px) !important;
+  min-height: clamp(138px, 12vw, 188px) !important;
+}
+
+@media (max-width: 720px) {
+  .public-category-nav {
+    grid-template-columns: 58px minmax(0, 1fr);
+    gap: 8px !important;
+  }
+
+  .public-category-all {
+    width: 58px !important;
+    min-width: 58px !important;
+    height: 58px !important;
+    font-size: 12px;
+  }
+
+  .public-category-slide {
+    flex-basis: 104px !important;
+    width: 104px !important;
+    max-width: 104px !important;
+    min-width: 104px !important;
+    min-height: 142px !important;
+  }
+}

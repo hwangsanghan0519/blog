@@ -61,7 +61,7 @@ export function PublicBlogHome({
 
   const selectedPost = publishedPosts.find((post) => post.id === selectedId)
   const selectedPostIndex = selectedPost ? publishedPosts.findIndex((post) => post.id === selectedPost.id) : -1
-  const activeCategoryIndex = categoryFilter === 'all' ? 0 : Math.max(0, publicCategories.indexOf(categoryFilter) + 1)
+  const activeCategoryIndex = Math.max(0, publicCategories.indexOf(categoryFilter))
 
   const [sliderRef, slider] = useKeenSlider<HTMLDivElement>({
     loop: topPosts.length > 1,
@@ -223,18 +223,16 @@ export function PublicBlogHome({
         </button>
 
         <nav className="public-category-nav" aria-label="셀럽별 광고 상품">
+          <button
+            className={`public-category-all ${categoryFilter === 'all' ? 'is-active' : ''}`}
+            style={getCategoryStyle('전체')}
+            type="button"
+            onClick={() => selectCategory('all')}
+          >
+            전체
+            <small>{publishedPosts.length}</small>
+          </button>
           <div ref={categorySliderRef} className="keen-slider public-category-track">
-            <button
-              className={`keen-slider__slide public-category-slide ${categoryFilter === 'all' ? 'is-active' : ''}`}
-              style={getCategoryStyle('전체')}
-              type="button"
-              onClick={() => selectCategoryFromSlide('all')}
-            >
-              <CategoryVisual image={getAllCategoryImage(publicCategories, categoryImages)} label="전체" />
-              <span>ALL</span>
-              <strong>전체 셀럽</strong>
-              <small>{publishedPosts.length}</small>
-            </button>
             {publicCategories.map((category) => (
               <button
                 className={`keen-slider__slide public-category-slide ${categoryFilter === category ? 'is-active' : ''}`}
@@ -665,10 +663,6 @@ function getTopPosts(posts: Post[]) {
       return score(b) - score(a)
     })
     .slice(0, 10)
-}
-
-function getAllCategoryImage(categories: string[], categoryImages: Record<string, string>) {
-  return categories.map((category) => categoryImages[category]).find(Boolean)
 }
 
 function scrollToHeaderEdge(target: HTMLElement | null, header: HTMLElement | null) {
