@@ -48,6 +48,15 @@ export function PublicBlogHome({
     () => categories.filter((category) => category.trim()),
     [categories],
   )
+  const categoryColumns = useMemo(() => {
+    const columns: string[][] = []
+
+    for (let index = 0; index < publicCategories.length; index += 2) {
+      columns.push(publicCategories.slice(index, index + 2))
+    }
+
+    return columns
+  }, [publicCategories])
   const categoryCounts = useMemo(() => {
     return publishedPosts.reduce<Record<string, number>>((counts, post) => {
       counts[post.category] = (counts[post.category] ?? 0) + 1
@@ -97,7 +106,7 @@ export function PublicBlogHome({
 
   useEffect(() => {
     categorySlider.current?.update()
-  }, [categorySlider, publicCategories.length])
+  }, [categoryColumns.length, categorySlider])
 
   useEffect(() => {
     const syncViewFromUrl = () => {
@@ -254,19 +263,23 @@ export function PublicBlogHome({
             ref={categorySliderRef}
             className="keen-slider public-category-track"
           >
-            {publicCategories.map((category) => (
-              <button
-                className={`keen-slider__slide public-category-slide ${categoryFilter === category ? 'is-active' : ''}`}
-                key={category}
-                style={getCategoryStyle(category)}
-                type="button"
-                onClick={() => selectCategory(category)}
-              >
-                <CategoryVisual image={categoryImages[category]} label={category} />
-                <span>CELEB</span>
-                <strong>{category}</strong>
-                <small>{categoryCounts[category] ?? 0}</small>
-              </button>
+            {categoryColumns.map((column) => (
+              <div className="keen-slider__slide public-category-column" key={column.join('|')}>
+                {column.map((category) => (
+                  <button
+                    className={`public-category-slide ${categoryFilter === category ? 'is-active' : ''}`}
+                    key={category}
+                    style={getCategoryStyle(category)}
+                    type="button"
+                    onClick={() => selectCategory(category)}
+                  >
+                    <CategoryVisual image={categoryImages[category]} label={category} />
+                    <span>CELEB</span>
+                    <strong>{category}</strong>
+                    <small>{categoryCounts[category] ?? 0}</small>
+                  </button>
+                ))}
+              </div>
             ))}
           </div>
         </nav>

@@ -10027,3 +10027,76 @@ button.category-row.is-selected,
     min-height: 98px !important;
   }
 }
+
+/* Two-row keen category slider: six columns, two photos per column. */
+.public-category-track.keen-slider {
+  align-items: stretch !important;
+  padding: 0 72px 8px 0 !important;
+}
+
+.public-category-track.keen-slider .public-category-column.keen-slider__slide {
+  display: grid !important;
+  grid-template-rows: repeat(2, 86px);
+  gap: 2px;
+  min-width: 0 !important;
+  height: 174px !important;
+}
+
+.public-category-track.keen-slider .public-category-column.keen-slider__slide + .public-category-column.keen-slider__slide {
+  margin-left: 2px !important;
+}
+
+.public-category-track.keen-slider .public-category-column .public-category-slide {
+  width: 100% !important;
+  min-width: 0 !important;
+  max-width: none !important;
+  height: 86px !important;
+  min-height: 86px !important;
+  margin: 0 !important;
+}
+
+.public-category-track.keen-slider .public-category-column .public-category-slide + .public-category-slide {
+  margin-left: 0 !important;
+}
+
+.public-category-track.keen-slider .public-category-column .public-category-slide strong {
+  right: 6px;
+  bottom: 6px;
+  left: 6px;
+  font-size: 10px;
+}
+
+@media (max-width: 1100px) and (min-width: 721px) {
+  .public-category-track.keen-slider .public-category-column.keen-slider__slide {
+    grid-template-rows: repeat(2, 82px);
+    height: 166px !important;
+  }
+
+  .public-category-track.keen-slider .public-category-column .public-category-slide {
+    height: 82px !important;
+    min-height: 82px !important;
+  }
+}
+
+@media (max-width: 720px) {
+  .public-category-track.keen-slider {
+    padding: 0 48px 7px 0 !important;
+  }
+
+  .public-category-track.keen-slider .public-category-column.keen-slider__slide {
+    grid-template-rows: repeat(2, 76px);
+    height: 154px !important;
+  }
+
+  .public-category-track.keen-slider .public-category-column .public-category-slide {
+    height: 76px !important;
+    min-height: 76px !important;
+  }
+
+  .public-category-track.keen-slider .public-category-column .public-category-slide strong {
+    right: 5px;
+    bottom: 5px;
+    left: 5px;
+    font-size: 9px;
+  }
+}
