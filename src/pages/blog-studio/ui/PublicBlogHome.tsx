@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
 import type { CSSProperties, MouseEvent, PointerEvent, UIEvent } from 'react'
 import * as Dialog from '@radix-ui/react-dialog'
-import { CalendarDays, ChevronLeft, ChevronRight, Mail, Search, Trophy, X } from 'lucide-react'
+import { CalendarDays, ChevronLeft, ChevronRight, ExternalLink, Mail, Search, ShoppingBag, Trophy, X, Zap } from 'lucide-react'
 import { useKeenSlider } from 'keen-slider/react'
 import 'keen-slider/keen-slider.min.css'
 import { countWords, formatDate } from '../../../entities/post/lib/formatters'
@@ -192,16 +192,16 @@ export function PublicBlogHome({
   return (
     <div className="public-blog">
       <header ref={headerRef} className="public-header">
-        <button className="public-brand" type="button" aria-label="블로그 홈" onClick={() => selectCategory('all')}>
+        <button className="public-brand" type="button" aria-label="쎈쇼핑 홈" onClick={() => selectCategory('all')}>
           <span className="public-logo-blob" aria-hidden="true">
             <i />
             <i />
             <i />
           </span>
-          <strong>꿈을 그림</strong>
+          <strong>쎈쇼핑</strong>
         </button>
 
-        <nav className="public-category-nav" aria-label="공개 카테고리">
+        <nav className="public-category-nav" aria-label="상품 카테고리">
           <button
             className={categoryFilter === 'all' ? 'is-active' : ''}
             style={getCategoryStyle('전체')}
@@ -233,13 +233,13 @@ export function PublicBlogHome({
       <AdStripBanners banners={adBanners} />
 
       <main className="public-main">
-        <section className="public-hero" aria-label="전체글 TOP 10">
+        <section className="public-hero" aria-label="실시간 상품 TOP 10">
           <div className="public-hero-copy">
             <span className="public-kicker">
-              <Trophy size={16} /> 전체글 TOP 10
+              <Trophy size={16} /> 실시간 딜 TOP 10
             </span>
-            <h1>꿈을 그림 BEST</h1>
-            <p>실시간으로 가장 많이 보고 있는 인기 글을 소개합니다.</p>
+            <h1>센 가격만 모아보는 쎈쇼핑</h1>
+            <p>쿠팡, G마켓, 11번가까지 흩어진 상품 링크를 한 화면에서 비교하고 바로 이동하세요.</p>
 
           </div>
 
@@ -261,36 +261,37 @@ export function PublicBlogHome({
                       <strong className="public-rank">TOP {index + 1}</strong>
                       <span>{post.category}</span>
                       <h2>{post.title}</h2>
-                      <p>{post.excerpt || '천천히 읽기 좋은 글입니다.'}</p>
-                      <em>본문 읽기</em>
+                      <p>{post.excerpt || '지금 비교하기 좋은 상품입니다.'}</p>
+                      <ProductPricePreview post={post} />
+                      <em>가격 비교</em>
                     </button>
                   </article>
                 ))}
               </div>
               <div className="public-slider-controls">
-                <button type="button" aria-label="이전 추천 글" disabled={topPosts.length < 2} onClick={(event) => moveSlider(event, -1)}>
+                <button type="button" aria-label="이전 추천 상품" disabled={topPosts.length < 2} onClick={(event) => moveSlider(event, -1)}>
                   <ChevronLeft size={18} />
                 </button>
                 <span className="public-slider-count">
                   <strong>{String(currentSlide + 1).padStart(2, '0')}</strong>
                   <small>/ {String(topPosts.length).padStart(2, '0')}</small>
                 </span>
-                <button type="button" aria-label="다음 추천 글" disabled={topPosts.length < 2} onClick={(event) => moveSlider(event, 1)}>
+                <button type="button" aria-label="다음 추천 상품" disabled={topPosts.length < 2} onClick={(event) => moveSlider(event, 1)}>
                   <ChevronRight size={18} />
                 </button>
-                <div className="public-slider-dots" aria-label="TOP 10 슬라이드 위치">
+                <div className="public-slider-dots" aria-label="TOP 10 상품 위치">
                   {topPosts.map((post, index) => (
                     <button
                       className={currentSlide === index ? 'is-active' : ''}
                       key={post.id}
                       type="button"
-                      aria-label={`TOP ${index + 1} 글 보기`}
+                      aria-label={`TOP ${index + 1} 상품 보기`}
                       onClick={(event) => moveSliderTo(event, index)}
                     />
                   ))}
                 </div>
               </div>
-              <div className="public-top-strip" aria-label="TOP 10 빠른 선택">
+              <div className="public-top-strip" aria-label="TOP 10 상품 빠른 선택">
                 {topPosts.map((post, index) => (
                   <button
                     className={currentSlide === index ? 'is-active' : ''}
@@ -306,17 +307,17 @@ export function PublicBlogHome({
             </div>
           ) : (
             <div className="public-empty public-hero-empty">
-              <strong>아직 공개된 글이 없습니다.</strong>
-              <p>곧 새로운 기록이 이곳에 채워질 예정입니다.</p>
+              <strong>아직 공개된 상품이 없습니다.</strong>
+              <p>곧 강한 가격의 딜이 이곳에 채워질 예정입니다.</p>
             </div>
           )}
         </section>
 
-        <section className="public-browser" aria-label="글 탐색">
+        <section className="public-browser" aria-label="상품 탐색">
           <div ref={latestHeadRef} className="public-section-head">
             <div>
-              <span>Latest Posts</span>
-              <h2>최근 글</h2>
+              <span>Fresh Deals</span>
+              <h2>최근 상품</h2>
             </div>
           </div>
 
@@ -333,7 +334,8 @@ export function PublicBlogHome({
                   <PostImage post={post} />
                   <span>{post.category}</span>
                   <h3>{post.title}</h3>
-                  <p>{post.excerpt || '본문으로 이어지는 짧은 소개를 작성해보세요.'}</p>
+                  <p>{post.excerpt || '지금 가격을 비교해보세요.'}</p>
+                  <ProductPricePreview post={post} />
                   <small>
                     <CalendarDays size={14} /> {formatDate(post.updatedAt)}
                   </small>
@@ -342,8 +344,8 @@ export function PublicBlogHome({
             </div>
           ) : (
             <div className="public-empty">
-              <strong>조건에 맞는 공개 글이 없습니다.</strong>
-              <p>검색어나 카테고리를 바꾸면 다른 글을 볼 수 있습니다.</p>
+              <strong>조건에 맞는 상품이 없습니다.</strong>
+              <p>검색어나 카테고리를 바꾸면 다른 상품을 볼 수 있습니다.</p>
             </div>
           )}
         </section>
@@ -361,7 +363,7 @@ export function PublicBlogHome({
               onInteractOutside={keepReaderOpenForNavControls}
               onPointerDownOutside={keepReaderOpenForNavControls}
             >
-              <Dialog.Close className="public-reader-close" aria-label="글 닫기">
+              <Dialog.Close className="public-reader-close" aria-label="상품 상세 닫기">
                 <X size={20} />
               </Dialog.Close>
               <div
@@ -378,7 +380,7 @@ export function PublicBlogHome({
                     <PostImage post={selectedPost} />
                     <div>
                       <span>{selectedPost.category}</span>
-                      <strong>Dream Journal</strong>
+                      <strong>SSEN PICK</strong>
                     </div>
                   </aside>
 
@@ -395,6 +397,7 @@ export function PublicBlogHome({
                         <span key={tag}>#{tag}</span>
                       ))}
                     </div>
+                    <ProductLinkPanel post={selectedPost} />
                     <RenderedContent content={selectedPost.content} />
                   </div>
                 </div>
@@ -402,12 +405,12 @@ export function PublicBlogHome({
             </Dialog.Content>
           )}
           {selectedPost && (
-            <div className="public-reader-outer-controls" aria-label="글 이동">
+            <div className="public-reader-outer-controls" aria-label="상품 이동">
               {selectedPostIndex > 0 && (
                 <button
                   className="public-reader-nav-button is-prev"
                   type="button"
-                  aria-label="이전 글"
+                  aria-label="이전 상품"
                   onPointerDown={stopReaderControlEvent}
                   onClick={(event) => moveReaderPostFromControl(event, -1)}
                 >
@@ -418,7 +421,7 @@ export function PublicBlogHome({
                 <button
                   className="public-reader-nav-button is-next"
                   type="button"
-                  aria-label="다음 글"
+                  aria-label="다음 상품"
                   onPointerDown={stopReaderControlEvent}
                   onClick={(event) => moveReaderPostFromControl(event, 1)}
                 >
@@ -434,12 +437,12 @@ export function PublicBlogHome({
 
       <footer className="public-footer">
         <div className="public-footer-copy">
-          <strong>꿈을 그림</strong>
-          <p>바쁘게 살아가는 우리들의 힐링페이퍼</p>
+          <strong>쎈쇼핑</strong>
+          <p>MZ를 위한 가격 비교 큐레이션, 링크 하나까지 쎄게 고릅니다.</p>
         </div>
 
         <div className="public-footer-bottom">
-          <small>© {new Date().getFullYear()} 웹개발자 황상한 | 010-4105-2711</small>
+          <small>© {new Date().getFullYear()} SSEN SHOPPING | Contact nmc2711@naver.com</small>
           <button type="button" onClick={() => window.scrollTo({ left: 0, top: 0, behavior: 'smooth' })}>
             TOP
           </button>
@@ -520,6 +523,70 @@ function PostImage({ post }: { post: Post }) {
       <span>{post.title.slice(0, 2).toUpperCase()}</span>
     </div>
   )
+}
+
+function ProductPricePreview({ post }: { post: Post }) {
+  const bestLink = getBestProductLink(post)
+
+  if (!bestLink) {
+    return (
+      <strong className="product-price-preview">
+        <Zap size={15} /> 가격 준비중
+      </strong>
+    )
+  }
+
+  return (
+    <strong className="product-price-preview">
+      <Zap size={15} /> {bestLink.mall} {bestLink.price || '가격 확인'}
+    </strong>
+  )
+}
+
+function ProductLinkPanel({ post }: { post: Post }) {
+  const links = post.productLinks.filter((link) => link.href.trim())
+
+  if (!links.length) {
+    return (
+      <section className="product-buy-panel">
+        <div>
+          <span>
+            <ShoppingBag size={16} /> 구매 링크
+          </span>
+          <strong>등록된 구매처가 없습니다.</strong>
+        </div>
+      </section>
+    )
+  }
+
+  return (
+    <section className="product-buy-panel" aria-label="구매처 비교">
+      <div>
+        <span>
+          <ShoppingBag size={16} /> 구매처 비교
+        </span>
+        <strong>클릭하면 등록된 제휴 링크로 이동합니다.</strong>
+      </div>
+      <div className="product-buy-list">
+        {links.map((link) => (
+          <a href={link.href} key={link.id} target="_blank" rel="noreferrer sponsored">
+            <span>
+              <b>{link.mall || '쇼핑몰'}</b>
+              {link.badge && <em>{link.badge}</em>}
+            </span>
+            <strong>{link.price || '가격 확인'}</strong>
+            <small>
+              {link.label || '구매하러 가기'} <ExternalLink size={14} />
+            </small>
+          </a>
+        ))}
+      </div>
+    </section>
+  )
+}
+
+function getBestProductLink(post: Post) {
+  return post.productLinks.find((link) => link.price || link.href) ?? post.productLinks[0]
 }
 
 function getTopPosts(posts: Post[]) {

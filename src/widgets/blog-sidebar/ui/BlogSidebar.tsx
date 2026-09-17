@@ -42,13 +42,13 @@ export function BlogSidebar({
       <div className="brand">
         <div className="brand-mark">B</div>
         <div>
-          <strong>블로그 관리</strong>
-          <span>콘텐츠 작성과 분류</span>
+          <strong>쎈쇼핑 관리</strong>
+          <span>상품 등록과 링크 관리</span>
         </div>
       </div>
 
       <button className="primary-action" type="button" onClick={onCreate}>
-        <FilePlus2 size={18} /> 새 글 작성
+        <FilePlus2 size={18} /> 새 상품 등록
       </button>
 
       <label className="search-box">
@@ -56,11 +56,11 @@ export function BlogSidebar({
         <input
           value={query}
           onChange={(event) => onQueryChange(event.target.value)}
-          placeholder="제목, 태그, 본문 검색"
+          placeholder="상품명, 쇼핑몰, 태그 검색"
         />
       </label>
 
-      <div className="filter-group" aria-label="글 상태 필터">
+      <div className="filter-group" aria-label="상품 상태 필터">
         {(['all', 'published', 'draft', 'archived'] as const).map((status) => (
           <button
             className={statusFilter === status ? 'is-active' : ''}

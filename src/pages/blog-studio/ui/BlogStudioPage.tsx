@@ -28,8 +28,8 @@ export function BlogStudioPage() {
     return (
       <main className="blog-loading-screen">
         <span aria-hidden="true" />
-        <strong>Supabase에서 글을 불러오는 중입니다.</strong>
-        <p>방문자 화면과 관리자 화면 모두 같은 서버 데이터를 사용합니다.</p>
+        <strong>Supabase에서 상품 데이터를 불러오는 중입니다.</strong>
+        <p>방문자 화면과 관리자 화면 모두 같은 상품/제휴 링크 데이터를 사용합니다.</p>
       </main>
     )
   }
@@ -86,7 +86,7 @@ export function BlogStudioPage() {
         <section className="admin-command-bar" aria-label="관리자 작업">
           <nav className="view-tabs compact-view-tabs" aria-label="작성 화면">
             <button className={studio.view === 'editor' ? 'is-active' : ''} type="button" onClick={() => studio.setView('editor')}>
-              <PenLine size={16} /> 쓰기
+              <PenLine size={16} /> 상품 편집
             </button>
             <button className={studio.view === 'preview' ? 'is-active' : ''} type="button" onClick={() => studio.setView('preview')}>
               <Eye size={16} /> 미리보기
@@ -95,10 +95,10 @@ export function BlogStudioPage() {
 
           <div className="admin-command-actions">
             <button className="ghost-action" type="button" onClick={() => studio.createPost()}>
-              <Plus size={17} /> 새 글
+              <Plus size={17} /> 새 상품
             </button>
             <button className="ghost-action" type="button" onClick={() => leaveOwnerMode(studio.lockOwnerMode)}>
-              <Lock size={16} /> 읽기 화면
+              <Lock size={16} /> 쇼핑 화면
             </button>
           </div>
         </section>

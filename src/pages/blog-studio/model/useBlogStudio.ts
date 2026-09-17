@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import type { ChangeEvent } from 'react'
 import { createEmptyPost, starterPosts } from '../../../entities/post/model/factory'
-import type { Post, PostStatus, PostStatusFilter } from '../../../entities/post/model/types'
+import type { Post, PostStatus, PostStatusFilter, ProductLink } from '../../../entities/post/model/types'
 import { countWords } from '../../../entities/post/lib/formatters'
 import { downloadJson, fileToDataUrl } from '../../../shared/lib/file'
 import { loadJson, saveJson } from '../../../shared/lib/storage'
@@ -248,7 +248,7 @@ export function useBlogStudio() {
       .filter((post) => {
         if (!keyword) return true
 
-        return [post.title, post.excerpt, post.category, post.slug, post.tags.join(' '), post.content]
+        return [post.title, post.excerpt, post.category, post.slug, post.tags.join(' '), post.content, post.productLinks.map((link) => `${link.mall} ${link.price} ${link.badge}`).join(' ')]
           .join(' ')
           .toLowerCase()
           .includes(keyword)
@@ -318,7 +318,7 @@ export function useBlogStudio() {
   const deleteCategory = (category: string) => {
     const count = posts.filter((post) => post.category === category).length
     const message = count
-      ? `"${category}" 카테고리를 삭제하고 ${count}개 글을 "${UNCATEGORIZED}"로 옮길까요?`
+      ? `"${category}" 카테고리를 삭제하고 ${count}개 상품을 "${UNCATEGORIZED}"로 옮길까요?`
       : `"${category}" 카테고리를 삭제할까요?`
 
     if (!window.confirm(message)) return
@@ -354,7 +354,7 @@ export function useBlogStudio() {
 
   const deletePost = (id: string) => {
     const target = posts.find((post) => post.id === id)
-    if (!target || !window.confirm(`"${target.title}" 글을 삭제할까요?`)) return
+    if (!target || !window.confirm(`"${target.title}" 상품을 삭제할까요?`)) return
 
     const remaining = posts.filter((post) => post.id !== id)
     setPosts(remaining)
@@ -439,7 +439,7 @@ export function useBlogStudio() {
   }
 
   const exportBackup = () => {
-    downloadJson(`blog-backup-${new Date().toISOString().slice(0, 10)}.json`, {
+    downloadJson(`ssen-shopping-backup-${new Date().toISOString().slice(0, 10)}.json`, {
       adBanners,
       exportedAt: new Date().toISOString(),
       categories,
@@ -641,8 +641,8 @@ function normalizePosts(values: unknown, categoryHints: unknown = []): Post[] {
 
       return {
         id: readString(value.id, `post-${Date.now()}-${index}`),
-        title: readString(value.title, '제목 없는 글'),
-        slug: readString(value.slug, `post-${Date.now()}-${index}`),
+        title: readString(value.title, '이름 없는 상품'),
+        slug: readString(value.slug, `product-${Date.now()}-${index}`),
         excerpt: readString(value.excerpt, ''),
         category,
         tags: Array.isArray(value.tags)
@@ -650,11 +650,28 @@ function normalizePosts(values: unknown, categoryHints: unknown = []): Post[] {
           : [],
         content: readString(value.content, '<h1>새 글</h1><p></p>'),
         coverImage: readString(value.coverImage, ''),
+        productLinks: normalizeProductLinks(value.productLinks),
         status: normalizePostStatus(value.status),
         createdAt: readString(value.createdAt, new Date().toISOString()),
         updatedAt: readString(value.updatedAt, new Date().toISOString()),
       }
     })
+}
+
+function normalizeProductLinks(values: unknown): ProductLink[] {
+  if (!Array.isArray(values)) return []
+
+  return values
+    .filter((value): value is Record<string, unknown> => Boolean(value) && typeof value === 'object')
+    .map((value, index) => ({
+      id: readString(value.id, `link-${Date.now()}-${index}`),
+      mall: readString(value.mall, ''),
+      price: readString(value.price, ''),
+      label: readString(value.label, ''),
+      href: readString(value.href, ''),
+      badge: readString(value.badge, ''),
+    }))
+    .filter((link) => link.mall || link.price || link.href)
 }
 
 function readString(value: unknown, fallback: string) {

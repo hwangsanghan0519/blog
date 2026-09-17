@@ -1,17 +1,35 @@
 import type { Post } from './types'
 
-// 앱을 처음 열었을 때 빈 화면 대신 바로 기능을 만져볼 수 있는 샘플 글입니다.
+// 앱을 처음 열었을 때 빈 화면 대신 바로 기능을 만져볼 수 있는 샘플 상품입니다.
 export const starterPosts: Post[] = [
   {
     id: crypto.randomUUID(),
-    title: '나만의 블로그 운영 노트',
-    slug: 'private-blog-ops-note',
-    excerpt: '아이디어, 회고, 긴 글 초안을 한 곳에서 정리하는 개인용 블로그 운영 템플릿입니다.',
-    category: '운영',
-    tags: ['pwa', 'writing', 'private'],
+    title: '로지텍 MX Master 3S',
+    slug: 'logitech-mx-master-3s',
+    excerpt: '사무용 끝판왕 무선 마우스\n쿠팡/지마켓/11번가 가격을 한 번에 비교하세요.',
+    category: '디지털',
+    tags: ['무선마우스', '업무템', '최저가'],
     content:
-      '<h1>나만의 블로그 운영 노트</h1><p>이 앱은 서버 없이 브라우저에 글을 저장합니다. 초안으로 쓰고, 미리보기로 다듬고, 필요할 때 백업 파일로 내보낼 수 있어요.</p><h2>오늘 할 일</h2><ul><li><p>글감 정리</p></li><li><p>커버 이미지 업로드</p></li><li><p>발행 상태 변경</p></li></ul><blockquote><p>개인 블로그는 속도보다 계속 열어보게 되는 감각이 더 중요합니다.</p></blockquote>',
+      '<h1>이 상품을 고른 이유</h1><p>손목 부담이 적고, 여러 기기를 오가며 쓰기 좋은 생산성 마우스입니다.</p><h2>체크 포인트</h2><ul><li><p>조용한 클릭감</p></li><li><p>긴 배터리와 USB-C 충전</p></li><li><p>가로 스크롤 휠 지원</p></li></ul><blockquote><p>가격 변동이 큰 상품이라 구매 전 여러 쇼핑몰을 비교하는 편이 좋습니다.</p></blockquote>',
     coverImage: '',
+    productLinks: [
+      {
+        id: crypto.randomUUID(),
+        mall: '쿠팡',
+        price: '129,000원',
+        label: '쿠팡에서 보기',
+        href: 'https://www.coupang.com',
+        badge: '로켓배송',
+      },
+      {
+        id: crypto.randomUUID(),
+        mall: 'G마켓',
+        price: '126,500원',
+        label: 'G마켓 최저가 보기',
+        href: 'https://www.gmarket.co.kr',
+        badge: '쿠폰가',
+      },
+    ],
     status: 'published',
     createdAt: new Date().toISOString(),
     updatedAt: new Date().toISOString(),
@@ -20,13 +38,14 @@ export const starterPosts: Post[] = [
 
 export const createEmptyPost = (): Post => ({
   id: crypto.randomUUID(),
-  title: '새 글',
-  slug: `post-${Date.now()}`,
+  title: '새 상품',
+  slug: `product-${Date.now()}`,
   excerpt: '',
-  category: '일상',
+  category: '디지털',
   tags: [],
-  content: '<h1>새 글</h1><p>여기에 내용을 작성하세요.</p>',
+  content: '<h1>상품 상세</h1><p>가격, 장점, 구매 전 체크할 점을 정리하세요.</p>',
   coverImage: '',
+  productLinks: [],
   status: 'draft',
   createdAt: new Date().toISOString(),
   updatedAt: new Date().toISOString(),

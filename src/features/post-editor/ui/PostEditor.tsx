@@ -23,6 +23,7 @@ import {
   Braces,
   Code2,
   Eraser,
+  ExternalLink,
   Heading1,
   Heading2,
   Highlighter,
@@ -36,6 +37,7 @@ import {
   Quote,
   Redo2,
   Table2,
+  Trash2,
   Underline as UnderlineIcon,
   Undo2,
 } from 'lucide-react'
@@ -44,7 +46,7 @@ import type { CSSProperties, ReactNode } from 'react'
 import { useEffect, useMemo, useRef } from 'react'
 import { normalizeEditorContent } from '../../../entities/post/lib/content'
 import { slugify } from '../../../entities/post/lib/formatters'
-import type { Post, PostStatus } from '../../../entities/post/model/types'
+import type { Post, PostStatus, ProductLink } from '../../../entities/post/model/types'
 import { fileToDataUrl } from '../../../shared/lib/file'
 
 type PostEditorProps = {
@@ -126,7 +128,7 @@ export function PostEditor({ categories, post, onCoverUpload, onUpdate }: PostEd
       TableHeader,
       TableCell,
       Placeholder.configure({
-        placeholder: '본문을 작성하세요. 이미지, 표, 인용문, 색상까지 자유롭게 넣을 수 있습니다.',
+        placeholder: '상품 상세, 장점, 구매 전 체크 포인트를 작성하세요. 이미지, 표, 코드블럭까지 자유롭게 넣을 수 있습니다.',
       }),
     ],
     content: normalizeEditorContent(post.content),
@@ -145,7 +147,7 @@ export function PostEditor({ categories, post, onCoverUpload, onUpdate }: PostEd
 
     const nextContent = normalizeEditorContent(post.content)
     if (editor.getHTML() !== nextContent) {
-      // 다른 글을 선택했을 때 에디터 내부 문서를 현재 글 내용으로 교체합니다.
+      // 다른 상품을 선택했을 때 에디터 내부 문서를 현재 상품 내용으로 교체합니다.
       editor.commands.setContent(nextContent, { emitUpdate: false })
     }
   }, [editor, post.content, post.id])
@@ -185,7 +187,7 @@ export function PostEditor({ categories, post, onCoverUpload, onUpdate }: PostEd
       .insertContent({
         type: 'codeBlock',
         attrs: { language: 'javascript' },
-        content: [{ type: 'text', text: 'const message = "Hello blog";\nconsole.log(message);' }],
+        content: [{ type: 'text', text: 'const product = "SSEN SHOPPING";\nconsole.log(product);' }],
       })
       .run()
   }
@@ -216,15 +218,41 @@ export function PostEditor({ categories, post, onCoverUpload, onUpdate }: PostEd
     editor?.chain().focus().unsetColor().unsetBackgroundColor().unsetHighlight().unsetFontSize().unsetAllMarks().clearNodes().run()
   }
 
+  const addProductLink = () => {
+    onUpdate({
+      productLinks: [
+        ...post.productLinks,
+        {
+          id: crypto.randomUUID(),
+          mall: '쿠팡',
+          price: '',
+          label: '최저가 보러가기',
+          href: '',
+          badge: '추천',
+        },
+      ],
+    })
+  }
+
+  const updateProductLink = (linkId: string, patch: Partial<ProductLink>) => {
+    onUpdate({
+      productLinks: post.productLinks.map((link) => (link.id === linkId ? { ...link, ...patch } : link)),
+    })
+  }
+
+  const removeProductLink = (linkId: string) => {
+    onUpdate({ productLinks: post.productLinks.filter((link) => link.id !== linkId) })
+  }
+
   return (
     <section className="editor-grid">
       <div className="editor-main">
         <label>
-          제목
+          상품명
           <input value={post.title} onChange={(event) => onUpdate({ title: event.target.value })} />
         </label>
         <label>
-          요약
+          한 줄 혜택/요약
           <textarea
             className="excerpt-input"
             value={post.excerpt}
@@ -233,7 +261,7 @@ export function PostEditor({ categories, post, onCoverUpload, onUpdate }: PostEd
           />
         </label>
 
-        <div className="toolbar rich-toolbar" aria-label="글 편집 도구">
+        <div className="toolbar rich-toolbar" aria-label="상품 상세 편집 도구">
           <ToolbarButton active={editor?.isActive('bold')} label="굵게" onClick={() => editor?.chain().focus().toggleBold().run()}>
             <Bold size={16} />
           </ToolbarButton>
@@ -348,7 +376,7 @@ export function PostEditor({ categories, post, onCoverUpload, onUpdate }: PostEd
         </div>
 
         <label>
-          본문
+          상품 상세 설명
           <EditorContent editor={editor} className="rich-editor" />
         </label>
       </div>
@@ -382,17 +410,57 @@ export function PostEditor({ categories, post, onCoverUpload, onUpdate }: PostEd
           </select>
         </label>
         <label>
-          태그
+          태그/혜택 키워드
           <input
             value={post.tags.join(', ')}
             onChange={(event) =>
               onUpdate({ tags: event.target.value.split(',').map((tag) => tag.trim()).filter(Boolean) })
             }
-            placeholder="react, essay, daily"
+            placeholder="쿠팡, 카드할인, 오늘특가"
           />
         </label>
+        <section className="product-link-admin" aria-label="구매 링크 관리">
+          <div>
+            <span>제휴 링크</span>
+            <button type="button" onClick={addProductLink}>
+              <ExternalLink size={15} /> 링크 추가
+            </button>
+          </div>
+          {post.productLinks.length ? (
+            post.productLinks.map((link, index) => (
+              <div className="product-link-card" key={link.id}>
+                <strong>구매처 {index + 1}</strong>
+                <label>
+                  쇼핑몰
+                  <input value={link.mall} placeholder="쿠팡, G마켓, 11번가" onChange={(event) => updateProductLink(link.id, { mall: event.target.value })} />
+                </label>
+                <label>
+                  가격
+                  <input value={link.price} placeholder="129,000원" onChange={(event) => updateProductLink(link.id, { price: event.target.value })} />
+                </label>
+                <label>
+                  버튼 문구
+                  <input value={link.label} placeholder="최저가 보러가기" onChange={(event) => updateProductLink(link.id, { label: event.target.value })} />
+                </label>
+                <label>
+                  배지
+                  <input value={link.badge} placeholder="쿠폰가, 로켓배송, 추천" onChange={(event) => updateProductLink(link.id, { badge: event.target.value })} />
+                </label>
+                <label className="product-link-url">
+                  제휴 URL
+                  <input value={link.href} placeholder="https://..." onChange={(event) => updateProductLink(link.id, { href: event.target.value })} />
+                </label>
+                <button className="product-link-remove" type="button" onClick={() => removeProductLink(link.id)}>
+                  <Trash2 size={14} /> 삭제
+                </button>
+              </div>
+            ))
+          ) : (
+            <p className="product-link-empty">쿠팡, G마켓, 11번가 등 제휴 링크를 추가하면 공개 화면에 구매 버튼이 표시됩니다.</p>
+          )}
+        </section>
         <label className="cover-uploader">
-          <span>커버 이미지</span>
+          <span>상품 이미지</span>
           <input type="file" accept="image/*" onChange={onCoverUpload} />
           {post.coverImage ? <img src={post.coverImage} alt="" /> : <ImagePlus size={32} />}
         </label>

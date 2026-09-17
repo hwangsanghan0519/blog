@@ -1,5 +1,14 @@
 export type PostStatus = 'draft' | 'published' | 'archived'
 
+export type ProductLink = {
+  id: string
+  mall: string
+  price: string
+  label: string
+  href: string
+  badge: string
+}
+
 export type Post = {
   id: string
   title: string
@@ -9,6 +18,7 @@ export type Post = {
   tags: string[]
   content: string
   coverImage: string
+  productLinks: ProductLink[]
   status: PostStatus
   createdAt: string
   updatedAt: string
