@@ -192,12 +192,12 @@ export function PublicBlogHome({
   return (
     <div className="public-blog">
       <header ref={headerRef} className="public-header">
-        <button className="public-brand" type="button" aria-label="쎈쇼핑 홈" onClick={() => selectCategory('all')}>
+        <button className="public-brand" type="button" aria-label="SSEN 홈" onClick={() => selectCategory('all')}>
           <span className="public-ssen-logo" aria-hidden="true">
             <span>SSEN</span>
-            <small>PRICE</small>
+            <small>DROP</small>
           </span>
-          <strong>쎈쇼핑</strong>
+          <strong>SSEN</strong>
         </button>
 
         <nav className="public-category-nav" aria-label="상품 카테고리">
@@ -237,8 +237,8 @@ export function PublicBlogHome({
             <span className="public-kicker">
               <Trophy size={16} /> 실시간 딜 TOP 10
             </span>
-            <h1>최저가 문제, 정답은 쎈쇼핑</h1>
-            <p>쿠팡, G마켓, 11번가까지 흩어진 가격을 문제집처럼 또렷하게 정리합니다.</p>
+            <h1>RED DROP, PRICE CHECK</h1>
+            <p>K-pop 무드로 고른 오늘의 상품과 제휴몰 가격을 한 번에 확인하세요.</p>
 
           </div>
 
@@ -439,12 +439,12 @@ export function PublicBlogHome({
 
       <footer className="public-footer">
         <div className="public-footer-copy">
-          <strong>쎈쇼핑</strong>
-          <p>MZ를 위한 최저가 풀이집. 링크 하나까지 쎄게 고릅니다.</p>
+          <strong>SSEN</strong>
+          <p>레드 무드로 고른 상품, 가격, 제휴 링크를 빠르게 큐레이션합니다.</p>
         </div>
 
         <div className="public-footer-bottom">
-          <small>© {new Date().getFullYear()} SSEN SHOPPING | Contact nmc2711@naver.com</small>
+          <small>© {new Date().getFullYear()} SSEN | Contact nmc2711@naver.com</small>
           <button type="button" onClick={() => window.scrollTo({ left: 0, top: 0, behavior: 'smooth' })}>
             TOP
           </button>

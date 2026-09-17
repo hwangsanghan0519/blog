@@ -4744,6 +4744,437 @@ button.category-row.is-selected {
   white-space: nowrap;
 }
 
+/* SSEN red street commerce theme: black/white fashion store structure with K-pop stage red energy. */
+.public-blog {
+  color: #111111;
+  background:
+    radial-gradient(circle at 78% 0, rgba(255, 0, 54, 0.2), transparent 34%),
+    linear-gradient(90deg, rgba(255, 0, 54, 0.045) 1px, transparent 1px) 0 0 / 42px 42px,
+    #f4f4f4;
+}
+
+.public-header {
+  min-height: 68px;
+  border-bottom: 1px solid #111111;
+  background: rgba(255, 255, 255, 0.92);
+  box-shadow: none;
+}
+
+.public-brand {
+  gap: 10px;
+  min-height: 48px;
+  padding: 0;
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+  box-shadow: none;
+}
+
+.public-brand:hover {
+  transform: none;
+  box-shadow: none;
+}
+
+.public-ssen-logo {
+  min-width: 112px;
+  min-height: 44px;
+  border: 0;
+  border-radius: 0;
+  background: #111111;
+  box-shadow: inset -8px 0 0 #ff0036;
+  transform: none;
+}
+
+.public-ssen-logo::before {
+  top: -5px;
+  right: -5px;
+  width: 18px;
+  height: 18px;
+  border: 0;
+  border-radius: 0;
+  background: #ff0036;
+}
+
+.public-ssen-logo::after {
+  content: 'LIVE';
+  top: -1px;
+  right: -3px;
+  color: #ffffff;
+  font-size: 7px;
+  letter-spacing: 0.02em;
+}
+
+.public-ssen-logo span {
+  font-size: 30px;
+  letter-spacing: -0.05em;
+  text-shadow: none;
+}
+
+.public-ssen-logo small {
+  margin-top: 0;
+  padding: 0;
+  border: 0;
+  border-radius: 0;
+  color: #ff0036;
+  background: transparent;
+  font-size: 9px;
+  letter-spacing: 0.22em;
+}
+
+.public-brand strong {
+  padding: 0;
+  border: 0;
+  border-radius: 0;
+  color: #111111;
+  background: transparent;
+  font-size: 24px;
+  letter-spacing: -0.04em;
+}
+
+.public-brand strong::after {
+  content: 'RED CURATION';
+  margin-left: 8px;
+  color: #ff0036;
+  font-size: 9px;
+  letter-spacing: 0.14em;
+}
+
+.public-category-nav {
+  border: 1px solid #111111;
+  border-radius: 0;
+  background: #ffffff;
+  box-shadow: none;
+}
+
+.public-category-nav button {
+  border-radius: 0;
+  color: #111111;
+  font-size: 13px;
+  text-transform: uppercase;
+}
+
+.public-category-nav button.is-active,
+.public-category-nav button:hover {
+  color: #ffffff;
+  background: #ff0036;
+  box-shadow: none;
+}
+
+.public-search {
+  border: 1px solid #111111;
+  border-radius: 0;
+  background: #ffffff;
+  box-shadow: none;
+}
+
+.public-hero {
+  min-height: 520px;
+}
+
+.public-hero-copy {
+  border: 1px solid #111111;
+  border-radius: 0;
+  background:
+    linear-gradient(135deg, rgba(255, 0, 54, 0.92) 0 42%, transparent 42%),
+    radial-gradient(circle at 78% 20%, rgba(255, 255, 255, 0.22), transparent 22%),
+    #111111;
+  box-shadow: none;
+}
+
+.public-hero-copy::before {
+  content: 'K-POP AUDIENCE PICK';
+  top: 18px;
+  right: 18px;
+  padding: 7px 10px;
+  color: #ffffff;
+  background: #ff0036;
+  font-size: 10px;
+  letter-spacing: 0.16em;
+  transform: none;
+}
+
+.public-kicker {
+  border: 1px solid #ffffff;
+  border-radius: 0;
+  color: #ffffff;
+  background: transparent;
+  box-shadow: none;
+}
+
+.public-hero-copy h1 {
+  color: #ffffff;
+  font-size: clamp(48px, 7vw, 86px);
+  line-height: 0.86;
+  letter-spacing: -0.07em;
+  text-transform: uppercase;
+  text-shadow: none;
+}
+
+.public-hero-copy p {
+  color: rgba(255, 255, 255, 0.78);
+  font-size: 17px;
+  font-weight: 800;
+}
+
+.public-slider-track,
+.public-slide button {
+  border-radius: 0;
+}
+
+.public-slider-track {
+  border: 1px solid #111111;
+  box-shadow: none;
+}
+
+.public-slide button {
+  border-radius: 0;
+}
+
+.public-slide button::before {
+  inset: 0;
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  border-radius: 0;
+}
+
+.public-slide button::after {
+  background:
+    linear-gradient(180deg, rgba(0, 0, 0, 0.02) 0, rgba(0, 0, 0, 0.84) 100%),
+    linear-gradient(135deg, transparent 0 68%, rgba(255, 0, 54, 0.86) 68% 100%);
+}
+
+.public-rank,
+.public-slide span,
+.public-slide em,
+.product-price-preview {
+  border: 1px solid #ffffff;
+  border-radius: 0;
+  color: #ffffff;
+  background: #ff0036;
+  box-shadow: none;
+}
+
+.public-slide h2 {
+  letter-spacing: -0.04em;
+  text-transform: uppercase;
+  text-shadow: none;
+}
+
+.public-slide em {
+  color: #111111;
+  background: #ffffff;
+}
+
+.public-slider-controls {
+  border: 1px solid #111111;
+  border-radius: 0;
+  background: #ffffff;
+  box-shadow: none;
+}
+
+.public-slider-controls button,
+.public-slider-count {
+  border: 1px solid #111111;
+  border-radius: 0;
+}
+
+.public-slider-dots button.is-active {
+  background: #ff0036;
+  border-color: #ff0036;
+  box-shadow: none;
+}
+
+.public-top-strip button,
+.public-post-card {
+  border: 1px solid #111111;
+  border-radius: 0;
+  background: #ffffff;
+  box-shadow: none;
+}
+
+.public-top-strip button:hover,
+.public-top-strip button.is-active,
+.public-post-card:hover,
+.public-post-card.is-active {
+  transform: translateY(-3px);
+  border-color: #ff0036;
+  box-shadow: 0 18px 0 rgba(255, 0, 54, 0.08);
+}
+
+.public-top-strip strong,
+.public-post-card span,
+.public-reader-tags span {
+  border-radius: 0;
+  color: #ffffff;
+  background: #111111;
+}
+
+.public-section-head span {
+  color: #ff0036;
+  letter-spacing: 0.18em;
+}
+
+.public-section-head h2 {
+  padding: 0;
+  color: #111111;
+  background: transparent;
+  box-shadow: none;
+  font-size: clamp(36px, 5vw, 64px);
+  letter-spacing: -0.06em;
+  text-transform: uppercase;
+}
+
+.public-post-card img,
+.public-post-card .public-image-fallback {
+  border: 0;
+  border-radius: 0;
+}
+
+.public-post-card h3 {
+  letter-spacing: -0.04em;
+  text-transform: uppercase;
+}
+
+.public-reader {
+  border: 1px solid #111111;
+  border-radius: 0;
+  background: #ffffff;
+  box-shadow: 0 40px 120px rgba(0, 0, 0, 0.52);
+}
+
+.product-detail-hero {
+  border: 1px solid #111111;
+  border-radius: 0;
+  background: #ffffff;
+  box-shadow: none;
+}
+
+.product-detail-image {
+  border: 1px solid #111111;
+  border-radius: 0;
+  background:
+    linear-gradient(90deg, rgba(255, 0, 54, 0.06) 1px, transparent 1px) 0 0 / 18px 18px,
+    #f6f6f6;
+}
+
+.product-detail-image > span {
+  border: 0;
+  border-radius: 0;
+  color: #ffffff;
+  background: #ff0036;
+  box-shadow: none;
+}
+
+.public-reader-title {
+  text-decoration: none;
+  font-size: clamp(42px, 5.8vw, 76px);
+  letter-spacing: -0.07em;
+  text-transform: uppercase;
+}
+
+.public-reader .product-price-preview {
+  color: #ffffff;
+  background: #ff0036;
+}
+
+.product-price-preview span {
+  border: 1px solid currentColor;
+  border-radius: 0;
+}
+
+.product-buy-panel,
+.product-detail-summary > .product-buy-panel {
+  border: 1px solid #111111;
+  border-radius: 0;
+  background: #ffffff;
+  box-shadow: none;
+}
+
+.product-buy-panel > div:first-child span,
+.product-buy-list small {
+  color: #ff0036;
+}
+
+.product-buy-list a,
+.product-buy-list a.is-primary {
+  border: 1px solid #111111;
+  border-radius: 0;
+  background: #ffffff;
+  box-shadow: none;
+}
+
+.product-buy-list a.is-primary {
+  color: #ffffff;
+  background: #ff0036;
+}
+
+.product-buy-list a.is-primary strong,
+.product-buy-list a.is-primary b,
+.product-buy-list a.is-primary small {
+  color: #ffffff;
+}
+
+.product-buy-list em,
+.product-buy-list a.is-primary em {
+  border-radius: 0;
+  color: #ffffff;
+  background: #111111;
+}
+
+.product-bottom-buy-bar {
+  border: 1px solid #111111;
+  border-radius: 0;
+  background: rgba(255, 255, 255, 0.94);
+  box-shadow: 0 22px 60px rgba(0, 0, 0, 0.28);
+  backdrop-filter: blur(16px);
+}
+
+.product-bottom-buy-bar > strong {
+  border: 0;
+  border-radius: 0;
+  background: #111111;
+}
+
+.product-bottom-buy-bar a,
+.product-bottom-buy-bar a.is-primary {
+  border: 1px solid #111111;
+  border-radius: 0;
+  background: #ffffff;
+}
+
+.product-bottom-buy-bar a.is-primary {
+  color: #ffffff;
+  background: #ff0036;
+}
+
+.product-bottom-buy-bar a.is-primary b {
+  color: #ffffff;
+}
+
+.product-bottom-buy-bar b {
+  color: #ff0036;
+}
+
+.public-footer {
+  border-top: 1px solid #ff0036;
+  background:
+    linear-gradient(135deg, #111111 0 74%, #ff0036 74% 100%);
+}
+
+.public-quick-actions {
+  border: 1px solid #111111;
+  border-radius: 0;
+  background: #ffffff;
+  box-shadow: 8px 8px 0 #ff0036;
+}
+
+.public-quick-actions a,
+.public-quick-actions button {
+  border: 1px solid #111111;
+  border-radius: 0;
+  color: #111111;
+  background: #ffffff;
+}
+
 @media (max-width: 720px) {
   .product-link-card,
   .product-detail-hero,
@@ -5087,7 +5518,7 @@ button.category-row.is-selected {
   filter: drop-shadow(0 4px 10px rgba(53, 197, 240, 0.26));
 }
 
-/* 쎈수학 문제집에서 연상되는 강한 레드/옐로우/블랙 대비를 쎈쇼핑만의 쇼핑 UI로 재해석합니다. */
+/* Earlier workbook-inspired layer kept for cascade history; the final SSEN layer below turns it into red street commerce. */
 .public-blog {
   background:
     linear-gradient(90deg, rgba(17, 24, 39, 0.035) 1px, transparent 1px) 0 0 / 24px 24px,
@@ -5260,7 +5691,7 @@ button.category-row.is-selected {
 }
 
 .public-hero-copy::before {
-  content: 'SSEN SHOPPING';
+  content: 'SSEN';
   position: absolute;
   top: 18px;
   right: -48px;
@@ -6132,4 +6563,206 @@ button.category-row.is-selected,
   .admin-command-actions {
     flex-wrap: wrap;
   }
+}
+
+/* Final SSEN street-commerce skin. Kept last so earlier workbook experiments cannot override it. */
+.public-blog {
+  color: #111111;
+  background:
+    radial-gradient(circle at 82% 0, rgba(255, 0, 54, 0.2), transparent 34%),
+    linear-gradient(90deg, rgba(255, 0, 54, 0.04) 1px, transparent 1px) 0 0 / 42px 42px,
+    #f4f4f4;
+}
+
+.public-header {
+  border-bottom: 1px solid #111111;
+  background: rgba(255, 255, 255, 0.94);
+  box-shadow: none;
+}
+
+.public-brand,
+.public-brand:hover {
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+  box-shadow: none;
+  transform: none;
+}
+
+.public-ssen-logo {
+  min-width: 112px;
+  min-height: 44px;
+  border: 0;
+  border-radius: 0;
+  background: #111111;
+  box-shadow: inset -8px 0 0 #ff0036;
+  transform: none;
+}
+
+.public-ssen-logo::before {
+  top: -5px;
+  right: -5px;
+  width: 18px;
+  height: 18px;
+  border: 0;
+  border-radius: 0;
+  background: #ff0036;
+}
+
+.public-ssen-logo::after {
+  content: 'LIVE';
+  top: -1px;
+  right: -3px;
+  color: #ffffff;
+  font-size: 7px;
+  letter-spacing: 0.02em;
+}
+
+.public-ssen-logo span {
+  font-size: 30px;
+  letter-spacing: -0.05em;
+  text-shadow: none;
+}
+
+.public-ssen-logo small {
+  margin-top: 0;
+  padding: 0;
+  border: 0;
+  color: #ff0036;
+  background: transparent;
+  font-size: 9px;
+  letter-spacing: 0.22em;
+}
+
+.public-brand strong {
+  padding: 0;
+  color: #111111;
+  background: transparent;
+  font-size: 24px;
+  letter-spacing: -0.04em;
+}
+
+.public-brand strong::after {
+  content: 'RED CURATION';
+  margin-left: 8px;
+  color: #ff0036;
+  font-size: 9px;
+  letter-spacing: 0.14em;
+}
+
+.public-category-nav,
+.public-search,
+.public-slider-track,
+.public-top-strip button,
+.public-post-card,
+.public-reader,
+.product-detail-hero,
+.product-detail-image,
+.product-buy-panel,
+.product-bottom-buy-bar,
+.public-quick-actions {
+  border: 1px solid #111111;
+  border-radius: 0;
+  box-shadow: none;
+}
+
+.public-category-nav button.is-active,
+.public-category-nav button:hover,
+.public-slide span,
+.public-rank,
+.product-price-preview,
+.public-reader .product-price-preview {
+  color: #ffffff;
+  background: #ff0036;
+}
+
+.public-hero-copy {
+  border: 1px solid #111111;
+  border-radius: 0;
+  background:
+    linear-gradient(135deg, rgba(255, 0, 54, 0.92) 0 42%, transparent 42%),
+    radial-gradient(circle at 78% 20%, rgba(255, 255, 255, 0.22), transparent 22%),
+    #111111;
+  box-shadow: none;
+}
+
+.public-hero-copy::before {
+  content: 'K-POP AUDIENCE PICK';
+  top: 18px;
+  right: 18px;
+  padding: 7px 10px;
+  color: #ffffff;
+  background: #ff0036;
+  font-size: 10px;
+  letter-spacing: 0.16em;
+  transform: none;
+}
+
+.public-hero-copy h1 {
+  color: #ffffff;
+  font-size: clamp(48px, 7vw, 86px);
+  line-height: 0.86;
+  letter-spacing: -0.07em;
+  text-transform: uppercase;
+  text-shadow: none;
+}
+
+.public-slide button,
+.public-slide button::before,
+.public-post-card img,
+.public-post-card .public-image-fallback,
+.product-buy-list a,
+.product-buy-list a.is-primary,
+.product-bottom-buy-bar a,
+.product-bottom-buy-bar a.is-primary {
+  border-radius: 0;
+}
+
+.public-slide h2,
+.public-post-card h3,
+.public-reader-title {
+  letter-spacing: -0.05em;
+  text-transform: uppercase;
+  text-shadow: none;
+  text-decoration: none;
+}
+
+.public-section-head h2 {
+  color: #111111;
+  background: transparent;
+  box-shadow: none;
+  font-size: clamp(36px, 5vw, 64px);
+  letter-spacing: -0.06em;
+  text-transform: uppercase;
+}
+
+.product-detail-image {
+  background:
+    linear-gradient(90deg, rgba(255, 0, 54, 0.06) 1px, transparent 1px) 0 0 / 18px 18px,
+    #f6f6f6;
+}
+
+.product-buy-list a.is-primary,
+.product-bottom-buy-bar a.is-primary {
+  color: #ffffff;
+  background: #ff0036;
+}
+
+.product-buy-list a.is-primary strong,
+.product-buy-list a.is-primary b,
+.product-buy-list a.is-primary small,
+.product-bottom-buy-bar a.is-primary b {
+  color: #ffffff;
+}
+
+.product-bottom-buy-bar > strong {
+  border: 0;
+  border-radius: 0;
+  background: #111111;
+}
+
+.public-footer {
+  border-top: 1px solid #ff0036;
+  background:
+    linear-gradient(135deg, #111111 0 74%, #ff0036 74% 100%);
 }
