@@ -8583,10 +8583,6 @@ button.category-row.is-selected,
 }
 
 .public-category-slide {
-  flex: 0 0 clamp(126px, 11vw, 176px) !important;
-  width: clamp(126px, 11vw, 176px) !important;
-  max-width: clamp(126px, 11vw, 176px) !important;
-  min-width: clamp(126px, 11vw, 176px) !important;
   min-height: clamp(142px, 13vw, 202px) !important;
   display: grid !important;
   grid-template-columns: 1fr auto !important;
@@ -8710,10 +8706,6 @@ button.category-row.is-selected,
   }
 
   .public-category-slide {
-    flex-basis: 122px !important;
-    width: 122px !important;
-    max-width: 122px !important;
-    min-width: 122px !important;
     min-height: 150px !important;
   }
 }
@@ -8768,10 +8760,6 @@ button.category-row.is-selected,
 }
 
 .public-category-slide {
-  flex-basis: clamp(108px, 8.8vw, 144px) !important;
-  width: clamp(108px, 8.8vw, 144px) !important;
-  max-width: clamp(108px, 8.8vw, 144px) !important;
-  min-width: clamp(108px, 8.8vw, 144px) !important;
   min-height: clamp(138px, 12vw, 188px) !important;
 }
 
@@ -8789,10 +8777,6 @@ button.category-row.is-selected,
   }
 
   .public-category-slide {
-    flex-basis: 104px !important;
-    width: 104px !important;
-    max-width: 104px !important;
-    min-width: 104px !important;
     min-height: 142px !important;
   }
 }

@@ -75,7 +75,15 @@ export function PublicBlogHome({
     drag: true,
     mode: 'free-snap',
     rubberband: true,
-    slides: { perView: 'auto', spacing: 12 },
+    slides: { perView: 4.6, spacing: 12 },
+    breakpoints: {
+      '(max-width: 1180px)': {
+        slides: { perView: 4.2, spacing: 10 },
+      },
+      '(max-width: 720px)': {
+        slides: { perView: 2.6, spacing: 8 },
+      },
+    },
     dragStarted() {
       categoryDraggingRef.current = true
     },
