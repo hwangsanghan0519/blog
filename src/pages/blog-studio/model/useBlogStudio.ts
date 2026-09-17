@@ -306,7 +306,7 @@ export function useBlogStudio() {
   }
 
   const createCategory = () => {
-    const name = window.prompt('새 카테고리 이름을 입력하세요.')
+    const name = window.prompt('새 셀럽/인플루언서 이름을 입력하세요.')
     const normalized = normalizeCategoryName(name)
     if (!normalized || categories.includes(normalized)) return
 
@@ -315,7 +315,7 @@ export function useBlogStudio() {
   }
 
   const renameCategory = (category: string) => {
-    const nextName = normalizeCategoryName(window.prompt('카테고리 이름을 변경하세요.', category))
+    const nextName = normalizeCategoryName(window.prompt('셀럽/인플루언서 이름을 변경하세요.', category))
     if (!nextName || nextName === category || categories.includes(nextName)) return
 
     setCategories((current) => current.map((name) => (name === category ? nextName : name)).sort((a, b) => a.localeCompare(b, 'ko')))
@@ -334,8 +334,8 @@ export function useBlogStudio() {
   const deleteCategory = (category: string) => {
     const count = posts.filter((post) => post.category === category).length
     const message = count
-      ? `"${category}" 카테고리를 삭제하고 ${count}개 상품을 "${UNCATEGORIZED}"로 옮길까요?`
-      : `"${category}" 카테고리를 삭제할까요?`
+      ? `"${category}" 셀럽을 삭제하고 ${count}개 상품을 "${UNCATEGORIZED}"로 옮길까요?`
+      : `"${category}" 셀럽을 삭제할까요?`
 
     if (!window.confirm(message)) return
 
@@ -430,7 +430,7 @@ export function useBlogStudio() {
       const image = await fileToOptimizedCategoryDataUrl(file)
       setCategoryImages((current) => ({ ...current, [category]: image }))
     } catch {
-      window.alert('카테고리 이미지를 처리하지 못했습니다. 다른 이미지를 선택해 주세요.')
+      window.alert('셀럽 이미지를 처리하지 못했습니다. 다른 이미지를 선택해 주세요.')
     } finally {
       event.target.value = ''
     }

@@ -7863,7 +7863,7 @@ button.category-row.is-selected,
 }
 
 .public-header::before {
-  content: 'SSEN / PRICE DROP / HOT LINK / AFFILIATE MARKET / ';
+  content: 'SSEN / CELEB AD PICKS / SELLER LINK / AFFILIATE MARKET / ';
   position: absolute;
   right: 0;
   bottom: -1px;
@@ -8041,7 +8041,7 @@ button.category-row.is-selected,
 }
 
 .public-category-nav::before {
-  content: 'CATEGORY DROPS';
+  content: 'CELEB AD PICKS';
   position: absolute;
   bottom: 1px;
   left: 0;
@@ -8317,7 +8317,7 @@ button.category-row.is-selected,
 }
 
 .public-category-nav::before {
-  content: 'VISUAL CATEGORY';
+  content: 'CELEB AD PICKS';
 }
 
 .public-category-nav button {

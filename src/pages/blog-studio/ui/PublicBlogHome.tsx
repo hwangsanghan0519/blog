@@ -203,11 +203,11 @@ export function PublicBlogHome({
         </button>
 
         <div className="public-header-drop" aria-hidden="true">
-          <span>DROP INDEX</span>
-          <strong>PRICE RADAR</strong>
+          <span>CELEB AD INDEX</span>
+          <strong>INFLUENCER PICKS</strong>
         </div>
 
-        <nav className="public-category-nav" aria-label="상품 카테고리">
+        <nav className="public-category-nav" aria-label="셀럽별 광고 상품">
           <button
             className={categoryFilter === 'all' ? 'is-active' : ''}
             style={getCategoryStyle('전체')}
@@ -216,7 +216,7 @@ export function PublicBlogHome({
           >
             <CategoryVisual image={getAllCategoryImage(publicCategories, categoryImages)} label="전체" />
             <span>ALL</span>
-            <strong>전체</strong>
+            <strong>전체 셀럽</strong>
             <small>{publishedPosts.length}</small>
           </button>
           {publicCategories.map((category) => (
@@ -228,7 +228,7 @@ export function PublicBlogHome({
               onClick={() => selectCategory(category)}
             >
               <CategoryVisual image={categoryImages[category]} label={category} />
-              <span>DROP</span>
+              <span>CELEB</span>
               <strong>{category}</strong>
               <small>{categoryCounts[category] ?? 0}</small>
             </button>
@@ -246,7 +246,7 @@ export function PublicBlogHome({
               <Trophy size={16} /> 오늘의 센 가격 TOP 10
             </span>
             <h1>SSEN PRICE DROP</h1>
-            <p>힙한 상품을 먼저 고르고, 제휴몰 가격은 가장 빠르게 비교합니다.</p>
+            <p>셀럽과 인플루언서가 광고한 상품을 모아 보고, 판매사 링크로 바로 이동합니다.</p>
 
           </div>
 
@@ -352,7 +352,7 @@ export function PublicBlogHome({
           ) : (
             <div className="public-empty">
               <strong>조건에 맞는 상품이 없습니다.</strong>
-              <p>다른 카테고리를 선택하면 새로운 상품을 볼 수 있습니다.</p>
+              <p>다른 셀럽을 선택하면 해당 인물이 광고한 상품을 볼 수 있습니다.</p>
             </div>
           )}
         </section>

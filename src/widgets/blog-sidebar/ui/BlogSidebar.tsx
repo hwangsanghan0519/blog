@@ -80,10 +80,10 @@ export function BlogSidebar({
         ))}
       </div>
 
-      <section className="category-manager" aria-label="카테고리 관리">
+      <section className="category-manager" aria-label="셀럽 관리">
         <div className="sidebar-section-title">
-          <span>카테고리</span>
-          <button type="button" title="카테고리 추가" onClick={onCreateCategory}>
+          <span>셀럽 / 인플루언서</span>
+          <button type="button" title="셀럽 추가" onClick={onCreateCategory}>
             <FolderPlus size={15} />
           </button>
         </div>
@@ -93,7 +93,7 @@ export function BlogSidebar({
           type="button"
           onClick={() => onCategoryFilterChange('all')}
         >
-          <span>전체</span>
+          <span>전체 셀럽</span>
           <small>{categoryCounts.reduce((sum, category) => sum + category.count, 0)}</small>
         </button>
 
@@ -107,7 +107,7 @@ export function BlogSidebar({
               <small>{category.count}</small>
             </button>
             <div className="category-actions">
-              <label title="카테고리 사진 첨부">
+              <label title="셀럽 사진 첨부">
                 <ImagePlus size={13} />
                 <input accept="image/*" type="file" onChange={(event) => onCategoryImageUpload(category.name, event)} />
               </label>

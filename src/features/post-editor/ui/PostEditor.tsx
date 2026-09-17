@@ -395,11 +395,11 @@ export function PostEditor({ categories, post, onCoverUpload, onUpdate }: PostEd
           <input value={post.slug} onChange={(event) => onUpdate({ slug: slugify(event.target.value) })} />
         </label>
         <label>
-          카테고리
+          광고 모델 / 셀럽
           <select value={selectedCategory} onChange={(event) => onUpdate({ category: event.target.value })}>
             {!selectedCategory && (
               <option value="" disabled>
-                카테고리 선택
+                셀럽 선택
               </option>
             )}
             {categoryOptions.map((category) => (
