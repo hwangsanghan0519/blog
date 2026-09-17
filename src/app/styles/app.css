@@ -7898,6 +7898,74 @@ button.category-row.is-selected,
   font-size: 22px !important;
 }
 
+/* Oversized original handstyle logo: streetwear energy without copying a protected brand mark. */
+.public-brand {
+  min-width: max-content;
+}
+
+.public-ssen-logo {
+  width: 214px !important;
+  min-width: 214px !important;
+  min-height: 92px !important;
+  overflow: visible !important;
+  border: 0 !important;
+  background: transparent !important;
+  box-shadow: none !important;
+  transform: rotate(-4deg) skew(-5deg) !important;
+}
+
+.public-ssen-logo::before {
+  content: 'ssen';
+  position: absolute;
+  inset: auto auto 13px 12px !important;
+  z-index: 0;
+  width: auto !important;
+  height: auto !important;
+  border: 0 !important;
+  color: var(--ssen-red);
+  background: transparent !important;
+  font-family: "Brush Script MT", "Segoe Script", cursive;
+  font-size: 76px;
+  font-weight: 950;
+  line-height: 0.7;
+  letter-spacing: -0.18em;
+  opacity: 0.82;
+  transform: skew(10deg) rotate(-3deg) scaleX(1.18);
+}
+
+.public-ssen-logo::after {
+  right: 8px !important;
+  bottom: 5px !important;
+  z-index: 3;
+  padding: 5px 9px !important;
+  transform: rotate(-4deg) !important;
+}
+
+.public-ssen-logo span {
+  position: relative;
+  z-index: 2;
+  font-family: "Brush Script MT", "Segoe Script", cursive;
+  font-size: 84px !important;
+  line-height: 0.68 !important;
+  letter-spacing: -0.19em !important;
+  text-shadow:
+    3px 3px 0 #000000,
+    8px 8px 0 var(--ssen-red),
+    -2px -1px 0 rgba(255, 255, 255, 0.34) !important;
+  transform: skew(10deg) rotate(-5deg) scaleX(1.18) !important;
+}
+
+.public-ssen-logo small {
+  right: 12px !important;
+  bottom: -2px !important;
+  z-index: 4;
+  padding: 3px 5px !important;
+  color: #ffffff !important;
+  background: var(--ssen-black) !important;
+  font-size: 9px !important;
+  transform: rotate(-4deg) !important;
+}
+
 .public-header-drop {
   position: relative;
   align-self: stretch;
@@ -8139,6 +8207,24 @@ button.category-row.is-selected,
   .public-category-nav button {
     min-width: 98px;
     padding: 10px !important;
+  }
+
+  .public-ssen-logo {
+    width: 146px !important;
+    min-width: 146px !important;
+    min-height: 66px !important;
+  }
+
+  .public-ssen-logo::before {
+    font-size: 52px;
+  }
+
+  .public-ssen-logo span {
+    font-size: 58px !important;
+  }
+
+  .public-ssen-logo small {
+    display: none;
   }
 
   .public-category-nav button strong {
