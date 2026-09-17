@@ -4430,17 +4430,25 @@ button.category-row.is-selected {
 .product-detail-image {
   min-height: clamp(280px, 36vw, 460px);
   position: relative;
+  display: grid;
+  place-items: center;
   overflow: hidden;
   border: 3px solid #111827;
   border-radius: 6px;
-  background: #ffffff;
+  background:
+    linear-gradient(90deg, rgba(17, 24, 39, 0.035) 1px, transparent 1px) 0 0 / 18px 18px,
+    linear-gradient(180deg, #ffffff, #fff8df);
 }
 
 .product-detail-image img,
 .product-detail-image .public-image-fallback {
   width: 100%;
   height: 100%;
-  object-fit: cover;
+  object-fit: contain;
+}
+
+.product-detail-image img {
+  padding: clamp(10px, 2vw, 22px);
 }
 
 .product-detail-image > span {
