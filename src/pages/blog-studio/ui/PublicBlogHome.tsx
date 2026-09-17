@@ -238,8 +238,8 @@ export function PublicBlogHome({
             <span className="public-kicker">
               <Trophy size={16} /> 실시간 딜 TOP 10
             </span>
-            <h1>센 가격만 모아보는 쎈쇼핑</h1>
-            <p>쿠팡, G마켓, 11번가까지 흩어진 상품 링크를 한 화면에서 비교하고 바로 이동하세요.</p>
+            <h1>최저가 문제, 정답은 쎈쇼핑</h1>
+            <p>쿠팡, G마켓, 11번가까지 흩어진 가격을 문제집처럼 또렷하게 정리합니다.</p>
 
           </div>
 
@@ -263,7 +263,7 @@ export function PublicBlogHome({
                       <h2>{post.title}</h2>
                       <p>{post.excerpt || '지금 비교하기 좋은 상품입니다.'}</p>
                       <ProductPricePreview post={post} />
-                      <em>가격 비교</em>
+                      <em>정답 확인</em>
                     </button>
                   </article>
                 ))}
@@ -438,7 +438,7 @@ export function PublicBlogHome({
       <footer className="public-footer">
         <div className="public-footer-copy">
           <strong>쎈쇼핑</strong>
-          <p>MZ를 위한 가격 비교 큐레이션, 링크 하나까지 쎄게 고릅니다.</p>
+          <p>MZ를 위한 최저가 풀이집. 링크 하나까지 쎄게 고릅니다.</p>
         </div>
 
         <div className="public-footer-bottom">
@@ -635,12 +635,12 @@ function syncCategoryParam(category: string) {
 }
 
 const CATEGORY_PALETTE = [
-  ['#35c5f0', '#e9f9fd'],
-  ['#7cddc7', '#e9fbf6'],
-  ['#ffb86b', '#fff3e4'],
-  ['#b89cff', '#f2ecff'],
-  ['#ff8aa5', '#fff0f4'],
-  ['#8fb8ff', '#edf4ff'],
+  ['#e21b2d', '#fff1f2'],
+  ['#111827', '#f3f4f6'],
+  ['#ffb800', '#fff7d6'],
+  ['#f97316', '#fff0df'],
+  ['#2563eb', '#eaf1ff'],
+  ['#16a34a', '#eaf8ee'],
 ] as const
 
 function getCategoryStyle(category: string): CSSProperties {

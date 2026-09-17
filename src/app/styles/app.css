@@ -4852,6 +4852,381 @@ button.category-row.is-selected {
   filter: drop-shadow(0 4px 10px rgba(53, 197, 240, 0.26));
 }
 
+/* 쎈수학 문제집에서 연상되는 강한 레드/옐로우/블랙 대비를 쎈쇼핑만의 쇼핑 UI로 재해석합니다. */
+.public-blog {
+  background:
+    linear-gradient(90deg, rgba(17, 24, 39, 0.035) 1px, transparent 1px) 0 0 / 24px 24px,
+    linear-gradient(180deg, #fff8df 0, #fffdf2 360px, #f8fafc 100%);
+}
+
+.public-header {
+  border-bottom: 4px solid #111827;
+  background: rgba(255, 248, 223, 0.94);
+  box-shadow: 0 8px 0 rgba(226, 27, 45, 0.1);
+}
+
+.public-brand {
+  border: 3px solid #111827;
+  border-radius: 8px;
+  color: #111827;
+  background: #ffffff;
+  box-shadow: 6px 6px 0 #111827;
+}
+
+.public-brand:hover {
+  transform: translate(-2px, -2px);
+  border-color: #111827;
+  box-shadow: 9px 9px 0 #111827;
+}
+
+.public-brand strong {
+  border: 0;
+  border-radius: 4px;
+  color: #ffffff;
+  background: #e21b2d;
+  box-shadow: none;
+  font-size: 25px;
+}
+
+.public-brand strong::after {
+  width: auto;
+  height: auto;
+  margin-left: 8px;
+  border-radius: 0;
+  color: #ffde31;
+  background: transparent;
+  box-shadow: none;
+  content: '100';
+  font-size: 12px;
+  font-weight: 950;
+}
+
+.public-logo-blob {
+  width: 44px;
+  height: 44px;
+  border: 3px solid #111827;
+  border-radius: 6px;
+  background:
+    linear-gradient(135deg, transparent 0 42%, #111827 42% 52%, transparent 52%),
+    linear-gradient(135deg, #ffde31 0 50%, #e21b2d 50% 100%);
+  box-shadow: none;
+  animation: logoBob 2.2s ease-in-out infinite;
+}
+
+.public-logo-blob::before,
+.public-logo-blob::after,
+.public-logo-blob i {
+  display: none;
+}
+
+.public-category-nav {
+  border: 2px solid #111827;
+  border-radius: 8px;
+  background: #ffffff;
+  box-shadow: 4px 4px 0 rgba(17, 24, 39, 0.18);
+}
+
+.public-category-nav button {
+  border-radius: 4px;
+  color: #111827;
+}
+
+.public-category-nav button.is-active,
+.public-category-nav button:hover {
+  color: #ffffff;
+  background: #111827;
+  box-shadow: inset 0 -4px 0 var(--category-accent, #e21b2d);
+}
+
+.public-search {
+  border: 2px solid #111827;
+  border-radius: 8px;
+  box-shadow: 4px 4px 0 rgba(17, 24, 39, 0.16);
+}
+
+.public-hero {
+  min-height: 500px;
+}
+
+.public-hero-copy {
+  position: relative;
+  overflow: hidden;
+  border: 4px solid #111827;
+  border-radius: 10px;
+  background:
+    radial-gradient(circle at 88% 16%, rgba(255, 222, 49, 0.95) 0 54px, transparent 55px),
+    linear-gradient(135deg, #e21b2d 0 58%, #111827 58% 100%);
+  box-shadow: 10px 10px 0 #111827;
+}
+
+.public-hero-copy::before {
+  content: 'SSEN SHOPPING';
+  position: absolute;
+  top: 18px;
+  right: -48px;
+  padding: 8px 52px;
+  color: #111827;
+  background: #ffde31;
+  font-size: 12px;
+  font-weight: 950;
+  letter-spacing: 0.08em;
+  transform: rotate(20deg);
+}
+
+.public-kicker {
+  border: 2px solid #111827;
+  border-radius: 4px;
+  color: #111827;
+  background: #ffde31;
+  box-shadow: 4px 4px 0 rgba(17, 24, 39, 0.24);
+}
+
+.public-hero-copy h1 {
+  max-width: 520px;
+  color: #ffffff;
+  font-size: clamp(42px, 5vw, 64px);
+  line-height: 0.98;
+  text-shadow: 4px 4px 0 rgba(17, 24, 39, 0.48);
+}
+
+.public-hero-copy p {
+  color: rgba(255, 255, 255, 0.9);
+  font-weight: 850;
+}
+
+.public-slider-track,
+.public-slide button {
+  border-radius: 10px;
+}
+
+.public-slider-track {
+  border: 4px solid #111827;
+  box-shadow: 10px 10px 0 #111827;
+}
+
+.public-slide button {
+  border-radius: 6px;
+  background: #111827;
+}
+
+.public-slide button::after {
+  background:
+    linear-gradient(180deg, rgba(17, 24, 39, 0.08) 0, rgba(17, 24, 39, 0.88) 100%),
+    linear-gradient(135deg, transparent 0 70%, rgba(226, 27, 45, 0.92) 70% 100%);
+}
+
+.public-slide button::before {
+  inset: 14px;
+  border: 2px solid rgba(255, 222, 49, 0.82);
+  border-radius: 4px;
+}
+
+.public-rank {
+  border: 2px solid #111827;
+  border-radius: 4px;
+  color: #111827;
+  background: #ffde31;
+  box-shadow: 4px 4px 0 #111827;
+}
+
+.public-slide span {
+  border: 2px solid rgba(255, 255, 255, 0.8);
+  border-radius: 4px;
+  background: rgba(226, 27, 45, 0.9);
+}
+
+.public-slide h2 {
+  text-shadow: 4px 4px 0 rgba(17, 24, 39, 0.55);
+}
+
+.public-slide em,
+.product-price-preview {
+  border: 2px solid #111827;
+  border-radius: 4px;
+  color: #111827;
+  background: #ffde31;
+  box-shadow: 4px 4px 0 #111827;
+}
+
+.public-slide .product-price-preview {
+  color: #111827;
+  border-color: #111827;
+  background: #ffde31;
+}
+
+.public-slider-controls {
+  border: 3px solid #111827;
+  border-radius: 8px;
+  background: #ffffff;
+  box-shadow: 6px 6px 0 rgba(17, 24, 39, 0.34);
+}
+
+.public-slider-controls button,
+.public-slider-count {
+  border: 2px solid #111827;
+  border-radius: 5px;
+  box-shadow: none;
+}
+
+.public-slider-dots button.is-active {
+  background: #e21b2d;
+  border-color: #111827;
+  box-shadow: 0 0 0 3px rgba(255, 222, 49, 0.5);
+}
+
+.public-top-strip button,
+.public-post-card {
+  border: 3px solid #111827;
+  border-radius: 8px;
+  box-shadow: 6px 6px 0 rgba(17, 24, 39, 0.16);
+}
+
+.public-top-strip button:hover,
+.public-top-strip button.is-active,
+.public-post-card:hover,
+.public-post-card.is-active {
+  transform: translate(-2px, -2px);
+  border-color: #111827;
+  box-shadow: 9px 9px 0 rgba(17, 24, 39, 0.22);
+}
+
+.public-top-strip strong,
+.public-post-card span,
+.public-reader-tags span {
+  border-radius: 4px;
+  color: #111827;
+  background: #ffde31;
+}
+
+.public-section-head span {
+  color: #e21b2d;
+}
+
+.public-section-head h2 {
+  width: fit-content;
+  padding: 0 10px;
+  color: #ffffff;
+  background: #111827;
+  box-shadow: 6px 6px 0 #e21b2d;
+}
+
+.public-post-card {
+  grid-template-rows: 190px auto auto auto 1fr auto;
+}
+
+.public-post-card img,
+.public-post-card .public-image-fallback {
+  border: 2px solid #111827;
+  border-radius: 5px;
+}
+
+.public-post-card h3 {
+  font-size: 22px;
+  font-weight: 950;
+}
+
+.public-reader {
+  border: 4px solid #111827;
+  border-radius: 8px;
+  background: #fff8df;
+  box-shadow:
+    0 42px 120px rgba(2, 8, 23, 0.42),
+    10px 10px 0 #e21b2d;
+}
+
+.public-reader-book {
+  border-radius: 4px;
+}
+
+.public-reader-cover {
+  background:
+    linear-gradient(180deg, transparent 20%, rgba(17, 24, 39, 0.86)),
+    #e21b2d;
+}
+
+.public-reader-cover::before {
+  background: linear-gradient(90deg, rgba(17, 24, 39, 0.62), transparent);
+}
+
+.public-reader-cover span {
+  border: 2px solid #111827;
+  border-radius: 4px;
+  color: #111827;
+  background: #ffde31;
+}
+
+.public-reader-cover strong {
+  color: #ffffff;
+  text-shadow: 4px 4px 0 rgba(17, 24, 39, 0.68);
+}
+
+.public-reader-page {
+  background:
+    linear-gradient(90deg, transparent 0 calc(100% - 18px), rgba(226, 27, 45, 0.08) calc(100% - 18px), transparent 100%),
+    repeating-linear-gradient(0deg, rgba(17, 24, 39, 0.035) 0 1px, transparent 1px 32px),
+    #fffdf2;
+}
+
+.public-reader-title {
+  color: #111827;
+  text-decoration: underline;
+  text-decoration-color: #ffde31;
+  text-decoration-thickness: 10px;
+  text-underline-offset: -4px;
+}
+
+.product-buy-panel {
+  border: 3px solid #111827;
+  background: #ffffff;
+  box-shadow: 6px 6px 0 rgba(17, 24, 39, 0.18);
+}
+
+.product-buy-panel > div:first-child span {
+  color: #e21b2d;
+}
+
+.product-buy-list a {
+  border: 2px solid #111827;
+  border-radius: 6px;
+  background: #fff8df;
+}
+
+.product-buy-list a:hover {
+  border-color: #111827;
+  box-shadow: 6px 6px 0 #ffde31;
+}
+
+.product-buy-list em {
+  border-radius: 4px;
+  color: #111827;
+  background: #ffde31;
+}
+
+.product-buy-list small {
+  color: #e21b2d;
+}
+
+.public-footer {
+  border-top: 6px solid #e21b2d;
+  background:
+    linear-gradient(135deg, #111827 0 70%, #e21b2d 70% 100%);
+}
+
+.public-quick-actions {
+  border: 3px solid #111827;
+  border-radius: 8px;
+  background: #ffde31;
+  box-shadow: 6px 6px 0 #111827;
+}
+
+.public-quick-actions a,
+.public-quick-actions button {
+  border: 2px solid #111827;
+  border-radius: 5px;
+  color: #111827;
+  background: #ffffff;
+}
+
 @keyframes floatUp {
   from {
     opacity: 0;
