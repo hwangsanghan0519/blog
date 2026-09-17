@@ -4,9 +4,9 @@ import * as Dialog from '@radix-ui/react-dialog'
 import { CalendarDays, ChevronLeft, ChevronRight, Mail, Search, Trophy, X } from 'lucide-react'
 import { useKeenSlider } from 'keen-slider/react'
 import 'keen-slider/keen-slider.min.css'
-import { normalizeEditorContent } from '../../../entities/post/lib/content'
 import { countWords, formatDate } from '../../../entities/post/lib/formatters'
 import type { Post } from '../../../entities/post/model/types'
+import { RenderedContent } from '../../../shared/ui/RenderedContent'
 import type { AdBannerSettings } from '../model/useBlogStudio'
 
 type PublicBlogHomeProps = {
@@ -206,13 +206,9 @@ export function PublicBlogHome({
             <span className="public-kicker">
               <Trophy size={16} /> 전체글 TOP 10
             </span>
-            <h1>가장 먼저 읽기 좋은 글 모음</h1>
-            <p>전체 공개 글 중에서 내용 밀도, 태그, 커버 이미지를 기준으로 상위 글을 먼저 보여줍니다.</p>
-            <div className="public-hero-stats">
-              <span>{publishedPosts.length}개 글</span>
-              <span>{publicCategories.length}개 카테고리</span>
-              <span>TOP {topPosts.length}</span>
-            </div>
+            <h1>꿈을 그림 BEST</h1>
+            <p>실시간으로 가장 많이 읽히고 있는 인기 글을 소개합니다.</p>
+
           </div>
 
           {topPosts.length > 0 ? (
@@ -369,7 +365,7 @@ export function PublicBlogHome({
                         <span key={tag}>#{tag}</span>
                       ))}
                     </div>
-                    <div className="rendered-content" dangerouslySetInnerHTML={{ __html: normalizeEditorContent(selectedPost.content) }} />
+                    <RenderedContent content={selectedPost.content} />
                   </div>
                 </div>
               </div>

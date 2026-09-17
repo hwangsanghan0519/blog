@@ -1,6 +1,6 @@
 import { formatDate, statusLabel } from '../../../entities/post/lib/formatters'
-import { normalizeEditorContent } from '../../../entities/post/lib/content'
 import type { Post } from '../../../entities/post/model/types'
+import { RenderedContent } from '../../../shared/ui/RenderedContent'
 
 type PostPreviewProps = {
   post: Post
@@ -16,7 +16,7 @@ export function PostPreview({ post }: PostPreviewProps) {
       <div className="preview-meta">
         {post.category} · {formatDate(post.updatedAt)} · {post.tags.join(', ')}
       </div>
-      <div className="rendered-content" dangerouslySetInnerHTML={{ __html: normalizeEditorContent(post.content) }} />
+      <RenderedContent content={post.content} />
     </article>
   )
 }

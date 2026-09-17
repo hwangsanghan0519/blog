@@ -20,6 +20,7 @@ import {
   AlignLeft,
   AlignRight,
   Bold,
+  Braces,
   Code2,
   Eraser,
   Heading1,
@@ -81,6 +82,15 @@ export function PostEditor({ categories, post, onCoverUpload, onUpdate }: PostEd
   const editor = useEditor({
     extensions: [
       StarterKit.configure({
+        codeBlock: {
+          defaultLanguage: 'javascript',
+          enableTabIndentation: true,
+          HTMLAttributes: {
+            class: 'blog-code-block',
+            'data-language': 'JAVASCRIPT',
+          },
+          tabSize: 2,
+        },
         heading: { levels: [1, 2, 3] },
         italic: false,
         link: false,
@@ -168,6 +178,18 @@ export function PostEditor({ categories, post, onCoverUpload, onUpdate }: PostEd
     editor?.chain().focus().insertTable({ rows: 3, cols: 3, withHeaderRow: true }).run()
   }
 
+  const insertJavaScriptBlock = () => {
+    editor
+      ?.chain()
+      .focus()
+      .insertContent({
+        type: 'codeBlock',
+        attrs: { language: 'javascript' },
+        content: [{ type: 'text', text: 'const message = "Hello blog";\nconsole.log(message);' }],
+      })
+      .run()
+  }
+
   const currentFontSize = (editor?.getAttributes('textStyle').fontSize as string | undefined) ?? ''
 
   const setFontSize = (fontSize: string) => {
@@ -223,6 +245,9 @@ export function PostEditor({ categories, post, onCoverUpload, onUpdate }: PostEd
           </ToolbarButton>
           <ToolbarButton active={editor?.isActive('code')} label="코드" onClick={() => editor?.chain().focus().toggleCode().run()}>
             <Code2 size={16} />
+          </ToolbarButton>
+          <ToolbarButton active={editor?.isActive('codeBlock')} label="JavaScript 코드블럭" onClick={insertJavaScriptBlock}>
+            <Braces size={16} />
           </ToolbarButton>
 
           <span className="toolbar-divider" />

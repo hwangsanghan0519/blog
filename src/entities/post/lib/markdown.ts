@@ -21,8 +21,27 @@ export function renderMarkdown(markdown: string) {
   const lines = markdown.split('\n')
   const html: string[] = []
   let inList = false
+  let codeLanguage = ''
+  let codeLines: string[] = []
 
   lines.forEach((line) => {
+    if (line.startsWith('```')) {
+      if (codeLanguage) {
+        html.push(`<pre><code class="language-${escapeHtml(codeLanguage)}">${escapeHtml(codeLines.join('\n'))}</code></pre>`)
+        codeLanguage = ''
+        codeLines = []
+        return
+      }
+
+      codeLanguage = line.replace(/^```/, '').trim() || 'javascript'
+      return
+    }
+
+    if (codeLanguage) {
+      codeLines.push(line)
+      return
+    }
+
     if (line.startsWith('- ')) {
       if (!inList) {
         html.push('<ul>')
@@ -48,5 +67,9 @@ export function renderMarkdown(markdown: string) {
   })
 
   if (inList) html.push('</ul>')
+  if (codeLanguage) {
+    html.push(`<pre><code class="language-${escapeHtml(codeLanguage)}">${escapeHtml(codeLines.join('\n'))}</code></pre>`)
+  }
+
   return html.join('')
 }
