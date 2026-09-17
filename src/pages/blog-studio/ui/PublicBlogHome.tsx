@@ -389,6 +389,7 @@ export function PublicBlogHome({
                         </div>
                         <Dialog.Title className="public-reader-title">{selectedPost.title}</Dialog.Title>
                         <ProductPricePreview post={selectedPost} />
+                        <ProductLinkPanel post={selectedPost} />
                         <Dialog.Description id="reader-description" className="public-reader-description">
                           {selectedPost.excerpt}
                         </Dialog.Description>
@@ -397,7 +398,6 @@ export function PublicBlogHome({
                             <span key={tag}>#{tag}</span>
                           ))}
                         </div>
-                        <ProductLinkPanel post={selectedPost} />
                       </div>
                     </section>
                     <RenderedContent content={selectedPost.content} />
@@ -540,7 +540,7 @@ function ProductPricePreview({ post }: { post: Post }) {
 
   return (
     <strong className="product-price-preview">
-      <Zap size={15} /> {bestLink.mall} {bestLink.price || '가격 확인'}
+      <Zap size={15} /> <span>최저가</span> {bestLink.price || '가격 확인'} <small>{bestLink.mall}</small>
     </strong>
   )
 }
@@ -565,16 +565,16 @@ function ProductLinkPanel({ post }: { post: Post }) {
     <section className="product-buy-panel" aria-label="구매처 비교">
       <div>
         <span>
-          <ShoppingBag size={16} /> 구매처 비교
+          <ShoppingBag size={16} /> 따라다니는 구매 버튼
         </span>
-        <strong>가장 괜찮은 구매처를 바로 확인하세요.</strong>
+        <strong>최저가 제휴 링크로 바로 이동하세요.</strong>
       </div>
       <div className="product-buy-list">
         {links.map((link, index) => (
           <a className={index === 0 ? 'is-primary' : ''} href={link.href} key={link.id} target="_blank" rel="noreferrer sponsored">
             <span>
               <b>{link.mall || '쇼핑몰'}</b>
-              {link.badge && <em>{link.badge}</em>}
+              <em>{index === 0 ? '최저가' : link.badge || '비교가'}</em>
             </span>
             <strong>{link.price || '가격 확인'}</strong>
             <small>

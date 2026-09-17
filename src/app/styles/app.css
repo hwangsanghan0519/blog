@@ -4465,6 +4465,12 @@ button.category-row.is-selected {
   gap: 14px;
 }
 
+.product-detail-summary > .product-buy-panel {
+  position: sticky;
+  top: 18px;
+  z-index: 6;
+}
+
 .public-reader-meta {
   color: var(--text-soft);
 }
@@ -4504,6 +4510,32 @@ button.category-row.is-selected {
   background:
     radial-gradient(circle at 100% 0, rgba(53, 197, 240, 0.16), transparent 30%),
     #f7fdff;
+}
+
+.public-reader .product-price-preview {
+  min-height: 52px;
+  padding: 0 16px;
+  color: #ffffff;
+  background: #e21b2d;
+  font-size: clamp(18px, 2.5vw, 28px);
+}
+
+.product-price-preview span {
+  display: inline-flex;
+  align-items: center;
+  min-height: 28px;
+  padding: 0 8px;
+  border: 2px solid currentColor;
+  border-radius: 4px;
+  color: #ffde31;
+  font-size: 12px;
+  line-height: 1;
+}
+
+.product-price-preview small {
+  color: inherit;
+  font-size: 12px;
+  opacity: 0.86;
 }
 
 .product-buy-panel > div:first-child {
@@ -4618,6 +4650,10 @@ button.category-row.is-selected {
   .product-buy-list a,
   .preview-product-links a {
     grid-template-columns: 1fr;
+  }
+
+  .product-detail-summary > .product-buy-panel {
+    position: static;
   }
 
   .product-buy-list small,
@@ -5120,15 +5156,15 @@ button.category-row.is-selected {
 .product-price-preview {
   border: 2px solid #111827;
   border-radius: 4px;
-  color: #111827;
-  background: #ffde31;
+  color: #ffffff;
+  background: #e21b2d;
   box-shadow: 4px 4px 0 #111827;
 }
 
 .public-slide .product-price-preview {
-  color: #111827;
+  color: #ffffff;
   border-color: #111827;
-  background: #ffde31;
+  background: #e21b2d;
 }
 
 .public-slider-controls {
@@ -5265,6 +5301,12 @@ button.category-row.is-selected {
   box-shadow: 6px 6px 0 rgba(17, 24, 39, 0.18);
 }
 
+.product-detail-summary > .product-buy-panel {
+  box-shadow:
+    6px 6px 0 rgba(17, 24, 39, 0.18),
+    0 18px 34px rgba(226, 27, 45, 0.16);
+}
+
 .product-buy-panel > div:first-child span {
   color: #e21b2d;
 }
@@ -5277,6 +5319,11 @@ button.category-row.is-selected {
 
 .product-buy-list a.is-primary {
   background: #ffde31;
+}
+
+.product-buy-list a.is-primary em {
+  color: #ffffff;
+  background: #e21b2d;
 }
 
 .product-buy-list a:hover {
