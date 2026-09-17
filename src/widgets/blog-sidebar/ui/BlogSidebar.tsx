@@ -42,7 +42,7 @@ export function BlogSidebar({
       <div className="brand">
         <div className="brand-mark">B</div>
         <div>
-          <strong>SSEN 관리</strong>
+          <strong>SEN 관리</strong>
           <span>상품 등록과 링크 관리</span>
         </div>
       </div>

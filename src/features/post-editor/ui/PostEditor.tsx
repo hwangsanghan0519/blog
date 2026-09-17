@@ -187,7 +187,7 @@ export function PostEditor({ categories, post, onCoverUpload, onUpdate }: PostEd
       .insertContent({
         type: 'codeBlock',
         attrs: { language: 'javascript' },
-        content: [{ type: 'text', text: 'const product = "SSEN";\nconsole.log(product);' }],
+        content: [{ type: 'text', text: 'const product = "SEN";\nconsole.log(product);' }],
       })
       .run()
   }

@@ -192,12 +192,12 @@ export function PublicBlogHome({
   return (
     <div className="public-blog">
       <header ref={headerRef} className="public-header">
-        <button className="public-brand" type="button" aria-label="SSEN 홈" onClick={() => selectCategory('all')}>
+        <button className="public-brand" type="button" aria-label="SEN 홈" onClick={() => selectCategory('all')}>
           <span className="public-ssen-logo" aria-hidden="true">
-            <span>SSEN</span>
-            <small>DROP</small>
+            <span>SEN</span>
+            <small>street select</small>
           </span>
-          <strong>SSEN</strong>
+          <strong>센</strong>
         </button>
 
         <div className="public-header-drop" aria-hidden="true">
@@ -242,7 +242,7 @@ export function PublicBlogHome({
             <span className="public-kicker">
               <Trophy size={16} /> 실시간 딜 TOP 10
             </span>
-            <h1>SSEN RED DROP</h1>
+            <h1>SEN RED DROP</h1>
             <p>무대 앞 열기처럼 강렬한 상품과 제휴몰 가격을 한 번에 확인하세요.</p>
 
           </div>
@@ -384,7 +384,7 @@ export function PublicBlogHome({
                     <section className="product-detail-hero" style={getCategoryStyle(selectedPost.category)}>
                       <div className="product-detail-image">
                         <PostImage post={selectedPost} />
-                        <span>SSEN PICK</span>
+                        <span>SEN PICK</span>
                       </div>
                       <div className="product-detail-summary">
                         <div className="public-reader-meta">
@@ -444,10 +444,10 @@ export function PublicBlogHome({
 
       <footer className="public-footer">
         <div className="public-footer-copy">
-          <span>SSEN CREW</span>
-          <strong>SSEN</strong>
+          <span>SEN CREW</span>
+          <strong>SEN</strong>
           <p>레드 무드로 고른 상품, 가격, 제휴 링크를 빠르게 큐레이션합니다.</p>
-          <div className="public-footer-tags" aria-label="SSEN 키워드">
+          <div className="public-footer-tags" aria-label="SEN 키워드">
             <span>RED DROP</span>
             <span>K-POP MOOD</span>
             <span>AFFILIATE SELECT</span>
@@ -455,7 +455,7 @@ export function PublicBlogHome({
         </div>
 
         <div className="public-footer-bottom">
-          <small>© {new Date().getFullYear()} SSEN | Contact nmc2711@naver.com</small>
+          <small>© {new Date().getFullYear()} SEN | Contact nmc2711@naver.com</small>
           <button type="button" onClick={() => window.scrollTo({ left: 0, top: 0, behavior: 'smooth' })}>
             TOP
           </button>

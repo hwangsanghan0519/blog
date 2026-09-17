@@ -4744,7 +4744,7 @@ button.category-row.is-selected {
   white-space: nowrap;
 }
 
-/* SSEN red street commerce theme: black/white fashion store structure with K-pop stage red energy. */
+/* SEN red street commerce theme: black/white fashion store structure with K-pop stage red energy. */
 .public-blog {
   color: #111111;
   background:
@@ -5160,7 +5160,223 @@ button.category-row.is-selected {
     linear-gradient(135deg, #111111 0 74%, #ff0036 74% 100%);
 }
 
-/* SSEN intensity pass: louder logo, sharper red stage energy, still commerce-first. */
+/* SEN handstyle streetwear pass: graffiti-like original logo treatment without copying a real mark. */
+.public-blog {
+  background:
+    radial-gradient(circle at 12% 12%, rgba(255, 0, 54, 0.18), transparent 24%),
+    radial-gradient(circle at 82% 0, rgba(0, 0, 0, 0.18), transparent 28%),
+    repeating-linear-gradient(-8deg, rgba(17, 17, 17, 0.035) 0 1px, transparent 1px 18px),
+    #eeeeea;
+}
+
+.public-header {
+  background:
+    linear-gradient(90deg, #ffffff 0 58%, #111111 58% 100%);
+  border-bottom: 3px solid #111111;
+}
+
+.public-brand {
+  gap: 14px;
+}
+
+.public-ssen-logo {
+  min-width: 132px;
+  min-height: 58px;
+  position: relative;
+  place-items: center;
+  overflow: visible;
+  background: transparent;
+  box-shadow: none;
+}
+
+.public-ssen-logo::before {
+  content: '';
+  width: 100%;
+  height: 30px;
+  position: absolute;
+  inset: auto 0 6px;
+  background: #ff0036;
+  transform: rotate(-4deg) skewX(-18deg);
+}
+
+.public-ssen-logo::after {
+  content: '';
+  width: 118%;
+  height: 3px;
+  position: absolute;
+  right: -10%;
+  bottom: 5px;
+  background: #111111;
+  transform: rotate(-4deg);
+}
+
+.public-ssen-logo span {
+  position: relative;
+  z-index: 2;
+  color: #111111;
+  font-family: Impact, Haettenschweiler, 'Arial Black', var(--sans);
+  font-size: 48px;
+  font-style: italic;
+  font-weight: 950;
+  letter-spacing: -0.16em;
+  line-height: 0.8;
+  text-transform: uppercase;
+  transform: rotate(-7deg) skewX(-12deg) scaleX(1.2);
+  text-shadow:
+    3px 3px 0 #ffffff,
+    7px 7px 0 #ff0036;
+}
+
+.public-ssen-logo small {
+  position: absolute;
+  right: -3px;
+  bottom: -7px;
+  z-index: 3;
+  color: #ffffff;
+  background: #111111;
+  padding: 2px 6px;
+  font-size: 8px;
+  font-weight: 950;
+  letter-spacing: 0.04em;
+  transform: rotate(-6deg);
+}
+
+.public-brand strong {
+  color: #111111;
+  font-size: 28px;
+  font-weight: 950;
+}
+
+.public-brand strong::after {
+  content: 'street price';
+  color: #ff0036;
+}
+
+.public-header-drop {
+  transform: rotate(-2deg);
+}
+
+.public-header-drop span {
+  color: #ffffff;
+  background: #ff0036;
+  padding: 2px 5px;
+}
+
+.public-header-drop strong {
+  color: #ffffff;
+}
+
+.public-category-nav {
+  background: #111111;
+  border: 2px solid #111111;
+  transform: rotate(-0.5deg);
+}
+
+.public-search {
+  border: 2px solid #111111;
+  transform: rotate(0.5deg);
+}
+
+.public-hero-copy {
+  background:
+    radial-gradient(circle at 86% 18%, rgba(255, 255, 255, 0.16), transparent 22%),
+    linear-gradient(108deg, #111111 0 54%, #ff0036 54% 100%);
+  border: 3px solid #111111;
+  transform: rotate(-0.4deg);
+}
+
+.public-hero-copy::before {
+  content: 'SEN STREET SELECT';
+  color: #111111;
+  background: #ffffff;
+  transform: rotate(3deg);
+}
+
+.public-hero-copy h1 {
+  font-family: Impact, Haettenschweiler, 'Arial Black', var(--sans);
+  font-style: italic;
+  letter-spacing: -0.12em;
+  transform: skewX(-8deg);
+}
+
+.public-hero-copy p {
+  max-width: 500px;
+}
+
+.public-slider-track,
+.public-post-card,
+.public-top-strip button {
+  border: 2px solid #111111;
+  transform: rotate(0.2deg);
+}
+
+.public-post-card:nth-child(even) {
+  transform: rotate(-0.35deg);
+}
+
+.public-post-card:hover,
+.public-post-card.is-active {
+  transform: rotate(0deg) translateY(-6px);
+  box-shadow: 10px 10px 0 #ff0036;
+}
+
+.public-slide h2,
+.public-post-card h3,
+.public-reader-title,
+.public-section-head h2 {
+  font-family: Impact, Haettenschweiler, 'Arial Black', var(--sans);
+  font-style: italic;
+}
+
+.public-rank,
+.product-price-preview,
+.public-slide em,
+.product-bottom-buy-bar > strong {
+  transform: rotate(-2deg);
+}
+
+.product-detail-hero {
+  border: 2px solid #111111;
+  transform: rotate(-0.2deg);
+}
+
+.product-detail-image > span,
+.product-buy-list em {
+  transform: rotate(-3deg);
+}
+
+.product-buy-list a.is-primary,
+.product-bottom-buy-bar a.is-primary {
+  background:
+    linear-gradient(135deg, #ff0036 0 72%, #111111 72% 100%);
+}
+
+.product-bottom-buy-bar {
+  border: 2px solid #111111;
+  transform: rotate(-0.25deg);
+}
+
+.public-footer {
+  background:
+    radial-gradient(circle at 80% 0, rgba(255, 0, 54, 0.44), transparent 28%),
+    #111111;
+}
+
+.public-footer::before {
+  content: 'SEN SEN SEN SEN SEN';
+  font-family: Impact, Haettenschweiler, 'Arial Black', var(--sans);
+  font-style: italic;
+  color: rgba(255, 255, 255, 0.07);
+}
+
+.public-footer-copy strong {
+  font-family: Impact, Haettenschweiler, 'Arial Black', var(--sans);
+  font-style: italic;
+  letter-spacing: -0.1em;
+  transform: skewX(-8deg);
+}
+
+/* SEN intensity pass: louder logo, sharper red stage energy, still commerce-first. */
 .public-blog {
   background:
     radial-gradient(circle at 80% -10%, rgba(255, 0, 54, 0.34), transparent 32%),
@@ -5265,7 +5481,7 @@ button.category-row.is-selected {
 }
 
 .public-hero-copy::before {
-  content: 'SSEN LIVE COMMERCE';
+  content: 'SEN LIVE COMMERCE';
   top: 18px;
   right: 18px;
   color: #050505;
@@ -5417,7 +5633,7 @@ button.category-row.is-selected {
 }
 
 .public-footer::before {
-  content: 'SSEN / RED DROP / LIVE COMMERCE / ';
+  content: 'SEN / RED DROP / LIVE COMMERCE / ';
   position: absolute;
   top: 18px;
   left: -20px;
@@ -5831,7 +6047,7 @@ button.category-row.is-selected {
   filter: drop-shadow(0 4px 10px rgba(53, 197, 240, 0.26));
 }
 
-/* Earlier workbook-inspired layer kept for cascade history; the final SSEN layer below turns it into red street commerce. */
+/* Earlier workbook-inspired layer kept for cascade history; the final SEN layer below turns it into red street commerce. */
 .public-blog {
   background:
     linear-gradient(90deg, rgba(17, 24, 39, 0.035) 1px, transparent 1px) 0 0 / 24px 24px,
@@ -6004,7 +6220,7 @@ button.category-row.is-selected {
 }
 
 .public-hero-copy::before {
-  content: 'SSEN';
+  content: 'SEN';
   position: absolute;
   top: 18px;
   right: -48px;
@@ -6878,7 +7094,7 @@ button.category-row.is-selected,
   }
 }
 
-/* Final SSEN street-commerce skin. Kept last so earlier workbook experiments cannot override it. */
+/* Final SEN street-commerce skin. Kept last so earlier workbook experiments cannot override it. */
 .public-blog {
   color: #111111;
   background:
