@@ -237,8 +237,8 @@ export function PublicBlogHome({
             <span className="public-kicker">
               <Trophy size={16} /> 실시간 딜 TOP 10
             </span>
-            <h1>RED DROP, PRICE CHECK</h1>
-            <p>K-pop 무드로 고른 오늘의 상품과 제휴몰 가격을 한 번에 확인하세요.</p>
+            <h1>SSEN RED DROP</h1>
+            <p>무대 앞 열기처럼 강렬한 상품과 제휴몰 가격을 한 번에 확인하세요.</p>
 
           </div>
 

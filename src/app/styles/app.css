@@ -5160,6 +5160,231 @@ button.category-row.is-selected {
     linear-gradient(135deg, #111111 0 74%, #ff0036 74% 100%);
 }
 
+/* SSEN intensity pass: louder logo, sharper red stage energy, still commerce-first. */
+.public-blog {
+  background:
+    radial-gradient(circle at 80% -10%, rgba(255, 0, 54, 0.34), transparent 32%),
+    radial-gradient(circle at 10% 20%, rgba(17, 17, 17, 0.13), transparent 24%),
+    repeating-linear-gradient(90deg, rgba(17, 17, 17, 0.045) 0 1px, transparent 1px 34px),
+    #f1f1f1;
+}
+
+.public-header {
+  background: rgba(17, 17, 17, 0.94);
+  border-bottom: 1px solid #ff0036;
+}
+
+.public-brand strong {
+  color: #ffffff;
+}
+
+.public-brand strong::after {
+  content: 'DROP NOW';
+  color: #ff0036;
+}
+
+.public-ssen-logo {
+  min-width: 136px;
+  min-height: 54px;
+  overflow: hidden;
+  background:
+    linear-gradient(90deg, #ff0036 0 9px, transparent 9px),
+    #050505;
+  box-shadow:
+    inset -10px 0 0 #ff0036,
+    0 0 0 1px #ffffff,
+    0 0 26px rgba(255, 0, 54, 0.34);
+}
+
+.public-ssen-logo::before {
+  width: 44px;
+  height: 120%;
+  top: -10%;
+  right: 18px;
+  background: rgba(255, 0, 54, 0.8);
+  transform: skewX(-18deg);
+}
+
+.public-ssen-logo::after {
+  content: 'STAGE';
+  top: 6px;
+  right: 8px;
+  color: #ffffff;
+  font-size: 8px;
+  letter-spacing: 0.18em;
+  writing-mode: vertical-rl;
+}
+
+.public-ssen-logo span {
+  position: relative;
+  z-index: 1;
+  font-size: 38px;
+  letter-spacing: -0.1em;
+  transform: scaleX(1.08);
+  text-shadow:
+    2px 0 0 #ff0036,
+    -2px 0 0 rgba(255, 255, 255, 0.22);
+}
+
+.public-ssen-logo small {
+  position: relative;
+  z-index: 1;
+  color: #ffffff;
+  font-size: 8px;
+  letter-spacing: 0.38em;
+}
+
+.public-category-nav {
+  background: #111111;
+  border-color: #2a2a2a;
+}
+
+.public-category-nav button {
+  color: rgba(255, 255, 255, 0.72);
+}
+
+.public-category-nav button.is-active,
+.public-category-nav button:hover {
+  background: #ff0036;
+  color: #ffffff;
+}
+
+.public-search {
+  background: #ffffff;
+  border-color: #ff0036;
+}
+
+.public-hero-copy {
+  min-height: 500px;
+  background:
+    linear-gradient(102deg, rgba(255, 0, 54, 0.96) 0 38%, transparent 38%),
+    radial-gradient(circle at 72% 22%, rgba(255, 0, 54, 0.42), transparent 28%),
+    repeating-linear-gradient(0deg, rgba(255, 255, 255, 0.08) 0 1px, transparent 1px 12px),
+    #050505;
+  border-color: #050505;
+}
+
+.public-hero-copy::before {
+  content: 'SSEN LIVE COMMERCE';
+  top: 18px;
+  right: 18px;
+  color: #050505;
+  background: #ffffff;
+}
+
+.public-kicker {
+  border-color: #ff0036;
+  color: #ffffff;
+  background: #ff0036;
+}
+
+.public-hero-copy h1 {
+  max-width: 640px;
+  font-size: clamp(58px, 8.4vw, 112px);
+  letter-spacing: -0.12em;
+  text-shadow:
+    5px 0 0 #ff0036,
+    -2px 0 0 rgba(255, 255, 255, 0.18);
+}
+
+.public-hero-copy p {
+  max-width: 560px;
+  color: rgba(255, 255, 255, 0.86);
+}
+
+.public-slider-track,
+.public-post-card,
+.public-top-strip button {
+  border-color: #050505;
+  background: #ffffff;
+}
+
+.public-slide button::after {
+  background:
+    linear-gradient(180deg, rgba(0, 0, 0, 0.04) 0, rgba(0, 0, 0, 0.88) 100%),
+    linear-gradient(115deg, transparent 0 62%, rgba(255, 0, 54, 0.94) 62% 100%);
+}
+
+.public-slide h2 {
+  font-size: clamp(34px, 4.8vw, 66px);
+}
+
+.public-rank {
+  background: #ffffff;
+  color: #050505;
+  border-color: #ffffff;
+}
+
+.product-price-preview,
+.public-reader .product-price-preview {
+  background: #ff0036;
+  border-color: #ff0036;
+  box-shadow: 0 0 18px rgba(255, 0, 54, 0.28);
+}
+
+.public-post-card {
+  transition:
+    transform 180ms ease,
+    border-color 180ms ease,
+    box-shadow 180ms ease;
+}
+
+.public-post-card:hover,
+.public-post-card.is-active {
+  border-color: #ff0036;
+  box-shadow:
+    0 0 0 1px #ff0036,
+    12px 12px 0 #111111;
+}
+
+.public-post-card h3 {
+  font-size: 25px;
+}
+
+.public-section-head h2 {
+  font-size: clamp(46px, 6vw, 86px);
+}
+
+.public-reader {
+  border-color: #050505;
+  background: #050505;
+}
+
+.product-detail-hero,
+.product-buy-panel,
+.product-bottom-buy-bar {
+  border-color: #050505;
+}
+
+.product-detail-hero {
+  background:
+    linear-gradient(112deg, #ffffff 0 62%, rgba(255, 0, 54, 0.08) 62% 100%);
+}
+
+.public-reader-title {
+  font-size: clamp(48px, 6.6vw, 88px);
+}
+
+.product-buy-list a.is-primary,
+.product-bottom-buy-bar a.is-primary,
+.product-bottom-buy-bar > strong {
+  background: #ff0036;
+}
+
+.product-bottom-buy-bar {
+  background: rgba(5, 5, 5, 0.94);
+  border-color: #ff0036;
+}
+
+.product-bottom-buy-bar a {
+  background: #ffffff;
+}
+
+.public-footer {
+  background:
+    linear-gradient(102deg, #050505 0 62%, #ff0036 62% 100%);
+}
+
 .public-quick-actions {
   border: 1px solid #111111;
   border-radius: 0;
