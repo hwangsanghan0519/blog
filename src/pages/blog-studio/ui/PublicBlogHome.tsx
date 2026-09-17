@@ -466,7 +466,7 @@ export function PublicBlogHome({
 function CategoryVisual({ image, label }: { image?: string; label: string }) {
   if (image) {
     return (
-      <span className="public-category-visual" aria-hidden="true">
+      <span className="public-category-visual" style={{ '--celeb-image': `url(${image})` } as CSSProperties} aria-hidden="true">
         <img src={image} alt="" />
       </span>
     )
