@@ -193,10 +193,9 @@ export function PublicBlogHome({
     <div className="public-blog">
       <header ref={headerRef} className="public-header">
         <button className="public-brand" type="button" aria-label="쎈쇼핑 홈" onClick={() => selectCategory('all')}>
-          <span className="public-logo-blob" aria-hidden="true">
-            <i />
-            <i />
-            <i />
+          <span className="public-ssen-logo" aria-hidden="true">
+            <span>SSEN</span>
+            <small>PRICE</small>
           </span>
           <strong>쎈쇼핑</strong>
         </button>
