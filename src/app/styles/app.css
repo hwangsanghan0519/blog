@@ -9252,8 +9252,8 @@ button.category-row.is-selected,
 
 /* Photo-first celeb picker: keep the category rail quiet, swipeable, and image-led. */
 .public-header {
-  gap: 16px !important;
-  padding-bottom: 10px !important;
+  gap: 12px !important;
+  padding-bottom: 4px !important;
 }
 
 .public-category-nav {
@@ -9285,7 +9285,7 @@ button.category-row.is-selected,
   position: absolute;
   top: 0;
   right: 0;
-  bottom: 18px;
+  bottom: 12px;
   z-index: 2;
   width: 72px;
   background: linear-gradient(90deg, rgba(15, 15, 15, 0), #0f0f0f 86%);
@@ -9323,7 +9323,7 @@ button.category-row.is-selected,
   overflow-x: auto !important;
   overflow-y: hidden !important;
   overscroll-behavior-x: contain;
-  padding: 0 86px 18px 0 !important;
+  padding: 0 86px 12px 0 !important;
   cursor: grab;
   mask-image: none !important;
   scroll-behavior: smooth;
@@ -9348,11 +9348,11 @@ button.category-row.is-selected,
 }
 
 .public-category-slide {
-  flex: 0 0 clamp(96px, 8.6vw, 128px) !important;
-  width: clamp(96px, 8.6vw, 128px) !important;
-  min-width: clamp(96px, 8.6vw, 128px) !important;
-  max-width: clamp(96px, 8.6vw, 128px) !important;
-  min-height: clamp(138px, 12vw, 178px) !important;
+  flex: 0 0 clamp(84px, 7.4vw, 110px) !important;
+  width: clamp(84px, 7.4vw, 110px) !important;
+  min-width: clamp(84px, 7.4vw, 110px) !important;
+  max-width: clamp(84px, 7.4vw, 110px) !important;
+  min-height: clamp(112px, 9.6vw, 146px) !important;
   overflow: hidden !important;
   border: 0 !important;
   border-radius: 10px !important;
@@ -9458,7 +9458,7 @@ button.category-row.is-selected,
 
 @media (max-width: 720px) {
   .public-header {
-    gap: 10px !important;
+    gap: 8px !important;
   }
 
   .public-category-nav {
@@ -9484,15 +9484,15 @@ button.category-row.is-selected,
 
   .public-category-track {
     gap: 7px !important;
-    padding-right: 62px !important;
+    padding: 0 62px 10px 0 !important;
   }
 
   .public-category-slide {
-    flex-basis: 92px !important;
-    width: 92px !important;
-    min-width: 92px !important;
-    max-width: 92px !important;
-    min-height: 132px !important;
+    flex-basis: 78px !important;
+    width: 78px !important;
+    min-width: 78px !important;
+    max-width: 78px !important;
+    min-height: 108px !important;
   }
 
   .public-category-nav button strong {
