@@ -7907,6 +7907,8 @@ button.category-row.is-selected,
   width: 214px !important;
   min-width: 214px !important;
   min-height: 92px !important;
+  display: grid;
+  place-items: center;
   overflow: visible !important;
   border: 0 !important;
   background: transparent !important;
@@ -7915,22 +7917,17 @@ button.category-row.is-selected,
 }
 
 .public-ssen-logo::before {
-  content: 'ssen';
+  content: '';
   position: absolute;
-  inset: auto auto 13px 12px !important;
+  inset: 20px 2px 4px 18px !important;
   z-index: 0;
   width: auto !important;
   height: auto !important;
   border: 0 !important;
-  color: var(--ssen-red);
-  background: transparent !important;
-  font-family: "Brush Script MT", "Segoe Script", cursive;
-  font-size: 76px;
-  font-weight: 950;
-  line-height: 0.7;
-  letter-spacing: -0.18em;
-  opacity: 0.82;
-  transform: skew(10deg) rotate(-3deg) scaleX(1.18);
+  background: var(--ssen-red) !important;
+  opacity: 0.86;
+  transform: translate(8px, 9px) skew(-12deg);
+  clip-path: polygon(8% 38%, 100% 22%, 95% 54%, 18% 82%, 0 68%);
 }
 
 .public-ssen-logo::after {
@@ -7941,18 +7938,51 @@ button.category-row.is-selected,
   transform: rotate(-4deg) !important;
 }
 
-.public-ssen-logo span {
+.public-ssen-mark {
   position: relative;
   z-index: 2;
+  width: 224px;
+  height: 100px;
+  overflow: visible;
+  filter: drop-shadow(4px 4px 0 #000000) drop-shadow(8px 8px 0 var(--ssen-red));
+}
+
+.public-ssen-mark text {
+  fill: #ffffff;
+  stroke: #ffffff;
+  stroke-width: 1.5;
   font-family: "Brush Script MT", "Segoe Script", cursive;
-  font-size: 84px !important;
-  line-height: 0.68 !important;
-  letter-spacing: -0.19em !important;
-  text-shadow:
-    3px 3px 0 #000000,
-    8px 8px 0 var(--ssen-red),
-    -2px -1px 0 rgba(255, 255, 255, 0.34) !important;
-  transform: skew(10deg) rotate(-5deg) scaleX(1.18) !important;
+  font-size: 76px;
+  font-weight: 950;
+  letter-spacing: -0.18em;
+  text-transform: lowercase;
+  transform: skewX(-14deg) rotate(-3deg);
+  transform-origin: 110px 62px;
+}
+
+.public-ssen-slash,
+.public-ssen-stroke,
+.public-ssen-drip {
+  fill: none;
+  stroke: #ffffff;
+  stroke-linecap: square;
+  stroke-linejoin: bevel;
+}
+
+.public-ssen-slash {
+  stroke-width: 13;
+}
+
+.public-ssen-stroke {
+  stroke-width: 10;
+}
+
+.public-ssen-stroke.is-fast {
+  stroke-width: 7;
+}
+
+.public-ssen-drip {
+  stroke-width: 11;
 }
 
 .public-ssen-logo small {
@@ -8216,11 +8246,28 @@ button.category-row.is-selected,
   }
 
   .public-ssen-logo::before {
-    font-size: 52px;
+    inset: 16px 4px 4px 12px !important;
   }
 
-  .public-ssen-logo span {
-    font-size: 58px !important;
+  .public-ssen-mark {
+    width: 152px;
+    height: 70px;
+  }
+
+  .public-ssen-mark text {
+    font-size: 58px;
+  }
+
+  .public-ssen-slash {
+    stroke-width: 10;
+  }
+
+  .public-ssen-stroke {
+    stroke-width: 8;
+  }
+
+  .public-ssen-drip {
+    stroke-width: 9;
   }
 
   .public-ssen-logo small {

@@ -200,7 +200,13 @@ export function PublicBlogHome({
       <header ref={headerRef} className="public-header">
         <button className="public-brand" type="button" aria-label="SSEN 홈" onClick={() => selectCategory('all')}>
           <span className="public-ssen-logo" aria-hidden="true">
-            <span>SSEN</span>
+            <svg className="public-ssen-mark" viewBox="0 0 260 118" focusable="false" role="img">
+              <path className="public-ssen-slash" d="M54 102 110 10" />
+              <text x="40" y="74">ssen</text>
+              <path className="public-ssen-stroke" d="M15 72 C62 51 121 51 244 54" />
+              <path className="public-ssen-stroke is-fast" d="M23 91 C80 77 146 73 229 83" />
+              <path className="public-ssen-drip" d="M230 43 C232 64 231 84 236 111" />
+            </svg>
             <small>drop market</small>
           </span>
           <strong>SSEN</strong>
