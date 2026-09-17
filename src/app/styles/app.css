@@ -10264,3 +10264,56 @@ button.category-row.is-selected,
     font-size: 7px;
   }
 }
+
+/* Final requested layout: wider logo area, seven columns by two rows per page. */
+@media (min-width: 900px) {
+  .public-header {
+    grid-template-columns: 300px minmax(0, 1fr) !important;
+  }
+
+  .public-ssen-logo {
+    width: min(100%, 292px) !important;
+  }
+
+  .public-ssen-logo img {
+    width: min(100%, 286px) !important;
+  }
+}
+
+.public-category-track.keen-slider .public-category-page.keen-slider__slide {
+  grid-template-columns: repeat(7, minmax(0, 1fr)) !important;
+  grid-template-rows: repeat(2, 112px) !important;
+  height: 226px !important;
+}
+
+.public-category-track.keen-slider .public-category-page .public-category-slide {
+  height: 112px !important;
+  min-height: 112px !important;
+}
+
+.public-category-track.keen-slider .public-category-page .public-category-slide strong {
+  right: 6px;
+  bottom: 6px;
+  left: 6px;
+  font-size: 9px;
+}
+
+@media (max-width: 720px) {
+  .public-category-track.keen-slider .public-category-page.keen-slider__slide {
+    grid-template-columns: repeat(7, minmax(0, 1fr)) !important;
+    grid-template-rows: repeat(2, 86px) !important;
+    height: 174px !important;
+  }
+
+  .public-category-track.keen-slider .public-category-page .public-category-slide {
+    height: 86px !important;
+    min-height: 86px !important;
+  }
+
+  .public-category-track.keen-slider .public-category-page .public-category-slide strong {
+    right: 4px;
+    bottom: 4px;
+    left: 4px;
+    font-size: 7px;
+  }
+}

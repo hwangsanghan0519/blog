@@ -51,8 +51,8 @@ export function PublicBlogHome({
   const categoryPages = useMemo(() => {
     const pages: string[][] = []
 
-    for (let index = 0; index < publicCategories.length; index += 7) {
-      pages.push(publicCategories.slice(index, index + 7))
+    for (let index = 0; index < publicCategories.length; index += 14) {
+      pages.push(publicCategories.slice(index, index + 14))
     }
 
     return pages
