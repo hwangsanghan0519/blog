@@ -918,6 +918,8 @@ button.category-row.is-selected {
 .rendered-content pre {
   position: relative;
   overflow: auto;
+  max-width: 100%;
+  box-sizing: border-box;
   margin: 22px 0;
   padding: 46px 18px 18px;
   border: 1px solid #1e293b;
@@ -928,6 +930,11 @@ button.category-row.is-selected {
   font-size: 14px;
   line-height: 1.75;
   white-space: pre;
+}
+
+.rendered-content pre {
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
 }
 
 .rich-editor-surface pre::before,
@@ -947,10 +954,15 @@ button.category-row.is-selected {
 .rich-editor-surface pre code,
 .rendered-content pre code {
   display: block;
+  max-width: 100%;
   padding: 0;
   color: inherit;
   background: transparent;
   font: inherit;
+}
+
+.rendered-content pre code {
+  white-space: inherit;
 }
 
 .code-copy-button {
@@ -3802,6 +3814,7 @@ button.category-row.is-selected {
   color: rgba(255, 255, 255, 0.84);
   font-size: 16px;
   line-height: 1.65;
+  white-space: pre-line;
 }
 
 .public-slider-controls {
@@ -4104,6 +4117,7 @@ button.category-row.is-selected {
 .public-post-card p {
   color: var(--text);
   line-height: 1.62;
+  white-space: pre-line;
 }
 
 .public-post-card small {
@@ -4310,6 +4324,7 @@ button.category-row.is-selected {
   color: var(--text);
   font-size: 19px;
   line-height: 1.72;
+  white-space: pre-line;
 }
 
 .public-reader-tags span {
