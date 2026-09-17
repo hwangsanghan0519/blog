@@ -10120,12 +10120,12 @@ button.category-row.is-selected,
 .public-category-track.keen-slider .public-category-page.keen-slider__slide {
   display: grid !important;
   grid-template-columns: repeat(6, minmax(0, 1fr));
-  grid-template-rows: repeat(2, 86px);
+  grid-template-rows: repeat(2, 112px);
   gap: 2px;
   width: 100% !important;
   min-width: 100% !important;
   max-width: 100% !important;
-  height: 174px !important;
+  height: 226px !important;
 }
 
 .public-category-track.keen-slider .public-category-page.keen-slider__slide + .public-category-page.keen-slider__slide {
@@ -10136,8 +10136,8 @@ button.category-row.is-selected,
   width: 100% !important;
   min-width: 0 !important;
   max-width: none !important;
-  height: 86px !important;
-  min-height: 86px !important;
+  height: 112px !important;
+  min-height: 112px !important;
   margin: 0 !important;
 }
 
@@ -10158,13 +10158,13 @@ button.category-row.is-selected,
   }
 
   .public-category-track.keen-slider .public-category-page.keen-slider__slide {
-    grid-template-rows: repeat(2, 64px);
-    height: 130px !important;
+    grid-template-rows: repeat(2, 86px);
+    height: 174px !important;
   }
 
   .public-category-track.keen-slider .public-category-page .public-category-slide {
-    height: 64px !important;
-    min-height: 64px !important;
+    height: 86px !important;
+    min-height: 86px !important;
   }
 
   .public-category-track.keen-slider .public-category-page .public-category-slide strong {
