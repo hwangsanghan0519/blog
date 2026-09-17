@@ -32,8 +32,6 @@ export function PublicBlogHome({
   const [readingProgress, setReadingProgress] = useState(0)
   const headerRef = useRef<HTMLElement>(null)
   const latestHeadRef = useRef<HTMLDivElement>(null)
-  const categoryTrackRef = useRef<HTMLDivElement>(null)
-  const categoryDragRef = useRef({ dragging: false, moved: false, scrollLeft: 0, startX: 0 })
   const sliderPausedRef = useRef(false)
 
   const publishedPosts = useMemo(
@@ -144,47 +142,6 @@ export function PublicBlogHome({
     slider.current?.moveToIdx(index)
   }
 
-  const startCategoryDrag = (event: PointerEvent<HTMLDivElement>) => {
-    const track = categoryTrackRef.current
-    if (!track) return
-
-    categoryDragRef.current = {
-      dragging: true,
-      moved: false,
-      scrollLeft: track.scrollLeft,
-      startX: event.clientX,
-    }
-    track.setPointerCapture(event.pointerId)
-  }
-
-  const moveCategoryDrag = (event: PointerEvent<HTMLDivElement>) => {
-    const track = categoryTrackRef.current
-    const drag = categoryDragRef.current
-    if (!track || !drag.dragging) return
-
-    const deltaX = event.clientX - drag.startX
-    if (Math.abs(deltaX) > 4) {
-      drag.moved = true
-      track.scrollLeft = drag.scrollLeft - deltaX
-    }
-  }
-
-  const stopCategoryDrag = (event: PointerEvent<HTMLDivElement>) => {
-    const track = categoryTrackRef.current
-    if (track?.hasPointerCapture(event.pointerId)) {
-      track.releasePointerCapture(event.pointerId)
-    }
-    window.setTimeout(() => {
-      categoryDragRef.current.dragging = false
-      categoryDragRef.current.moved = false
-    }, 80)
-  }
-
-  const selectCategoryFromSlide = (category: string) => {
-    if (categoryDragRef.current.moved) return
-    selectCategory(category)
-  }
-
   const stopReaderControlEvent = (event: MouseEvent<HTMLButtonElement> | PointerEvent<HTMLButtonElement>) => {
     event.preventDefault()
     event.stopPropagation()
@@ -248,21 +205,14 @@ export function PublicBlogHome({
             전체
             <small>{publishedPosts.length}</small>
           </button>
-          <div
-            ref={categoryTrackRef}
-            className="public-category-track"
-            onPointerDown={startCategoryDrag}
-            onPointerLeave={stopCategoryDrag}
-            onPointerMove={moveCategoryDrag}
-            onPointerUp={stopCategoryDrag}
-          >
+          <div className="public-category-track">
             {publicCategories.map((category) => (
               <button
                 className={`public-category-slide ${categoryFilter === category ? 'is-active' : ''}`}
                 key={category}
                 style={getCategoryStyle(category)}
                 type="button"
-                onClick={() => selectCategoryFromSlide(category)}
+                onClick={() => selectCategory(category)}
               >
                 <CategoryVisual image={categoryImages[category]} label={category} />
                 <span>CELEB</span>
