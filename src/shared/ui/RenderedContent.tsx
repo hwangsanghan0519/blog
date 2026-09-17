@@ -19,7 +19,7 @@ export function RenderedContent({ content }: RenderedContentProps) {
       const code = block.querySelector('code')
       if (!code || block.dataset.copyReady === 'true') return
 
-      const language = readLanguage(code)
+      const language = readLanguage(block, code)
       block.classList.add('rendered-code-block')
       block.dataset.copyReady = 'true'
       block.dataset.language = language
@@ -43,7 +43,9 @@ export function RenderedContent({ content }: RenderedContentProps) {
   return <div ref={rootRef} className="rendered-content" dangerouslySetInnerHTML={{ __html: html }} />
 }
 
-function readLanguage(code: Element) {
+function readLanguage(block: HTMLElement, code: Element) {
+  if (block.dataset.language) return block.dataset.language
+
   const languageClass = Array.from(code.classList).find((className) => className.startsWith('language-'))
   return languageClass?.replace('language-', '').toUpperCase() || 'CODE'
 }
