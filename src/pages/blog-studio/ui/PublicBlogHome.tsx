@@ -7,6 +7,7 @@ import 'keen-slider/keen-slider.min.css'
 import { countWords, formatDate } from '../../../entities/post/lib/formatters'
 import type { Post } from '../../../entities/post/model/types'
 import { RenderedContent } from '../../../shared/ui/RenderedContent'
+import ssenLogoImage from '../../../assets/ssen-logo.svg'
 import type { AdBannerSettings } from '../model/useBlogStudio'
 
 type PublicBlogHomeProps = {
@@ -191,15 +192,8 @@ export function PublicBlogHome({
       <header ref={headerRef} className="public-header">
         <button className="public-brand" type="button" aria-label="SSEN 홈" onClick={() => selectCategory('all')}>
           <span className="public-ssen-logo" aria-hidden="true">
-            <svg className="public-ssen-mark" viewBox="0 0 260 118" focusable="false" role="img">
-              <path className="public-ssen-slash" d="M54 102 110 10" />
-              <text x="40" y="74">ssen</text>
-              <path className="public-ssen-stroke" d="M15 72 C62 51 121 51 244 54" />
-              <path className="public-ssen-stroke is-fast" d="M23 91 C80 77 146 73 229 83" />
-              <path className="public-ssen-drip" d="M230 43 C232 64 231 84 236 111" />
-            </svg>
+            <img src={ssenLogoImage} alt="" />
           </span>
-          <strong>SSEN</strong>
         </button>
 
         <div className="public-header-drop" aria-hidden="true">

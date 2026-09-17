@@ -1,0 +1,26 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 620 190" role="img" aria-label="SSEN">
+  <defs>
+    <filter id="rough" x="-8%" y="-18%" width="118%" height="140%">
+      <feTurbulence type="fractalNoise" baseFrequency="0.035" numOctaves="2" seed="8" result="noise"/>
+      <feDisplacementMap in="SourceGraphic" in2="noise" scale="1.8" xChannelSelector="R" yChannelSelector="G"/>
+    </filter>
+  </defs>
+  <g filter="url(#rough)" transform="translate(12 4) rotate(-3 300 92)">
+    <path d="M36 118 C104 79 199 69 352 73 C438 75 510 78 583 86" fill="none" stroke="#ff0038" stroke-width="24" stroke-linecap="square" stroke-linejoin="bevel"/>
+    <path d="M48 138 C153 106 278 104 518 119" fill="none" stroke="#ff0038" stroke-width="17" stroke-linecap="square" stroke-linejoin="bevel"/>
+    <path d="M173 170 L272 12" fill="none" stroke="#ff0038" stroke-width="26" stroke-linecap="square"/>
+    <path d="M551 48 C552 86 552 128 563 178" fill="none" stroke="#ff0038" stroke-width="22" stroke-linecap="square"/>
+
+    <path d="M24 106 C94 68 190 60 346 64 C435 67 510 71 581 78" fill="none" stroke="#0a0a0a" stroke-width="27" stroke-linecap="square" stroke-linejoin="bevel"/>
+    <path d="M36 128 C140 96 279 93 520 110" fill="none" stroke="#0a0a0a" stroke-width="19" stroke-linecap="square" stroke-linejoin="bevel"/>
+    <path d="M158 162 L258 4" fill="none" stroke="#0a0a0a" stroke-width="29" stroke-linecap="square"/>
+    <path d="M537 39 C538 80 537 126 548 181" fill="none" stroke="#0a0a0a" stroke-width="24" stroke-linecap="square"/>
+
+    <path d="M28 99 C99 61 193 55 350 58 C438 60 510 64 578 72" fill="none" stroke="#ffffff" stroke-width="20" stroke-linecap="square" stroke-linejoin="bevel"/>
+    <path d="M40 120 C145 88 279 86 516 101" fill="none" stroke="#ffffff" stroke-width="14" stroke-linecap="square" stroke-linejoin="bevel"/>
+    <path d="M164 154 L263 8" fill="none" stroke="#ffffff" stroke-width="21" stroke-linecap="square"/>
+    <path d="M540 34 C541 76 540 123 550 177" fill="none" stroke="#ffffff" stroke-width="17" stroke-linecap="square"/>
+
+    <text x="92" y="112" fill="#ffffff" stroke="#ffffff" stroke-width="2" font-family="Brush Script MT, Segoe Script, cursive" font-size="104" font-weight="900" letter-spacing="-22" transform="skewX(-16) rotate(-2 265 92)">ssen</text>
+  </g>
+</svg>
