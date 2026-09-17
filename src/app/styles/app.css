@@ -5160,6 +5160,245 @@ button.category-row.is-selected {
     linear-gradient(135deg, #111111 0 74%, #ff0036 74% 100%);
 }
 
+/* Final SSEN handstyle streetwear storefront. Inspired by surf/skate streetwear energy, not a copy of any brand mark. */
+.public-blog {
+  color: #111111;
+  background:
+    radial-gradient(circle at 8% 12%, rgba(255, 0, 54, 0.16), transparent 22%),
+    radial-gradient(circle at 90% 4%, rgba(17, 17, 17, 0.18), transparent 28%),
+    repeating-linear-gradient(-9deg, rgba(17, 17, 17, 0.035) 0 1px, transparent 1px 18px),
+    #efeee8;
+}
+
+.public-header {
+  min-height: 78px;
+  border-bottom: 2px solid #111111;
+  background:
+    linear-gradient(90deg, #efeee8 0 55%, #111111 55% 100%);
+}
+
+.public-brand {
+  gap: 16px;
+}
+
+.public-ssen-logo {
+  min-width: 158px;
+  min-height: 62px;
+  position: relative;
+  place-items: center;
+  overflow: visible;
+  background: transparent;
+  box-shadow: none;
+}
+
+.public-ssen-logo::before {
+  content: '';
+  width: 112%;
+  height: 32px;
+  position: absolute;
+  inset: auto -8% 7px 0;
+  background: #ff0036;
+  transform: rotate(-5deg) skewX(-18deg);
+}
+
+.public-ssen-logo::after {
+  content: '';
+  width: 126%;
+  height: 3px;
+  position: absolute;
+  right: -12%;
+  bottom: 5px;
+  background: #111111;
+  transform: rotate(-5deg);
+}
+
+.public-ssen-logo span {
+  position: relative;
+  z-index: 2;
+  color: #111111;
+  font-family: Impact, Haettenschweiler, 'Arial Black', var(--sans);
+  font-size: 52px;
+  font-style: italic;
+  font-weight: 950;
+  letter-spacing: -0.18em;
+  line-height: 0.76;
+  text-transform: uppercase;
+  transform: rotate(-7deg) skewX(-14deg) scaleX(1.16);
+  text-shadow:
+    3px 3px 0 #efeee8,
+    8px 8px 0 #ff0036;
+}
+
+.public-ssen-logo small {
+  position: absolute;
+  right: -2px;
+  bottom: -9px;
+  z-index: 3;
+  padding: 2px 7px;
+  color: #efeee8;
+  background: #111111;
+  font-size: 8px;
+  font-weight: 950;
+  letter-spacing: 0.04em;
+  transform: rotate(-6deg);
+}
+
+.public-brand strong {
+  color: #111111;
+  font-family: Impact, Haettenschweiler, 'Arial Black', var(--sans);
+  font-size: 32px;
+  font-style: italic;
+  letter-spacing: -0.12em;
+  transform: rotate(-4deg) skewX(-10deg);
+}
+
+.public-brand strong::after {
+  content: 'street select';
+  color: #ff0036;
+  font-family: var(--sans);
+  font-size: 9px;
+  font-style: normal;
+  letter-spacing: 0.1em;
+}
+
+.public-header-drop {
+  transform: rotate(-2deg);
+}
+
+.public-header-drop span {
+  padding: 2px 5px;
+  color: #ffffff;
+  background: #ff0036;
+}
+
+.public-header-drop strong {
+  color: #ffffff;
+}
+
+.public-category-nav {
+  border: 2px solid #111111;
+  background: #111111;
+  transform: rotate(-0.5deg);
+}
+
+.public-category-nav button {
+  color: rgba(255, 255, 255, 0.72);
+}
+
+.public-category-nav button.is-active,
+.public-category-nav button:hover {
+  color: #ffffff;
+  background: #ff0036;
+}
+
+.public-search {
+  border: 2px solid #111111;
+  background: #ffffff;
+  transform: rotate(0.5deg);
+}
+
+.public-hero-copy {
+  border: 3px solid #111111;
+  background:
+    radial-gradient(circle at 82% 18%, rgba(255, 255, 255, 0.14), transparent 24%),
+    linear-gradient(108deg, #111111 0 53%, #ff0036 53% 100%);
+  transform: rotate(-0.35deg);
+}
+
+.public-hero-copy::before {
+  content: 'SSEN STREET SELECT';
+  color: #111111;
+  background: #ffffff;
+  transform: rotate(3deg);
+}
+
+.public-hero-copy h1,
+.public-slide h2,
+.public-post-card h3,
+.public-reader-title,
+.public-section-head h2,
+.public-footer-copy strong {
+  font-family: Impact, Haettenschweiler, 'Arial Black', var(--sans);
+  font-style: italic;
+}
+
+.public-hero-copy h1 {
+  font-size: clamp(58px, 8.2vw, 112px);
+  letter-spacing: -0.13em;
+  transform: skewX(-8deg);
+  text-shadow:
+    5px 0 0 #ff0036,
+    -2px 0 0 rgba(255, 255, 255, 0.16);
+}
+
+.public-slider-track,
+.public-post-card,
+.public-top-strip button,
+.product-detail-hero,
+.product-bottom-buy-bar {
+  border: 2px solid #111111;
+}
+
+.public-post-card {
+  transform: rotate(0.18deg);
+}
+
+.public-post-card:nth-child(even) {
+  transform: rotate(-0.35deg);
+}
+
+.public-post-card:hover,
+.public-post-card.is-active {
+  transform: rotate(0deg) translateY(-6px);
+  box-shadow: 10px 10px 0 #ff0036;
+}
+
+.public-rank,
+.product-price-preview,
+.public-slide em,
+.product-bottom-buy-bar > strong,
+.product-detail-image > span {
+  transform: rotate(-2deg);
+}
+
+.public-slide button::after {
+  background:
+    linear-gradient(180deg, rgba(0, 0, 0, 0.04) 0, rgba(0, 0, 0, 0.88) 100%),
+    linear-gradient(115deg, transparent 0 62%, rgba(255, 0, 54, 0.94) 62% 100%);
+}
+
+.product-detail-hero {
+  transform: rotate(-0.2deg);
+}
+
+.product-buy-list a.is-primary,
+.product-bottom-buy-bar a.is-primary {
+  background:
+    linear-gradient(135deg, #ff0036 0 72%, #111111 72% 100%);
+}
+
+.product-bottom-buy-bar {
+  transform: rotate(-0.25deg);
+}
+
+.public-footer {
+  background:
+    radial-gradient(circle at 82% 0, rgba(255, 0, 54, 0.42), transparent 28%),
+    #111111;
+}
+
+.public-footer::before {
+  content: 'SSEN SSEN SSEN SSEN';
+  font-family: Impact, Haettenschweiler, 'Arial Black', var(--sans);
+  font-style: italic;
+  color: rgba(255, 255, 255, 0.07);
+}
+
+.public-footer-copy strong {
+  letter-spacing: -0.14em;
+  transform: skewX(-10deg);
+}
+
 /* SEN handstyle streetwear pass: graffiti-like original logo treatment without copying a real mark. */
 .public-blog {
   background:
