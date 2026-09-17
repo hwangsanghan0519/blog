@@ -32,6 +32,8 @@ export function PublicBlogHome({
   const [readingProgress, setReadingProgress] = useState(0)
   const headerRef = useRef<HTMLElement>(null)
   const latestHeadRef = useRef<HTMLDivElement>(null)
+  const categoryTrackRef = useRef<HTMLDivElement>(null)
+  const categoryDragRef = useRef({ active: false, moved: false, pointerId: -1, scrollLeft: 0, startX: 0 })
   const sliderPausedRef = useRef(false)
 
   const publishedPosts = useMemo(
@@ -186,6 +188,51 @@ export function PublicBlogHome({
     })
   }
 
+  // 셀럽 사진 레일은 데스크톱에서도 손으로 넘기는 감각이 나도록 직접 드래그 스크롤을 처리합니다.
+  const startCategoryDrag = (event: PointerEvent<HTMLDivElement>) => {
+    const track = categoryTrackRef.current
+    if (!track) return
+
+    categoryDragRef.current = {
+      active: true,
+      moved: false,
+      pointerId: event.pointerId,
+      scrollLeft: track.scrollLeft,
+      startX: event.clientX,
+    }
+    track.setPointerCapture(event.pointerId)
+  }
+
+  const moveCategoryDrag = (event: PointerEvent<HTMLDivElement>) => {
+    const track = categoryTrackRef.current
+    const drag = categoryDragRef.current
+    if (!track || !drag.active || drag.pointerId !== event.pointerId) return
+
+    const deltaX = event.clientX - drag.startX
+    if (Math.abs(deltaX) > 3) {
+      drag.moved = true
+      track.scrollLeft = drag.scrollLeft - deltaX
+      event.preventDefault()
+    }
+  }
+
+  const stopCategoryDrag = (event: PointerEvent<HTMLDivElement>) => {
+    const track = categoryTrackRef.current
+    if (track?.hasPointerCapture(event.pointerId)) {
+      track.releasePointerCapture(event.pointerId)
+    }
+
+    window.setTimeout(() => {
+      categoryDragRef.current.active = false
+      categoryDragRef.current.moved = false
+    }, 80)
+  }
+
+  const selectCategoryFromRail = (category: string) => {
+    if (categoryDragRef.current.moved) return
+    selectCategory(category)
+  }
+
   return (
     <div className="public-blog">
       <header ref={headerRef} className="public-header">
@@ -205,14 +252,22 @@ export function PublicBlogHome({
             전체
             <small>{publishedPosts.length}</small>
           </button>
-          <div className="public-category-track">
+          <div
+            ref={categoryTrackRef}
+            className="public-category-track"
+            onPointerDown={startCategoryDrag}
+            onPointerMove={moveCategoryDrag}
+            onPointerUp={stopCategoryDrag}
+            onPointerCancel={stopCategoryDrag}
+            onPointerLeave={stopCategoryDrag}
+          >
             {publicCategories.map((category) => (
               <button
                 className={`public-category-slide ${categoryFilter === category ? 'is-active' : ''}`}
                 key={category}
                 style={getCategoryStyle(category)}
                 type="button"
-                onClick={() => selectCategory(category)}
+                onClick={() => selectCategoryFromRail(category)}
               >
                 <CategoryVisual image={categoryImages[category]} label={category} />
                 <span>CELEB</span>
