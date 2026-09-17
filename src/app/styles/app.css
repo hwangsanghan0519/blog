@@ -10141,6 +10141,18 @@ button.category-row.is-selected,
   margin: 0 !important;
 }
 
+.public-category-track.keen-slider .public-category-page .public-category-visual {
+  background:
+    radial-gradient(circle at 50% 30%, rgba(255, 255, 255, 0.1), transparent 44%),
+    #101010 !important;
+}
+
+.public-category-track.keen-slider .public-category-page .public-category-visual img {
+  object-fit: contain !important;
+  object-position: center center !important;
+  padding: 3px;
+}
+
 .public-category-track.keen-slider .public-category-page .public-category-slide strong {
   right: 6px;
   bottom: 6px;
