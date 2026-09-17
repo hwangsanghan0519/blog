@@ -200,6 +200,11 @@ export function PublicBlogHome({
           <strong>SSEN</strong>
         </button>
 
+        <div className="public-header-drop" aria-hidden="true">
+          <span>LIVE DROP</span>
+          <strong>RED PRICE CLUB</strong>
+        </div>
+
         <nav className="public-category-nav" aria-label="상품 카테고리">
           <button
             className={categoryFilter === 'all' ? 'is-active' : ''}
@@ -439,8 +444,14 @@ export function PublicBlogHome({
 
       <footer className="public-footer">
         <div className="public-footer-copy">
+          <span>SSEN CREW</span>
           <strong>SSEN</strong>
           <p>레드 무드로 고른 상품, 가격, 제휴 링크를 빠르게 큐레이션합니다.</p>
+          <div className="public-footer-tags" aria-label="SSEN 키워드">
+            <span>RED DROP</span>
+            <span>K-POP MOOD</span>
+            <span>AFFILIATE SELECT</span>
+          </div>
         </div>
 
         <div className="public-footer-bottom">

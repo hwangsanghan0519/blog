@@ -5385,6 +5385,94 @@ button.category-row.is-selected {
     linear-gradient(102deg, #050505 0 62%, #ff0036 62% 100%);
 }
 
+.public-header-drop {
+  min-width: 154px;
+  display: grid;
+  gap: 2px;
+  padding-left: 14px;
+  border-left: 1px solid rgba(255, 255, 255, 0.18);
+}
+
+.public-header-drop span {
+  color: #ff0036;
+  font-size: 10px;
+  font-weight: 950;
+  letter-spacing: 0.22em;
+}
+
+.public-header-drop strong {
+  color: #ffffff;
+  font-size: 12px;
+  font-weight: 950;
+  letter-spacing: 0.08em;
+}
+
+.public-footer {
+  position: relative;
+  overflow: hidden;
+  border-top: 1px solid #ff0036;
+  background:
+    radial-gradient(circle at 80% 0, rgba(255, 0, 54, 0.36), transparent 28%),
+    linear-gradient(102deg, #050505 0 62%, #ff0036 62% 100%);
+}
+
+.public-footer::before {
+  content: 'SSEN / RED DROP / LIVE COMMERCE / ';
+  position: absolute;
+  top: 18px;
+  left: -20px;
+  width: calc(100% + 40px);
+  color: rgba(255, 255, 255, 0.08);
+  font-size: clamp(42px, 8vw, 96px);
+  font-weight: 950;
+  letter-spacing: -0.08em;
+  white-space: nowrap;
+  pointer-events: none;
+}
+
+.public-footer-copy {
+  position: relative;
+  z-index: 1;
+}
+
+.public-footer-copy > span {
+  width: fit-content;
+  padding: 6px 9px;
+  color: #ffffff;
+  background: #ff0036;
+}
+
+.public-footer-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 8px;
+}
+
+.public-footer-tags span {
+  min-height: 30px;
+  display: inline-flex;
+  align-items: center;
+  padding: 0 10px;
+  border: 1px solid rgba(255, 255, 255, 0.28);
+  color: #ffffff;
+  background: rgba(255, 255, 255, 0.08);
+  font-size: 11px;
+  font-weight: 950;
+  letter-spacing: 0.08em;
+}
+
+.public-footer-bottom {
+  position: relative;
+  z-index: 1;
+}
+
+@media (max-width: 1120px) {
+  .public-header-drop {
+    display: none;
+  }
+}
+
 .public-quick-actions {
   border: 1px solid #111111;
   border-radius: 0;
