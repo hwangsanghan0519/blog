@@ -7850,3 +7850,313 @@ button.category-row.is-selected,
     grid-template-columns: 1fr !important;
   }
 }
+
+/* SSEN V3: harder street-commerce header, category drop board, poster footer. */
+.public-header {
+  grid-template-columns: auto minmax(140px, 0.42fr) minmax(320px, 1.35fr) minmax(180px, 0.56fr) !important;
+  gap: 18px !important;
+  padding: 16px clamp(18px, 4vw, 70px) 18px !important;
+  background:
+    linear-gradient(90deg, rgba(240, 0, 47, 0.28), transparent 24%),
+    linear-gradient(180deg, rgba(255, 255, 255, 0.08), transparent),
+    rgba(6, 6, 6, 0.92) !important;
+}
+
+.public-header::before {
+  content: 'SSEN / PRICE DROP / HOT LINK / AFFILIATE MARKET / ';
+  position: absolute;
+  right: 0;
+  bottom: -1px;
+  left: 0;
+  height: 18px;
+  overflow: hidden;
+  color: #ffffff;
+  background: var(--ssen-red);
+  font-size: 10px;
+  font-weight: 950;
+  line-height: 18px;
+  letter-spacing: 0.18em;
+  white-space: nowrap;
+}
+
+.public-brand {
+  padding-bottom: 14px !important;
+}
+
+.public-ssen-logo {
+  width: 138px !important;
+  min-width: 138px !important;
+  min-height: 64px !important;
+  box-shadow: 9px 9px 0 #ffffff, 17px 17px 0 var(--ssen-red) !important;
+}
+
+.public-ssen-logo span {
+  font-size: 40px !important;
+}
+
+.public-brand strong {
+  font-size: 22px !important;
+}
+
+.public-header-drop {
+  position: relative;
+  align-self: stretch;
+  justify-content: center;
+  padding: 8px 14px 22px;
+  border-left: 1px solid rgba(255, 255, 255, 0.16);
+}
+
+.public-header-drop::after {
+  content: 'CURATED NOW';
+  position: absolute;
+  bottom: 4px;
+  left: 14px;
+  color: var(--ssen-red);
+  font-size: 9px;
+  font-weight: 950;
+  letter-spacing: 0.18em;
+}
+
+.public-category-nav {
+  position: relative;
+  display: grid !important;
+  grid-auto-columns: minmax(112px, 1fr);
+  grid-auto-flow: column;
+  gap: 8px !important;
+  align-items: stretch;
+  padding: 0 0 18px !important;
+  overflow-x: auto;
+  border: 0 !important;
+  border-radius: 0 !important;
+  background: transparent !important;
+}
+
+.public-category-nav::before {
+  content: 'CATEGORY DROPS';
+  position: absolute;
+  bottom: 1px;
+  left: 0;
+  color: rgba(255, 255, 255, 0.44);
+  font-size: 9px;
+  font-weight: 950;
+  letter-spacing: 0.16em;
+}
+
+.public-category-nav button {
+  position: relative;
+  display: grid;
+  min-width: 112px;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 3px 8px;
+  align-content: center;
+  padding: 11px 12px !important;
+  overflow: hidden;
+  border: 1px solid rgba(255, 255, 255, 0.16) !important;
+  border-radius: 2px !important;
+  color: #ffffff !important;
+  background:
+    linear-gradient(135deg, color-mix(in srgb, var(--category-accent, #f0002f) 28%, transparent), transparent 52%),
+    rgba(255, 255, 255, 0.07) !important;
+  text-align: left;
+}
+
+.public-category-nav button::after {
+  content: '';
+  position: absolute;
+  inset: auto -12px -22px auto;
+  width: 56px;
+  height: 56px;
+  background: var(--category-accent, var(--ssen-red));
+  opacity: 0.28;
+  transform: rotate(16deg);
+}
+
+.public-category-nav button span,
+.public-category-nav button strong,
+.public-category-nav button small {
+  position: relative;
+  z-index: 1;
+}
+
+.public-category-nav button span {
+  grid-column: 1 / -1;
+  color: rgba(255, 255, 255, 0.48);
+  font-size: 8px;
+  font-weight: 950;
+  letter-spacing: 0.16em;
+}
+
+.public-category-nav button strong {
+  overflow: hidden;
+  color: #ffffff;
+  font-size: 14px;
+  font-weight: 950;
+  letter-spacing: -0.04em;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.public-category-nav button small {
+  display: grid;
+  min-width: 26px;
+  height: 26px;
+  place-items: center;
+  color: #ffffff;
+  background: rgba(255, 255, 255, 0.14);
+  font-size: 12px;
+  font-weight: 950;
+}
+
+.public-category-nav button.is-active,
+.public-category-nav button:hover {
+  border-color: var(--category-accent, var(--ssen-red)) !important;
+  color: #ffffff !important;
+  background:
+    linear-gradient(135deg, var(--category-accent, var(--ssen-red)), rgba(240, 0, 47, 0.42)),
+    #111111 !important;
+  box-shadow: 0 12px 30px rgba(240, 0, 47, 0.22) !important;
+  transform: translateY(-3px) rotate(-1deg) !important;
+}
+
+.public-category-nav button.is-active small,
+.public-category-nav button:hover small {
+  color: var(--ssen-black);
+  background: #ffffff;
+}
+
+.public-header-search {
+  align-self: start;
+  margin-top: 2px;
+  padding-bottom: 14px !important;
+}
+
+.public-footer {
+  grid-template-columns: minmax(0, 0.92fr) minmax(260px, 0.58fr) !important;
+  min-height: 330px;
+  align-items: stretch !important;
+  padding: clamp(28px, 5vw, 64px) clamp(18px, 5vw, 76px) !important;
+  background:
+    linear-gradient(100deg, rgba(240, 0, 47, 0.92) 0 18%, transparent 18%),
+    repeating-linear-gradient(-8deg, rgba(255, 255, 255, 0.045) 0 1px, transparent 1px 15px),
+    #070707 !important;
+}
+
+.public-footer::before {
+  top: 18px;
+  right: -7vw;
+  bottom: auto;
+  content: 'SSEN SSEN SSEN' !important;
+  color: rgba(255, 255, 255, 0.07);
+  font-size: clamp(72px, 14vw, 180px);
+  transform: rotate(-4deg);
+}
+
+.public-footer::after {
+  content: 'PRICE DROP CLUB';
+  position: absolute;
+  right: clamp(18px, 5vw, 76px);
+  bottom: 24px;
+  color: var(--ssen-red);
+  font-size: clamp(22px, 4vw, 54px);
+  font-weight: 950;
+  line-height: 0.85;
+  letter-spacing: -0.06em;
+  text-transform: uppercase;
+}
+
+.public-footer-copy {
+  align-self: end;
+}
+
+.public-footer-copy span {
+  display: inline-flex;
+  padding: 8px 10px;
+  color: var(--ssen-black) !important;
+  background: #ffffff;
+}
+
+.public-footer-copy strong {
+  margin-top: 14px !important;
+  font-size: clamp(64px, 10vw, 142px) !important;
+  text-shadow: 5px 5px 0 var(--ssen-red);
+}
+
+.public-footer-copy p {
+  max-width: 620px;
+  font-size: 15px;
+  font-weight: 760;
+}
+
+.public-footer-tags span {
+  border-color: rgba(255, 255, 255, 0.26);
+  background: rgba(255, 255, 255, 0.08);
+}
+
+.public-footer-bottom {
+  align-self: start;
+  justify-items: end;
+  padding: 18px;
+  border: 1px solid rgba(255, 255, 255, 0.16);
+  background: rgba(255, 255, 255, 0.06);
+}
+
+.public-footer-bottom button {
+  border-color: transparent !important;
+  color: #ffffff;
+  background: var(--ssen-red) !important;
+}
+
+@media (max-width: 1180px) {
+  .public-header {
+    grid-template-columns: auto minmax(0, 1fr) !important;
+  }
+
+  .public-brand {
+    padding-bottom: 16px !important;
+  }
+
+  .public-category-nav {
+    grid-column: 1 / -1;
+  }
+
+  .public-header-search {
+    grid-column: 1 / -1;
+  }
+}
+
+@media (max-width: 720px) {
+  .public-header::before {
+    height: 16px;
+    font-size: 9px;
+    line-height: 16px;
+  }
+
+  .public-category-nav {
+    grid-auto-columns: minmax(98px, 0.62fr);
+    padding-bottom: 17px !important;
+  }
+
+  .public-category-nav button {
+    min-width: 98px;
+    padding: 10px !important;
+  }
+
+  .public-category-nav button strong {
+    font-size: 13px;
+  }
+
+  .public-footer {
+    grid-template-columns: 1fr !important;
+    min-height: 0;
+  }
+
+  .public-footer-bottom {
+    justify-items: start;
+  }
+
+  .public-footer::after {
+    position: relative;
+    right: auto;
+    bottom: auto;
+  }
+}

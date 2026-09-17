@@ -45,6 +45,12 @@ export function PublicBlogHome({
     () => categories.filter((category) => category.trim()),
     [categories],
   )
+  const categoryCounts = useMemo(() => {
+    return publishedPosts.reduce<Record<string, number>>((counts, post) => {
+      counts[post.category] = (counts[post.category] ?? 0) + 1
+      return counts
+    }, {})
+  }, [publishedPosts])
 
   const filteredPosts = useMemo(() => {
     const keyword = query.trim().toLowerCase()
@@ -212,7 +218,9 @@ export function PublicBlogHome({
             type="button"
             onClick={() => selectCategory('all')}
           >
-            전체
+            <span>ALL</span>
+            <strong>전체</strong>
+            <small>{publishedPosts.length}</small>
           </button>
           {publicCategories.map((category) => (
             <button
@@ -222,7 +230,9 @@ export function PublicBlogHome({
               type="button"
               onClick={() => selectCategory(category)}
             >
-              {category}
+              <span>DROP</span>
+              <strong>{category}</strong>
+              <small>{categoryCounts[category] ?? 0}</small>
             </button>
           ))}
         </nav>
