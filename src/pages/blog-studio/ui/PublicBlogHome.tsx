@@ -376,28 +376,30 @@ export function PublicBlogHome({
               />
               <div className="public-reader-scroll" onScroll={updateReadingProgress}>
                 <div className="public-reader-book">
-                  <aside className="public-reader-cover" style={getCategoryStyle(selectedPost.category)}>
-                    <PostImage post={selectedPost} />
-                    <div>
-                      <span>{selectedPost.category}</span>
-                      <strong>SSEN PICK</strong>
-                    </div>
-                  </aside>
-
                   <div className="public-reader-page">
-                    <div className="public-reader-meta">
-                      <span>{formatDate(selectedPost.updatedAt)}</span>
-                    </div>
-                    <Dialog.Title className="public-reader-title">{selectedPost.title}</Dialog.Title>
-                    <Dialog.Description id="reader-description" className="public-reader-description">
-                      {selectedPost.excerpt}
-                    </Dialog.Description>
-                    <div className="public-reader-tags">
-                      {selectedPost.tags.map((tag) => (
-                        <span key={tag}>#{tag}</span>
-                      ))}
-                    </div>
-                    <ProductLinkPanel post={selectedPost} />
+                    <section className="product-detail-hero" style={getCategoryStyle(selectedPost.category)}>
+                      <div className="product-detail-image">
+                        <PostImage post={selectedPost} />
+                        <span>SSEN PICK</span>
+                      </div>
+                      <div className="product-detail-summary">
+                        <div className="public-reader-meta">
+                          <span>{selectedPost.category}</span>
+                          <span>{formatDate(selectedPost.updatedAt)}</span>
+                        </div>
+                        <Dialog.Title className="public-reader-title">{selectedPost.title}</Dialog.Title>
+                        <ProductPricePreview post={selectedPost} />
+                        <Dialog.Description id="reader-description" className="public-reader-description">
+                          {selectedPost.excerpt}
+                        </Dialog.Description>
+                        <div className="public-reader-tags">
+                          {selectedPost.tags.map((tag) => (
+                            <span key={tag}>#{tag}</span>
+                          ))}
+                        </div>
+                        <ProductLinkPanel post={selectedPost} />
+                      </div>
+                    </section>
                     <RenderedContent content={selectedPost.content} />
                   </div>
                 </div>
@@ -565,11 +567,11 @@ function ProductLinkPanel({ post }: { post: Post }) {
         <span>
           <ShoppingBag size={16} /> 구매처 비교
         </span>
-        <strong>클릭하면 등록된 제휴 링크로 이동합니다.</strong>
+        <strong>가장 괜찮은 구매처를 바로 확인하세요.</strong>
       </div>
       <div className="product-buy-list">
-        {links.map((link) => (
-          <a href={link.href} key={link.id} target="_blank" rel="noreferrer sponsored">
+        {links.map((link, index) => (
+          <a className={index === 0 ? 'is-primary' : ''} href={link.href} key={link.id} target="_blank" rel="noreferrer sponsored">
             <span>
               <b>{link.mall || '쇼핑몰'}</b>
               {link.badge && <em>{link.badge}</em>}
