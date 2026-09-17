@@ -650,6 +650,7 @@ function normalizePosts(values: unknown, categoryHints: unknown = []): Post[] {
           : [],
         content: readString(value.content, '<h1>새 글</h1><p></p>'),
         coverImage: readString(value.coverImage, ''),
+        purchaseTitle: readString(value.purchaseTitle, '최저가 제휴몰 바로가기'),
         productLinks: normalizeProductLinks(value.productLinks),
         status: normalizePostStatus(value.status),
         createdAt: readString(value.createdAt, new Date().toISOString()),

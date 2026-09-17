@@ -426,6 +426,14 @@ export function PostEditor({ categories, post, onCoverUpload, onUpdate }: PostEd
               <ExternalLink size={15} /> 링크 추가
             </button>
           </div>
+          <label className="product-link-url">
+            구매바 상단 문구
+            <input
+              value={post.purchaseTitle}
+              placeholder="지금 제일 쎈 가격으로 이동"
+              onChange={(event) => onUpdate({ purchaseTitle: event.target.value })}
+            />
+          </label>
           {post.productLinks.length ? (
             post.productLinks.map((link, index) => (
               <div className="product-link-card" key={link.id}>

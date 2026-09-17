@@ -18,6 +18,7 @@ export type Post = {
   tags: string[]
   content: string
   coverImage: string
+  purchaseTitle: string
   productLinks: ProductLink[]
   status: PostStatus
   createdAt: string

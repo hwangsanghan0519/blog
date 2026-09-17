@@ -12,6 +12,7 @@ export const starterPosts: Post[] = [
     content:
       '<h1>이 상품을 고른 이유</h1><p>손목 부담이 적고, 여러 기기를 오가며 쓰기 좋은 생산성 마우스입니다.</p><h2>체크 포인트</h2><ul><li><p>조용한 클릭감</p></li><li><p>긴 배터리와 USB-C 충전</p></li><li><p>가로 스크롤 휠 지원</p></li></ul><blockquote><p>가격 변동이 큰 상품이라 구매 전 여러 쇼핑몰을 비교하는 편이 좋습니다.</p></blockquote>',
     coverImage: '',
+    purchaseTitle: '지금 제일 쎈 가격으로 이동',
     productLinks: [
       {
         id: crypto.randomUUID(),
@@ -45,6 +46,7 @@ export const createEmptyPost = (): Post => ({
   tags: [],
   content: '<h1>상품 상세</h1><p>가격, 장점, 구매 전 체크할 점을 정리하세요.</p>',
   coverImage: '',
+  purchaseTitle: '최저가 제휴몰 바로가기',
   productLinks: [],
   status: 'draft',
   createdAt: new Date().toISOString(),

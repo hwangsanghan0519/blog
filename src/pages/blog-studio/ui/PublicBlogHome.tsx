@@ -403,6 +403,7 @@ export function PublicBlogHome({
                   </div>
                 </div>
               </div>
+              <ProductBottomBuyBar post={selectedPost} />
             </Dialog.Content>
           )}
           {selectedPost && (
@@ -583,6 +584,26 @@ function ProductLinkPanel({ post }: { post: Post }) {
         ))}
       </div>
     </section>
+  )
+}
+
+function ProductBottomBuyBar({ post }: { post: Post }) {
+  const links = post.productLinks.filter((link) => link.href.trim())
+
+  if (!links.length) return null
+
+  return (
+    <nav className="product-bottom-buy-bar" aria-label="제휴몰 바로가기">
+      <strong>{post.purchaseTitle || '최저가 제휴몰 바로가기'}</strong>
+      <div>
+        {links.map((link, index) => (
+          <a className={index === 0 ? 'is-primary' : ''} href={link.href} key={link.id} target="_blank" rel="noreferrer sponsored">
+            <span>{link.mall || '쇼핑몰'}</span>
+            <b>{link.price || '가격 확인'}</b>
+          </a>
+        ))}
+      </div>
+    </nav>
   )
 }
 
