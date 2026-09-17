@@ -207,7 +207,6 @@ export function PublicBlogHome({
               <path className="public-ssen-stroke is-fast" d="M23 91 C80 77 146 73 229 83" />
               <path className="public-ssen-drip" d="M230 43 C232 64 231 84 236 111" />
             </svg>
-            <small>drop market</small>
           </span>
           <strong>SSEN</strong>
         </button>

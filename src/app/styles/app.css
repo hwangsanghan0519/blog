@@ -7904,59 +7904,55 @@ button.category-row.is-selected,
 }
 
 .public-ssen-logo {
-  width: 214px !important;
-  min-width: 214px !important;
-  min-height: 92px !important;
+  width: 238px !important;
+  min-width: 238px !important;
+  min-height: 104px !important;
   display: grid;
   place-items: center;
   overflow: visible !important;
   border: 0 !important;
   background: transparent !important;
   box-shadow: none !important;
-  transform: rotate(-4deg) skew(-5deg) !important;
+  transform: rotate(-3deg) skew(-4deg) !important;
 }
 
 .public-ssen-logo::before {
   content: '';
   position: absolute;
-  inset: 20px 2px 4px 18px !important;
+  inset: 25px 4px 12px 18px !important;
   z-index: 0;
   width: auto !important;
   height: auto !important;
   border: 0 !important;
   background: var(--ssen-red) !important;
-  opacity: 0.86;
-  transform: translate(8px, 9px) skew(-12deg);
-  clip-path: polygon(8% 38%, 100% 22%, 95% 54%, 18% 82%, 0 68%);
+  opacity: 0.9;
+  transform: translate(10px, 10px) skew(-13deg);
+  clip-path: polygon(6% 42%, 98% 20%, 96% 46%, 18% 78%, 0 66%);
 }
 
 .public-ssen-logo::after {
-  right: 8px !important;
-  bottom: 5px !important;
-  z-index: 3;
-  padding: 5px 9px !important;
-  transform: rotate(-4deg) !important;
+  content: none !important;
 }
 
 .public-ssen-mark {
   position: relative;
   z-index: 2;
-  width: 224px;
-  height: 100px;
+  width: 250px;
+  height: 112px;
   overflow: visible;
-  filter: drop-shadow(4px 4px 0 #000000) drop-shadow(8px 8px 0 var(--ssen-red));
+  filter: drop-shadow(3px 3px 0 #000000) drop-shadow(7px 7px 0 var(--ssen-red));
 }
 
 .public-ssen-mark text {
   fill: #ffffff;
   stroke: #ffffff;
-  stroke-width: 1.5;
+  stroke-width: 1.2;
   font-family: "Brush Script MT", "Segoe Script", cursive;
-  font-size: 76px;
+  font-size: 82px;
   font-weight: 950;
   letter-spacing: -0.18em;
   text-transform: lowercase;
-  transform: skewX(-14deg) rotate(-3deg);
+  transform: skewX(-13deg) rotate(-2.5deg);
   transform-origin: 110px 62px;
 }
 
@@ -7970,30 +7966,45 @@ button.category-row.is-selected,
 }
 
 .public-ssen-slash {
-  stroke-width: 13;
+  stroke-width: 12;
 }
 
 .public-ssen-stroke {
-  stroke-width: 10;
+  stroke-width: 9;
 }
 
 .public-ssen-stroke.is-fast {
-  stroke-width: 7;
+  stroke-width: 6;
 }
 
 .public-ssen-drip {
-  stroke-width: 11;
+  stroke-width: 10;
 }
 
 .public-ssen-logo small {
-  right: 12px !important;
-  bottom: -2px !important;
-  z-index: 4;
-  padding: 3px 5px !important;
+  display: none !important;
+}
+
+.public-brand strong {
+  position: relative;
+  margin-left: 8px;
+  padding: 9px 11px 8px !important;
+  border: 1px solid rgba(255, 255, 255, 0.22);
   color: #ffffff !important;
-  background: var(--ssen-black) !important;
-  font-size: 9px !important;
-  transform: rotate(-4deg) !important;
+  background: rgba(255, 255, 255, 0.07) !important;
+  font-size: 15px !important;
+  line-height: 1 !important;
+  letter-spacing: 0.02em !important;
+  text-transform: uppercase !important;
+}
+
+.public-brand strong::after {
+  content: 'DROP MARKET' !important;
+  display: block;
+  margin-top: 4px;
+  color: var(--ssen-red) !important;
+  font-size: 8px !important;
+  letter-spacing: 0.18em !important;
 }
 
 .public-header-drop {
@@ -8240,22 +8251,22 @@ button.category-row.is-selected,
   }
 
   .public-ssen-logo {
-    width: 146px !important;
-    min-width: 146px !important;
-    min-height: 66px !important;
+    width: 166px !important;
+    min-width: 166px !important;
+    min-height: 74px !important;
   }
 
   .public-ssen-logo::before {
-    inset: 16px 4px 4px 12px !important;
+    inset: 18px 3px 7px 10px !important;
   }
 
   .public-ssen-mark {
-    width: 152px;
-    height: 70px;
+    width: 172px;
+    height: 78px;
   }
 
   .public-ssen-mark text {
-    font-size: 58px;
+    font-size: 62px;
   }
 
   .public-ssen-slash {
