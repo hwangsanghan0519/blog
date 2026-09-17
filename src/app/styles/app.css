@@ -9962,6 +9962,45 @@ button.category-row.is-selected,
   }
 }
 
+/* Single-row category pages: seven taller photos per swipe page. */
+.public-category-track.keen-slider .public-category-page.keen-slider__slide {
+  grid-template-columns: repeat(7, minmax(0, 1fr));
+  grid-template-rows: 162px;
+  height: 162px !important;
+}
+
+.public-category-track.keen-slider .public-category-page .public-category-slide {
+  height: 162px !important;
+  min-height: 162px !important;
+}
+
+.public-category-track.keen-slider .public-category-page .public-category-slide strong {
+  right: 7px;
+  bottom: 7px;
+  left: 7px;
+  font-size: 10px;
+}
+
+@media (max-width: 720px) {
+  .public-category-track.keen-slider .public-category-page.keen-slider__slide {
+    grid-template-columns: repeat(7, minmax(0, 1fr));
+    grid-template-rows: 126px;
+    height: 126px !important;
+  }
+
+  .public-category-track.keen-slider .public-category-page .public-category-slide {
+    height: 126px !important;
+    min-height: 126px !important;
+  }
+
+  .public-category-track.keen-slider .public-category-page .public-category-slide strong {
+    right: 4px;
+    bottom: 4px;
+    left: 4px;
+    font-size: 7px;
+  }
+}
+
 /* Keen-powered category slider: one row, six visible items on desktop. */
 .public-category-track.keen-slider {
   display: flex !important;
@@ -10184,5 +10223,44 @@ button.category-row.is-selected,
     bottom: 4px;
     left: 4px;
     font-size: 8px;
+  }
+}
+
+/* Final category layout: one row, seven items per page, taller portraits. */
+.public-category-track.keen-slider .public-category-page.keen-slider__slide {
+  grid-template-columns: repeat(7, minmax(0, 1fr)) !important;
+  grid-template-rows: 162px !important;
+  height: 162px !important;
+}
+
+.public-category-track.keen-slider .public-category-page .public-category-slide {
+  height: 162px !important;
+  min-height: 162px !important;
+}
+
+.public-category-track.keen-slider .public-category-page .public-category-slide strong {
+  right: 7px;
+  bottom: 7px;
+  left: 7px;
+  font-size: 10px;
+}
+
+@media (max-width: 720px) {
+  .public-category-track.keen-slider .public-category-page.keen-slider__slide {
+    grid-template-columns: repeat(7, minmax(0, 1fr)) !important;
+    grid-template-rows: 126px !important;
+    height: 126px !important;
+  }
+
+  .public-category-track.keen-slider .public-category-page .public-category-slide {
+    height: 126px !important;
+    min-height: 126px !important;
+  }
+
+  .public-category-track.keen-slider .public-category-page .public-category-slide strong {
+    right: 4px;
+    bottom: 4px;
+    left: 4px;
+    font-size: 7px;
   }
 }
