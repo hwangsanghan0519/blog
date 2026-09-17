@@ -29,10 +29,12 @@ export function PublicBlogHome({
 }: PublicBlogHomeProps) {
   const [selectedId, setSelectedId] = useState('')
   const [currentSlide, setCurrentSlide] = useState(0)
+  const [categoryPageIndex, setCategoryPageIndex] = useState(0)
   const [readingProgress, setReadingProgress] = useState(0)
   const headerRef = useRef<HTMLElement>(null)
   const latestHeadRef = useRef<HTMLDivElement>(null)
   const pendingCategoryScrollRef = useRef<'top' | 'latest' | null>(null)
+  const categorySwipeRef = useRef({ active: false, blockClick: false, moved: false, pointerId: -1, startX: 0, startY: 0, x: 0 })
   const sliderPausedRef = useRef(false)
 
   const publishedPosts = useMemo(
@@ -78,11 +80,6 @@ export function PublicBlogHome({
       setCurrentSlide(instance.track.details.rel)
     },
   })
-  const [categorySliderRef, categorySlider] = useKeenSlider<HTMLDivElement>({
-    rubberband: true,
-    slides: { perView: 1, spacing: 0 },
-  })
-
   useEffect(() => {
     if (topPosts.length < 2) return undefined
 
@@ -96,8 +93,25 @@ export function PublicBlogHome({
   }, [slider, topPosts.length])
 
   useEffect(() => {
-    categorySlider.current?.update()
-  }, [categoryPages.length, categorySlider])
+    const timer = window.setTimeout(() => {
+      setCategoryPageIndex((currentIndex) => Math.min(currentIndex, Math.max(0, categoryPages.length - 1)))
+    }, 0)
+
+    return () => window.clearTimeout(timer)
+  }, [categoryPages.length])
+
+  useEffect(() => {
+    if (categoryFilter === 'all') return undefined
+
+    const categoryIndex = publicCategories.indexOf(categoryFilter)
+    if (categoryIndex < 0) return undefined
+
+    const timer = window.setTimeout(() => {
+      setCategoryPageIndex(Math.floor(categoryIndex / 14))
+    }, 0)
+
+    return () => window.clearTimeout(timer)
+  }, [categoryFilter, publicCategories])
 
   useEffect(() => {
     const syncViewFromUrl = () => {
@@ -208,6 +222,11 @@ export function PublicBlogHome({
   }
 
   const selectCategory = (category: string) => {
+    const categoryIndex = publicCategories.indexOf(category)
+    if (categoryIndex >= 0) {
+      setCategoryPageIndex(Math.floor(categoryIndex / 14))
+    }
+
     onCategoryFilterChange(category)
     syncCategoryParam(category === 'all' ? '' : category)
 
@@ -231,6 +250,67 @@ export function PublicBlogHome({
     }, 40)
   }
 
+  const moveCategoryPage = (direction: -1 | 1) => {
+    setCategoryPageIndex((currentIndex) => clamp(currentIndex + direction, 0, Math.max(0, categoryPages.length - 1)))
+  }
+
+  const startCategorySwipe = (event: PointerEvent<HTMLDivElement>) => {
+    if (event.pointerType === 'mouse' && event.button !== 0) return
+
+    categorySwipeRef.current = {
+      active: true,
+      blockClick: false,
+      moved: false,
+      pointerId: event.pointerId,
+      startX: event.clientX,
+      startY: event.clientY,
+      x: event.clientX,
+    }
+    event.currentTarget.setPointerCapture(event.pointerId)
+  }
+
+  const moveCategorySwipe = (event: PointerEvent<HTMLDivElement>) => {
+    const swipe = categorySwipeRef.current
+    if (!swipe.active || swipe.pointerId !== event.pointerId) return
+
+    const deltaX = event.clientX - swipe.startX
+    const deltaY = event.clientY - swipe.startY
+    swipe.x = event.clientX
+
+    if (Math.abs(deltaX) > 12 && Math.abs(deltaX) > Math.abs(deltaY)) {
+      swipe.moved = true
+      event.preventDefault()
+    }
+  }
+
+  const stopCategorySwipe = (event: PointerEvent<HTMLDivElement>) => {
+    const swipe = categorySwipeRef.current
+    if (!swipe.active || swipe.pointerId !== event.pointerId) return
+
+    if (event.currentTarget.hasPointerCapture(event.pointerId)) {
+      event.currentTarget.releasePointerCapture(event.pointerId)
+    }
+
+    const deltaX = swipe.x - swipe.startX
+    if (swipe.moved && Math.abs(deltaX) > 44) {
+      moveCategoryPage(deltaX < 0 ? 1 : -1)
+    }
+
+    categorySwipeRef.current.active = false
+    categorySwipeRef.current.blockClick = swipe.moved
+    window.setTimeout(() => {
+      categorySwipeRef.current.blockClick = false
+      categorySwipeRef.current.moved = false
+    }, 120)
+  }
+
+  const blockCategoryClickAfterSwipe = (event: MouseEvent<HTMLDivElement>) => {
+    if (!categorySwipeRef.current.blockClick) return
+
+    event.preventDefault()
+    event.stopPropagation()
+  }
+
   return (
     <div className="public-blog">
       <header ref={headerRef} className="public-header">
@@ -251,11 +331,20 @@ export function PublicBlogHome({
             <small>{publishedPosts.length}</small>
           </button>
           <div
-            ref={categorySliderRef}
-            className="keen-slider public-category-track"
+            className="public-category-carousel"
+            onClickCapture={blockCategoryClickAfterSwipe}
+            onPointerCancel={stopCategorySwipe}
+            onPointerDown={startCategorySwipe}
+            onPointerLeave={stopCategorySwipe}
+            onPointerMove={moveCategorySwipe}
+            onPointerUp={stopCategorySwipe}
           >
+            <div
+              className="public-category-page-strip"
+              style={{ transform: `translate3d(-${categoryPageIndex * 100}%, 0, 0)` }}
+            >
             {categoryPages.map((page, pageIndex) => (
-              <div className="keen-slider__slide public-category-page" key={`category-page-${pageIndex}`}>
+              <div className="public-category-page" key={`category-page-${pageIndex}`}>
                 {page.map((category) => (
                   <button
                     className={`public-category-slide ${categoryFilter === category ? 'is-active' : ''}`}
@@ -272,6 +361,7 @@ export function PublicBlogHome({
                 ))}
               </div>
             ))}
+            </div>
           </div>
         </nav>
 
@@ -700,6 +790,10 @@ function scrollToHeaderEdge(target: HTMLElement | null, header: HTMLElement | nu
     top: Math.max(0, targetTop - headerHeight),
     behavior: 'smooth',
   })
+}
+
+function clamp(value: number, min: number, max: number) {
+  return Math.min(Math.max(value, min), max)
 }
 
 function syncPostParam(slug: string) {

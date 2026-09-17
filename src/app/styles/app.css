@@ -10265,6 +10265,97 @@ button.category-row.is-selected,
   }
 }
 
+/* Stable custom category pager: exact 7x2 pages with native-feeling swipe. */
+.public-category-nav::after {
+  display: none !important;
+}
+
+.public-category-carousel {
+  width: 100%;
+  min-width: 0;
+  overflow: hidden;
+  padding: 0 0 8px;
+  cursor: grab;
+  touch-action: pan-y pinch-zoom;
+  user-select: none;
+}
+
+.public-category-carousel:active {
+  cursor: grabbing;
+}
+
+.public-category-page-strip {
+  display: flex;
+  width: 100%;
+  transition: transform 260ms cubic-bezier(0.22, 1, 0.36, 1);
+  will-change: transform;
+}
+
+.public-category-page {
+  display: grid;
+  flex: 0 0 100%;
+  grid-template-columns: repeat(7, minmax(0, 1fr));
+  grid-template-rows: repeat(2, 112px);
+  gap: 2px;
+  width: 100%;
+  min-width: 100%;
+  height: 226px;
+}
+
+.public-category-page .public-category-slide {
+  width: 100% !important;
+  min-width: 0 !important;
+  max-width: none !important;
+  height: 112px !important;
+  min-height: 112px !important;
+  margin: 0 !important;
+}
+
+.public-category-page .public-category-visual {
+  inset: 0 !important;
+  background:
+    radial-gradient(circle at 50% 30%, rgba(255, 255, 255, 0.1), transparent 44%),
+    #101010 !important;
+}
+
+.public-category-page .public-category-visual img {
+  object-fit: contain !important;
+  object-position: center center !important;
+  padding: 3px;
+  -webkit-user-drag: none;
+}
+
+.public-category-page .public-category-slide strong {
+  right: 6px;
+  bottom: 6px;
+  left: 6px;
+  font-size: 9px;
+}
+
+@media (max-width: 720px) {
+  .public-category-carousel {
+    padding-bottom: 7px;
+  }
+
+  .public-category-page {
+    grid-template-columns: repeat(7, minmax(0, 1fr));
+    grid-template-rows: repeat(2, 86px);
+    height: 174px;
+  }
+
+  .public-category-page .public-category-slide {
+    height: 86px !important;
+    min-height: 86px !important;
+  }
+
+  .public-category-page .public-category-slide strong {
+    right: 4px;
+    bottom: 4px;
+    left: 4px;
+    font-size: 7px;
+  }
+}
+
 /* Final requested layout: wider logo area, seven columns by two rows per page. */
 @media (min-width: 900px) {
   .public-header {
