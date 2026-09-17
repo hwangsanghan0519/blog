@@ -32,6 +32,7 @@ export type AdBannerSettings = {
 
 export type HeroVideoSettings = {
   enabled: boolean
+  visibilityConfigured: boolean
   youtubeUrl: string
   eyebrow: string
   title: string
@@ -108,6 +109,7 @@ const DEFAULT_AD_BANNERS = [createDefaultAdBanner(0), createDefaultAdBanner(1)]
 
 const DEFAULT_HERO_VIDEO: HeroVideoSettings = {
   enabled: false,
+  visibilityConfigured: false,
   youtubeUrl: '',
   eyebrow: 'NOW PLAYING',
   title: 'SSEN VIDEO PICK',
@@ -834,12 +836,16 @@ function normalizeAdBanners(banners: Partial<AdBannerSettings>[]) {
 }
 
 function normalizeHeroVideo(value?: Partial<HeroVideoSettings>): HeroVideoSettings {
+  const youtubeUrl = typeof value?.youtubeUrl === 'string' ? value.youtubeUrl : ''
+  const visibilityConfigured = Boolean(value?.visibilityConfigured)
+
   return {
     ...DEFAULT_HERO_VIDEO,
     ...value,
-    enabled: Boolean(value?.enabled),
+    enabled: visibilityConfigured ? Boolean(value?.enabled) : Boolean(youtubeUrl.trim()),
     eyebrow: typeof value?.eyebrow === 'string' ? value.eyebrow : DEFAULT_HERO_VIDEO.eyebrow,
     title: typeof value?.title === 'string' ? value.title : DEFAULT_HERO_VIDEO.title,
-    youtubeUrl: typeof value?.youtubeUrl === 'string' ? value.youtubeUrl : '',
+    visibilityConfigured,
+    youtubeUrl,
   }
 }

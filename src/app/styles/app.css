@@ -3587,7 +3587,7 @@ button.category-row.is-selected {
 .public-trend-video {
   position: relative;
   width: 100%;
-  aspect-ratio: 16 / 9;
+  aspect-ratio: 2 / 1;
   overflow: hidden;
   color: #ffffff;
   background: #050505;
@@ -3596,12 +3596,15 @@ button.category-row.is-selected {
 
 .public-trend-video iframe {
   position: absolute;
-  inset: 0;
+  top: 50%;
+  right: 0;
+  left: 0;
   z-index: 0;
   width: 100%;
-  height: 100%;
+  height: 112.5%;
   border: 0;
   pointer-events: none;
+  transform: translateY(-50%);
 }
 
 .public-trend-video-shade {
@@ -3678,12 +3681,14 @@ button.category-row.is-selected {
 
 @media (max-width: 720px) {
   .public-trend-video {
-    aspect-ratio: 4 / 5;
+    aspect-ratio: 9 / 10;
   }
 
   .public-trend-video iframe {
+    top: 0;
     left: 50%;
-    width: 222.23%;
+    width: 200%;
+    height: 100%;
     max-width: none;
     transform: translateX(-50%);
   }
@@ -9223,6 +9228,426 @@ button.category-row.is-selected,
   transform: translate(2px, 2px);
 }
 
+/* The sticky masthead folds into a single-row rail only while scrolling down. */
+.public-header,
+.public-header .public-brand,
+.public-header .public-ssen-logo,
+.public-header .public-ssen-logo img,
+.public-header .public-brand-message,
+.public-header .public-category-page-strip,
+.public-header .public-category-column {
+  transition-duration: 360ms;
+  transition-timing-function: cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.public-header {
+  transition-property: grid-template-columns, gap, padding, box-shadow;
+}
+
+.public-header .public-brand {
+  transition-property: gap, padding;
+}
+
+.public-header .public-ssen-logo,
+.public-header .public-ssen-logo img {
+  transition-property: width, min-height, max-height;
+}
+
+.public-header .public-brand-message {
+  transition-property: opacity, transform;
+}
+
+.public-header .public-category-page-strip {
+  transition-property: height !important;
+}
+
+.public-header .public-category-column {
+  transition-property: width, min-width, max-width, height;
+}
+
+@media (min-width: 900px) {
+  .public-header .public-category-page-strip {
+    height: 303px !important;
+    overflow: hidden;
+  }
+
+  .public-header.is-scroll-compact {
+    grid-template-columns: clamp(320px, 28vw, 390px) minmax(0, 1fr) !important;
+    gap: clamp(14px, 2vw, 24px) !important;
+    padding-block: 6px !important;
+    box-shadow: 0 14px 34px rgba(0, 0, 0, 0.18);
+  }
+
+  .public-header.is-scroll-compact .public-brand {
+    flex-direction: row;
+    align-items: center !important;
+    justify-content: center !important;
+    gap: 12px;
+    padding: 0 8px !important;
+  }
+
+  .public-header.is-scroll-compact .public-brand .public-ssen-logo {
+    flex: 0 0 164px;
+    width: 164px !important;
+    min-height: 52px !important;
+    place-items: center !important;
+  }
+
+  .public-header.is-scroll-compact .public-brand .public-ssen-logo img {
+    width: 160px !important;
+    max-height: 58px !important;
+    object-position: center;
+  }
+
+  .public-header.is-scroll-compact .public-brand-message {
+    width: auto;
+    min-width: 0;
+    align-items: flex-start;
+    padding: 0;
+    transform: translateY(1px);
+  }
+
+  .public-header.is-scroll-compact .public-brand-kicker {
+    padding: 3px 6px 2px;
+    font-size: 7px;
+  }
+
+  .public-header.is-scroll-compact .public-brand-title {
+    align-items: flex-start;
+    font-size: clamp(23px, 2vw, 29px);
+    line-height: 0.9;
+  }
+
+  .public-header.is-scroll-compact .public-brand-caption {
+    margin: 2px 0 0 !important;
+    font-size: 13px;
+  }
+
+  .public-header.is-scroll-compact .public-category-page-strip {
+    height: 150px !important;
+  }
+
+  .public-header.is-scroll-compact .public-category-column {
+    grid-template-columns: repeat(2, 120px) !important;
+    grid-template-rows: 150px !important;
+    gap: 3px;
+    width: 243px !important;
+    min-width: 243px !important;
+    max-width: 243px !important;
+    height: 150px !important;
+  }
+
+  .public-header.is-scroll-compact .public-category-column .public-category-slide {
+    width: 120px !important;
+    min-width: 120px !important;
+    max-width: 120px !important;
+    height: 150px !important;
+  }
+}
+
+@media (max-width: 899px) {
+  .public-header.is-scroll-compact {
+    grid-template-columns: 108px minmax(0, 1fr) !important;
+    gap: 8px !important;
+    padding-block: 5px !important;
+    box-shadow: 0 12px 28px rgba(0, 0, 0, 0.2);
+  }
+
+  .public-header.is-scroll-compact .public-brand {
+    width: 108px !important;
+    align-items: center !important;
+    justify-content: center !important;
+    padding: 0 5px !important;
+  }
+
+  .public-header.is-scroll-compact .public-brand .public-ssen-logo,
+  .public-header.is-scroll-compact .public-brand .public-ssen-logo img {
+    width: 98px !important;
+    min-height: 34px !important;
+    max-height: 42px !important;
+    object-position: center;
+  }
+
+  .public-header.is-scroll-compact .public-brand-message {
+    display: none !important;
+  }
+
+  .public-header.is-scroll-compact .public-category-page-strip {
+    height: 110px !important;
+    overflow: hidden;
+  }
+
+  .public-header.is-scroll-compact .public-category-column {
+    grid-template-columns: repeat(2, 88px) !important;
+    grid-template-rows: 110px !important;
+    gap: 3px;
+    width: 179px !important;
+    min-width: 179px !important;
+    max-width: 179px !important;
+    height: 110px !important;
+  }
+
+  .public-header.is-scroll-compact .public-category-column .public-category-slide {
+    width: 88px !important;
+    min-width: 88px !important;
+    max-width: 88px !important;
+    height: 110px !important;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .public-header,
+  .public-header * {
+    transition-duration: 0.01ms !important;
+  }
+}
+
+/* Stable dual-rail header: the sticky box never changes height, so reversing
+   scroll cannot push the restored two-row rail away from the masthead. */
+.public-header {
+  isolation: isolate;
+  overflow: visible;
+  border-bottom: 0 !important;
+  background: transparent !important;
+  transition-property: grid-template-columns, gap, padding !important;
+}
+
+.public-header::after {
+  content: '';
+  position: absolute;
+  inset: 0 0 auto;
+  z-index: -1;
+  height: 100%;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+  background:
+    linear-gradient(90deg, rgba(240, 0, 47, 0.28), transparent 24%),
+    linear-gradient(180deg, rgba(255, 255, 255, 0.08), transparent),
+    rgba(6, 6, 6, 0.92);
+  box-shadow: 0 10px 28px rgba(0, 0, 0, 0.14);
+  backdrop-filter: blur(22px);
+  pointer-events: none;
+  transition: height 300ms cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.public-category-compact {
+  display: none !important;
+  width: 100%;
+  min-width: 0;
+  overflow: hidden;
+}
+
+.public-category-compact-track.keen-slider {
+  width: 100%;
+  overflow: hidden;
+  touch-action: pan-y pinch-zoom;
+}
+
+.public-category-compact-track .public-category-slide.keen-slider__slide {
+  flex: 0 0 120px !important;
+  width: 120px !important;
+  min-width: 120px !important;
+  max-width: 120px !important;
+  height: 150px !important;
+  min-height: 150px !important;
+  aspect-ratio: 4 / 5;
+}
+
+.public-category-compact-track .public-category-slide strong {
+  right: 8px;
+  bottom: 8px;
+  left: 8px;
+  display: block;
+  padding: 6px 7px 5px;
+  overflow: hidden;
+  border-left: 3px solid #f0002f;
+  color: #ffffff;
+  background: rgba(8, 8, 8, 0.78);
+  font-size: 11px;
+  font-weight: 950;
+  line-height: 1;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  backdrop-filter: blur(7px);
+}
+
+.public-category-compact-track .public-category-slide small {
+  top: 7px;
+  right: 7px;
+  bottom: auto;
+  left: auto;
+}
+
+.public-header.is-scroll-compact {
+  align-items: start !important;
+  pointer-events: none;
+}
+
+.public-header.is-scroll-compact::after {
+  height: 164px;
+}
+
+.public-header.is-scroll-compact .public-brand,
+.public-header.is-scroll-compact .public-category-compact {
+  pointer-events: auto;
+}
+
+.public-header.is-scroll-compact .public-category-nav {
+  display: none !important;
+}
+
+.public-header.is-scroll-compact .public-category-compact {
+  display: block !important;
+}
+
+@media (min-width: 900px) {
+  .public-header,
+  .public-header.is-scroll-compact {
+    height: 321px !important;
+    min-height: 321px !important;
+  }
+
+  .public-header.is-scroll-compact .public-category-compact {
+    align-self: start;
+    padding-top: 1px;
+  }
+}
+
+@media (min-width: 721px) and (max-width: 899px) {
+  .public-header,
+  .public-header.is-scroll-compact {
+    height: 462px !important;
+    min-height: 462px !important;
+  }
+
+  .public-header.is-scroll-compact::after {
+    height: 124px;
+  }
+
+  .public-header.is-scroll-compact .public-category-compact-track .public-category-slide.keen-slider__slide {
+    flex-basis: 88px !important;
+    width: 88px !important;
+    min-width: 88px !important;
+    max-width: 88px !important;
+    height: 110px !important;
+    min-height: 110px !important;
+  }
+
+  .public-header.is-scroll-compact .public-category-compact-track .public-category-slide strong {
+    right: 5px;
+    bottom: 5px;
+    left: 5px;
+    padding: 5px 5px 4px;
+    font-size: 9px;
+  }
+}
+
+@media (max-width: 720px) {
+  .public-header,
+  .public-header.is-scroll-compact {
+    height: 414px !important;
+    min-height: 414px !important;
+  }
+
+  .public-header.is-scroll-compact::after {
+    height: 120px;
+  }
+
+  .public-header.is-scroll-compact .public-category-compact-track .public-category-slide.keen-slider__slide {
+    flex-basis: 88px !important;
+    width: 88px !important;
+    min-width: 88px !important;
+    max-width: 88px !important;
+    height: 110px !important;
+    min-height: 110px !important;
+  }
+
+  .public-header.is-scroll-compact .public-category-compact-track .public-category-slide strong {
+    right: 5px;
+    bottom: 5px;
+    left: 5px;
+    padding: 5px 5px 4px;
+    font-size: 9px;
+  }
+}
+
+/* Fixed masthead stage: preserve its original document slot while the docked
+   header changes height independently above the page content. */
+.public-header-slot {
+  position: relative;
+  z-index: 30;
+  width: 100%;
+  height: 321px;
+}
+
+.public-header,
+.public-header.is-scroll-compact {
+  position: relative;
+  top: auto;
+  right: auto;
+  left: auto;
+  width: 100%;
+  height: 321px !important;
+  min-height: 321px !important;
+  overflow: hidden;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1) !important;
+  background:
+    linear-gradient(90deg, rgba(240, 0, 47, 0.28), transparent 24%),
+    linear-gradient(180deg, rgba(255, 255, 255, 0.08), transparent),
+    rgba(6, 6, 6, 0.92) !important;
+  pointer-events: auto;
+  transition:
+    height 300ms cubic-bezier(0.22, 1, 0.36, 1),
+    min-height 300ms cubic-bezier(0.22, 1, 0.36, 1),
+    grid-template-columns 300ms cubic-bezier(0.22, 1, 0.36, 1),
+    gap 300ms cubic-bezier(0.22, 1, 0.36, 1),
+    padding 300ms cubic-bezier(0.22, 1, 0.36, 1) !important;
+}
+
+.public-header::after {
+  display: none !important;
+}
+
+.public-header.is-docked {
+  position: fixed;
+  top: 0;
+  right: 0;
+  left: 0;
+  z-index: 30;
+}
+
+.public-header.is-docked.is-scroll-compact {
+  height: 164px !important;
+  min-height: 164px !important;
+}
+
+@media (min-width: 721px) and (max-width: 899px) {
+  .public-header-slot,
+  .public-header,
+  .public-header.is-scroll-compact {
+    height: 462px !important;
+    min-height: 462px !important;
+  }
+
+  .public-header.is-docked.is-scroll-compact {
+    height: 124px !important;
+    min-height: 124px !important;
+  }
+}
+
+@media (max-width: 720px) {
+  .public-header-slot,
+  .public-header,
+  .public-header.is-scroll-compact {
+    height: 414px !important;
+    min-height: 414px !important;
+  }
+
+  .public-header.is-docked.is-scroll-compact {
+    height: 120px !important;
+    min-height: 120px !important;
+  }
+}
+
 /* Logo is the all-items action; the rail keeps seven cards plus a swipe cue. */
 .public-category-nav {
   grid-template-columns: minmax(0, 1fr) !important;
@@ -11604,6 +12029,151 @@ button.category-row.is-selected,
 
   .public-brand-message::after {
     display: none;
+  }
+}
+
+/* Final scroll-header behavior: keep the original Keen rail and only reflow
+   each two-card column into a single horizontal row. */
+.public-category-compact {
+  display: none !important;
+}
+
+.public-header.is-scroll-compact .public-category-nav {
+  display: grid !important;
+}
+
+.public-header.is-scroll-compact .public-category-column {
+  transition: none !important;
+}
+
+@media (min-width: 900px) {
+  .public-header.is-docked.is-scroll-compact {
+    display: block !important;
+  }
+
+  .public-header.is-docked.is-scroll-compact .public-brand {
+    position: absolute;
+    top: 6px;
+    bottom: 6px;
+    left: 0;
+    z-index: 3;
+    width: clamp(300px, 28vw, 390px) !important;
+  }
+
+  .public-header.is-docked.is-scroll-compact .public-category-nav {
+    position: absolute;
+    top: 6px;
+    right: 0;
+    bottom: 8px;
+    left: clamp(278px, 25vw, 356px);
+    z-index: 2;
+    width: calc(100% - clamp(278px, 25vw, 356px)) !important;
+    max-width: none !important;
+    justify-self: stretch !important;
+    overflow: hidden !important;
+  }
+
+  .public-header.is-scroll-compact .public-category-page-strip {
+    height: 150px !important;
+    overflow: hidden;
+  }
+
+  .public-header.is-scroll-compact .public-category-column {
+    grid-template-columns: repeat(2, 120px) !important;
+    grid-template-rows: 150px !important;
+    gap: 0 !important;
+    width: 230px !important;
+    min-width: 230px !important;
+    max-width: 230px !important;
+    height: 150px !important;
+    min-height: 150px !important;
+    overflow: visible;
+  }
+
+  .public-header.is-scroll-compact .public-category-column .public-category-slide {
+    width: 120px !important;
+    min-width: 120px !important;
+    max-width: 120px !important;
+    height: 150px !important;
+    min-height: 150px !important;
+  }
+
+  .public-header.is-scroll-compact .public-category-column .public-category-slide:nth-child(2) {
+    position: relative;
+    left: -10px;
+    z-index: 2;
+  }
+
+  .public-header.is-scroll-compact .public-category-column.is-single {
+    grid-template-columns: 120px !important;
+    width: 120px !important;
+    min-width: 120px !important;
+    max-width: 120px !important;
+  }
+}
+
+@media (max-width: 899px) {
+  .public-header.is-docked.is-scroll-compact {
+    display: block !important;
+  }
+
+  .public-header.is-docked.is-scroll-compact .public-brand {
+    position: absolute;
+    top: 5px;
+    bottom: 5px;
+    left: 0;
+    z-index: 3;
+  }
+
+  .public-header.is-docked.is-scroll-compact .public-category-nav {
+    position: absolute;
+    top: 5px;
+    right: 0;
+    bottom: 5px;
+    left: 96px;
+    z-index: 2;
+    width: calc(100% - 96px) !important;
+    max-width: none !important;
+    justify-self: stretch !important;
+    overflow: hidden !important;
+  }
+
+  .public-header.is-scroll-compact .public-category-page-strip {
+    height: 110px !important;
+    overflow: hidden;
+  }
+
+  .public-header.is-scroll-compact .public-category-column {
+    grid-template-columns: repeat(2, 88px) !important;
+    grid-template-rows: 110px !important;
+    gap: 0 !important;
+    width: 168px !important;
+    min-width: 168px !important;
+    max-width: 168px !important;
+    height: 110px !important;
+    min-height: 110px !important;
+    overflow: visible;
+  }
+
+  .public-header.is-scroll-compact .public-category-column .public-category-slide {
+    width: 88px !important;
+    min-width: 88px !important;
+    max-width: 88px !important;
+    height: 110px !important;
+    min-height: 110px !important;
+  }
+
+  .public-header.is-scroll-compact .public-category-column .public-category-slide:nth-child(2) {
+    position: relative;
+    left: -8px;
+    z-index: 2;
+  }
+
+  .public-header.is-scroll-compact .public-category-column.is-single {
+    grid-template-columns: 88px !important;
+    width: 88px !important;
+    min-width: 88px !important;
+    max-width: 88px !important;
   }
 }
 

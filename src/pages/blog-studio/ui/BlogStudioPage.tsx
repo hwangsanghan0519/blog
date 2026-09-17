@@ -175,7 +175,11 @@ function HeroVideoAdminPanel({
       </div>
 
       <label className="ad-admin-toggle">
-        <input checked={settings.enabled} type="checkbox" onChange={(event) => onUpdate({ enabled: event.target.checked })} />
+        <input
+          checked={settings.enabled}
+          type="checkbox"
+          onChange={(event) => onUpdate({ enabled: event.target.checked, visibilityConfigured: true })}
+        />
         노출
       </label>
 
@@ -195,9 +199,15 @@ function HeroVideoAdminPanel({
           inputMode="url"
           value={settings.youtubeUrl}
           placeholder="https://www.youtube.com/watch?v=... 또는 https://youtu.be/..."
-          onChange={(event) => onUpdate({ youtubeUrl: event.target.value })}
+          onChange={(event) => {
+            const youtubeUrl = event.target.value
+            onUpdate({
+              youtubeUrl,
+              ...(!settings.visibilityConfigured ? { enabled: Boolean(youtubeUrl.trim()) } : {}),
+            })
+          }}
         />
-        <small>자동재생 정책에 맞춰 소리는 꺼진 상태로 시작하며 영상은 계속 반복됩니다.</small>
+        <small>주소를 등록하면 자동 노출됩니다. 직접 노출 스위치를 끈 이후에는 해당 설정을 유지합니다.</small>
       </label>
     </section>
   )

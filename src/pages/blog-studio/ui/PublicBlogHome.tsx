@@ -34,10 +34,15 @@ export function PublicBlogHome({
   const [selectedId, setSelectedId] = useState('')
   const [currentSlide, setCurrentSlide] = useState(0)
   const [readingProgress, setReadingProgress] = useState(0)
+  const [isHeaderCompact, setIsHeaderCompact] = useState(false)
+  const [isHeaderDocked, setIsHeaderDocked] = useState(false)
   const headerRef = useRef<HTMLElement>(null)
+  const headerSlotRef = useRef<HTMLDivElement>(null)
   const latestHeadRef = useRef<HTMLDivElement>(null)
   const pendingCategoryScrollRef = useRef<'top' | 'latest' | null>(null)
   const sliderPausedRef = useRef(false)
+  const headerCompactRef = useRef(false)
+  const headerDirectionLockRef = useRef(0)
 
   const publishedPosts = useMemo(
     () =>
@@ -87,7 +92,7 @@ export function PublicBlogHome({
     mode: 'free',
     range: { align: true },
     rubberband: false,
-    slides: { perView: 'auto', spacing: 1 },
+    slides: { perView: 'auto', spacing: 3 },
   })
   useEffect(() => {
     if (topPosts.length < 2) return undefined
@@ -102,10 +107,69 @@ export function PublicBlogHome({
   }, [slider, topPosts.length])
 
   useEffect(() => {
-    const frame = window.requestAnimationFrame(() => categorySlider.current?.update())
+    const updateCategorySlider = () => categorySlider.current?.update()
+    const frame = window.requestAnimationFrame(() => {
+      updateCategorySlider()
+      categorySlider.current?.moveToIdx(0, true, { duration: 0 })
+    })
+    window.addEventListener('resize', updateCategorySlider)
 
-    return () => window.cancelAnimationFrame(frame)
-  }, [categoryColumns.length, categorySlider])
+    return () => {
+      window.cancelAnimationFrame(frame)
+      window.removeEventListener('resize', updateCategorySlider)
+    }
+  }, [categoryColumns.length, categorySlider, isHeaderCompact])
+
+  useEffect(() => {
+    let previousScrollY = window.scrollY
+    let downwardDistance = 0
+    let upwardDistance = 0
+
+    const applyHeaderMode = (compact: boolean) => {
+      if (headerCompactRef.current === compact) return
+
+      headerCompactRef.current = compact
+      setIsHeaderCompact(compact)
+    }
+
+    const restoreHeader = () => applyHeaderMode(false)
+    const handleScroll = () => {
+      const currentScrollY = window.scrollY
+      const delta = currentScrollY - previousScrollY
+      const headerStart = headerSlotRef.current?.offsetTop ?? 0
+      const maxScrollY = Math.max(0, document.documentElement.scrollHeight - window.innerHeight)
+      const shouldDockHeader = currentScrollY >= headerStart
+      const isAtTop = currentScrollY <= 12
+      const isAtBottom = maxScrollY > 0 && currentScrollY >= maxScrollY - 2
+
+      setIsHeaderDocked(shouldDockHeader)
+
+      if (!shouldDockHeader || isAtTop || isAtBottom) {
+        downwardDistance = 0
+        upwardDistance = 0
+        restoreHeader()
+      } else if (performance.now() >= headerDirectionLockRef.current) {
+        if (delta > 1) {
+          downwardDistance += delta
+          upwardDistance = 0
+          if (downwardDistance >= 12) applyHeaderMode(true)
+        } else if (delta < -1) {
+          upwardDistance += Math.abs(delta)
+          downwardDistance = 0
+          if (upwardDistance >= 28) restoreHeader()
+        }
+      }
+
+      previousScrollY = currentScrollY
+    }
+
+    window.addEventListener('scroll', handleScroll, { passive: true })
+    handleScroll()
+
+    return () => {
+      window.removeEventListener('scroll', handleScroll)
+    }
+  }, [])
 
   useEffect(() => {
     if (categoryFilter === 'all') return undefined
@@ -229,6 +293,10 @@ export function PublicBlogHome({
   }
 
   const selectCategory = (category: string) => {
+    if (category !== 'all') {
+      headerDirectionLockRef.current = performance.now() + 900
+    }
+
     onCategoryFilterChange(category)
     syncCategoryParam(category === 'all' ? '' : category)
 
@@ -254,7 +322,13 @@ export function PublicBlogHome({
 
   return (
     <div className="public-blog">
-      <header ref={headerRef} className="public-header">
+      <AdStripBanners banners={adBanners} />
+
+      <div ref={headerSlotRef} className="public-header-slot">
+      <header
+        ref={headerRef}
+        className={`public-header ${isHeaderDocked ? 'is-docked' : ''} ${isHeaderCompact ? 'is-scroll-compact' : ''}`}
+      >
         <button className="public-brand" type="button" aria-label="전체 상품 보기" onClick={() => selectCategory('all')}>
           <span className="public-ssen-logo" aria-hidden="true">
             <img src={ssenLogoImage} alt="" />
@@ -273,7 +347,10 @@ export function PublicBlogHome({
           <div className="public-category-carousel">
             <div ref={categorySliderRef} className="keen-slider public-category-page-strip">
             {categoryColumns.map((column, columnIndex) => (
-              <div className="keen-slider__slide public-category-column" key={`category-column-${columnIndex}`}>
+              <div
+                className={`keen-slider__slide public-category-column ${column.length === 1 ? 'is-single' : ''}`}
+                key={`category-column-${columnIndex}`}
+              >
                 {column.map((category) => (
                   <button
                     className={`public-category-slide ${categoryFilter === category ? 'is-active' : ''}`}
@@ -296,8 +373,8 @@ export function PublicBlogHome({
         </nav>
 
       </header>
+      </div>
 
-      <AdStripBanners banners={adBanners} />
       <TrendVideo settings={heroVideo} />
 
       <main className="public-main">
@@ -554,7 +631,8 @@ function CategoryVisual({ image, label }: { image?: string; label: string }) {
 
 function TrendVideo({ settings }: { settings: HeroVideoSettings }) {
   const videoId = getYoutubeVideoId(settings.youtubeUrl)
-  if (!settings.enabled || !videoId) return null
+  const isEnabled = settings.visibilityConfigured ? settings.enabled : Boolean(settings.youtubeUrl.trim())
+  if (!isEnabled || !videoId) return null
 
   const playerUrl = new URL(`https://www.youtube.com/embed/${videoId}`)
   playerUrl.searchParams.set('autoplay', '1')
