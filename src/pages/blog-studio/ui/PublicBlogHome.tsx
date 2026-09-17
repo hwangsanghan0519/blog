@@ -196,11 +196,6 @@ export function PublicBlogHome({
           </span>
         </button>
 
-        <div className="public-header-drop" aria-hidden="true">
-          <span>CELEB AD INDEX</span>
-          <strong>INFLUENCER PICKS</strong>
-        </div>
-
         <nav className="public-category-nav" aria-label="셀럽별 광고 상품">
           <button
             className={categoryFilter === 'all' ? 'is-active' : ''}

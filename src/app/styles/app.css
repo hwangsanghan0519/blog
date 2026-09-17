@@ -8477,7 +8477,12 @@ button.category-row.is-selected,
 
 /* SSEN image masthead: use one oversized logo asset instead of assembled badges. */
 .public-header {
-  grid-template-columns: minmax(330px, 0.64fr) minmax(150px, 0.28fr) minmax(430px, 1fr) !important;
+  grid-template-columns: minmax(420px, 0.68fr) minmax(430px, 1fr) !important;
+}
+
+.public-header::before,
+.public-header-drop {
+  display: none !important;
 }
 
 .public-brand {
@@ -8487,9 +8492,9 @@ button.category-row.is-selected,
 }
 
 .public-ssen-logo {
-  width: min(100%, 560px) !important;
+  width: min(100%, 680px) !important;
   min-width: 0 !important;
-  min-height: 128px !important;
+  min-height: 148px !important;
   place-items: center start;
   transform: none !important;
 }
@@ -8501,9 +8506,9 @@ button.category-row.is-selected,
 
 .public-ssen-logo img {
   display: block;
-  width: min(100%, 540px);
+  width: min(100%, 660px);
   height: auto;
-  max-height: 150px;
+  max-height: 170px;
   object-fit: contain;
   filter: drop-shadow(0 18px 36px rgba(240, 0, 47, 0.28));
 }
@@ -8516,16 +8521,16 @@ button.category-row.is-selected,
 
 @media (max-width: 1180px) {
   .public-header {
-    grid-template-columns: minmax(220px, 0.88fr) minmax(0, 1fr) !important;
+    grid-template-columns: 1fr !important;
   }
 
   .public-ssen-logo {
-    min-height: 108px !important;
+    min-height: 124px !important;
   }
 
   .public-ssen-logo img {
-    width: min(100%, 420px);
-    max-height: 124px;
+    width: min(100%, 540px);
+    max-height: 144px;
   }
 }
 
