@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
-import type { CSSProperties, UIEvent } from 'react'
+import type { CSSProperties, MouseEvent, PointerEvent, UIEvent } from 'react'
 import * as Dialog from '@radix-ui/react-dialog'
 import { CalendarDays, ChevronLeft, ChevronRight, Mail, Search, Trophy, X } from 'lucide-react'
 import { useKeenSlider } from 'keen-slider/react'
@@ -128,6 +128,33 @@ export function PublicBlogHome({
     }
   }
 
+  const moveSlider = (event: MouseEvent<HTMLButtonElement>, direction: -1 | 1) => {
+    event.preventDefault()
+    event.stopPropagation()
+    if (direction < 0) {
+      slider.current?.prev()
+      return
+    }
+
+    slider.current?.next()
+  }
+
+  const moveSliderTo = (event: MouseEvent<HTMLButtonElement>, index: number) => {
+    event.preventDefault()
+    event.stopPropagation()
+    slider.current?.moveToIdx(index)
+  }
+
+  const stopReaderControlEvent = (event: MouseEvent<HTMLButtonElement> | PointerEvent<HTMLButtonElement>) => {
+    event.preventDefault()
+    event.stopPropagation()
+  }
+
+  const moveReaderPostFromControl = (event: MouseEvent<HTMLButtonElement>, direction: -1 | 1) => {
+    stopReaderControlEvent(event)
+    moveReaderPost(direction)
+  }
+
   const updateReadingProgress = (event: UIEvent<HTMLElement>) => {
     const target = event.currentTarget
     const maxScroll = target.scrollHeight - target.clientHeight
@@ -135,9 +162,14 @@ export function PublicBlogHome({
   }
 
   // 이전/다음 버튼은 화면상 모달 밖에 두되, Dialog의 바깥 클릭 닫힘으로 처리되지 않게 제외합니다.
-  const keepReaderOpenForNavControls = (event: { target: EventTarget | null; preventDefault: () => void }) => {
+  const keepReaderOpenForNavControls = (event: {
+    target: EventTarget | null
+    preventDefault: () => void
+    stopPropagation?: () => void
+  }) => {
     if (event.target instanceof Element && event.target.closest('.public-reader-outer-controls')) {
       event.preventDefault()
+      event.stopPropagation?.()
     }
   }
 
@@ -236,14 +268,14 @@ export function PublicBlogHome({
                 ))}
               </div>
               <div className="public-slider-controls">
-                <button type="button" aria-label="이전 추천 글" disabled={topPosts.length < 2} onClick={() => slider.current?.prev()}>
+                <button type="button" aria-label="이전 추천 글" disabled={topPosts.length < 2} onClick={(event) => moveSlider(event, -1)}>
                   <ChevronLeft size={18} />
                 </button>
                 <span className="public-slider-count">
                   <strong>{String(currentSlide + 1).padStart(2, '0')}</strong>
                   <small>/ {String(topPosts.length).padStart(2, '0')}</small>
                 </span>
-                <button type="button" aria-label="다음 추천 글" disabled={topPosts.length < 2} onClick={() => slider.current?.next()}>
+                <button type="button" aria-label="다음 추천 글" disabled={topPosts.length < 2} onClick={(event) => moveSlider(event, 1)}>
                   <ChevronRight size={18} />
                 </button>
                 <div className="public-slider-dots" aria-label="TOP 10 슬라이드 위치">
@@ -253,7 +285,7 @@ export function PublicBlogHome({
                       key={post.id}
                       type="button"
                       aria-label={`TOP ${index + 1} 글 보기`}
-                      onClick={() => slider.current?.moveToIdx(index)}
+                      onClick={(event) => moveSliderTo(event, index)}
                     />
                   ))}
                 </div>
@@ -264,9 +296,7 @@ export function PublicBlogHome({
                     className={currentSlide === index ? 'is-active' : ''}
                     key={post.id}
                     type="button"
-                    onClick={() => {
-                      slider.current?.moveToIdx(index)
-                    }}
+                    onClick={(event) => moveSliderTo(event, index)}
                   >
                     <strong>{index + 1}</strong>
                     <span>{post.title}</span>
@@ -374,12 +404,24 @@ export function PublicBlogHome({
           {selectedPost && (
             <div className="public-reader-outer-controls" aria-label="글 이동">
               {selectedPostIndex > 0 && (
-                <button className="public-reader-nav-button is-prev" type="button" aria-label="이전 글" onClick={() => moveReaderPost(-1)}>
+                <button
+                  className="public-reader-nav-button is-prev"
+                  type="button"
+                  aria-label="이전 글"
+                  onPointerDown={stopReaderControlEvent}
+                  onClick={(event) => moveReaderPostFromControl(event, -1)}
+                >
                   <ChevronLeft size={24} />
                 </button>
               )}
               {selectedPostIndex < publishedPosts.length - 1 && (
-                <button className="public-reader-nav-button is-next" type="button" aria-label="다음 글" onClick={() => moveReaderPost(1)}>
+                <button
+                  className="public-reader-nav-button is-next"
+                  type="button"
+                  aria-label="다음 글"
+                  onPointerDown={stopReaderControlEvent}
+                  onClick={(event) => moveReaderPostFromControl(event, 1)}
+                >
                   <ChevronRight size={24} />
                 </button>
               )}
