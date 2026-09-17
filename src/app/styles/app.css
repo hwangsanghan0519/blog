@@ -7333,204 +7333,520 @@ button.category-row.is-selected,
   }
 }
 
-/* Final SEN street-commerce skin. Kept last so earlier workbook experiments cannot override it. */
+/* SSEN V2 lock: keep this layer last. It turns the public site into a focused price-drop storefront. */
 .public-blog {
-  color: #111111;
+  --ssen-black: #070707;
+  --ssen-ink: #141414;
+  --ssen-red: #f0002f;
+  --ssen-red-dark: #a80022;
+  --ssen-cream: #f4efe5;
+  --ssen-paper: #fffaf1;
+  --ssen-line: rgba(20, 20, 20, 0.14);
+  --ssen-shadow: 0 22px 60px rgba(7, 7, 7, 0.16);
+  color: var(--ssen-ink);
   background:
-    radial-gradient(circle at 82% 0, rgba(255, 0, 54, 0.2), transparent 34%),
-    linear-gradient(90deg, rgba(255, 0, 54, 0.04) 1px, transparent 1px) 0 0 / 42px 42px,
-    #f4f4f4;
+    radial-gradient(circle at 15% 0, rgba(240, 0, 47, 0.28), transparent 24rem),
+    radial-gradient(circle at 88% 8%, rgba(240, 0, 47, 0.16), transparent 22rem),
+    linear-gradient(180deg, #090909 0 520px, var(--ssen-cream) 520px 100%) !important;
 }
 
 .public-header {
-  border-bottom: 1px solid #111111;
-  background: rgba(255, 255, 255, 0.94);
-  box-shadow: none;
+  display: grid !important;
+  grid-template-columns: auto minmax(120px, 0.5fr) minmax(260px, 1.2fr) minmax(190px, 0.7fr);
+  gap: 16px;
+  align-items: center;
+  padding: 14px clamp(18px, 4vw, 64px) !important;
+  border: 0 !important;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1) !important;
+  background: rgba(8, 8, 8, 0.88) !important;
+  box-shadow: 0 16px 44px rgba(0, 0, 0, 0.28) !important;
+  backdrop-filter: blur(20px);
 }
 
 .public-brand,
 .public-brand:hover {
-  border: 0;
-  border-radius: 0;
-  background: transparent;
-  box-shadow: none;
-  transform: none;
+  gap: 12px;
+  padding: 0 !important;
+  border: 0 !important;
+  border-radius: 0 !important;
+  color: #ffffff !important;
+  background: transparent !important;
+  box-shadow: none !important;
+  transform: none !important;
 }
 
 .public-ssen-logo {
-  min-width: 112px;
-  min-height: 44px;
-  border: 0;
-  border-radius: 0;
-  background: #111111;
-  box-shadow: inset -8px 0 0 #ff0036;
-  transform: none;
+  width: 124px !important;
+  min-width: 124px !important;
+  min-height: 58px !important;
+  border: 1px solid rgba(255, 255, 255, 0.2) !important;
+  border-radius: 2px !important;
+  background:
+    linear-gradient(135deg, rgba(240, 0, 47, 0.95) 0 48%, transparent 48%),
+    #111111 !important;
+  box-shadow: 8px 8px 0 var(--ssen-red) !important;
+  transform: skew(-7deg) !important;
 }
 
 .public-ssen-logo::before {
-  top: -5px;
-  right: -5px;
-  width: 18px;
-  height: 18px;
-  border: 0;
-  border-radius: 0;
-  background: #ff0036;
+  content: '';
+  inset: 7px -7px -7px 7px !important;
+  z-index: -1;
+  width: auto !important;
+  height: auto !important;
+  border: 1px solid rgba(255, 255, 255, 0.22) !important;
+  border-radius: 0 !important;
+  background: transparent !important;
+  animation: ssenLogoJolt 3.8s steps(2, end) infinite;
 }
 
 .public-ssen-logo::after {
-  content: 'LIVE';
-  top: -1px;
-  right: -3px;
-  color: #ffffff;
-  font-size: 7px;
-  letter-spacing: 0.02em;
+  content: 'DROP' !important;
+  right: -14px !important;
+  bottom: -10px !important;
+  padding: 4px 7px !important;
+  color: #ffffff !important;
+  background: var(--ssen-red) !important;
+  font-size: 9px !important;
+  font-weight: 950 !important;
+  letter-spacing: 0.08em !important;
+  transform: skew(7deg) rotate(-3deg) !important;
 }
 
 .public-ssen-logo span {
-  font-size: 30px;
-  letter-spacing: -0.05em;
-  text-shadow: none;
+  color: #ffffff !important;
+  font-size: 35px !important;
+  font-weight: 950 !important;
+  line-height: 0.82 !important;
+  letter-spacing: -0.09em !important;
+  text-transform: lowercase !important;
+  text-shadow: 2px 2px 0 #000000, -2px 0 0 var(--ssen-red) !important;
+  transform: skew(7deg) !important;
 }
 
 .public-ssen-logo small {
-  margin-top: 0;
-  padding: 0;
-  border: 0;
-  color: #ff0036;
-  background: transparent;
-  font-size: 9px;
-  letter-spacing: 0.22em;
+  right: 9px !important;
+  bottom: 7px !important;
+  color: rgba(255, 255, 255, 0.7) !important;
+  background: transparent !important;
+  font-size: 8px !important;
+  letter-spacing: 0.16em !important;
+  transform: skew(7deg) !important;
 }
 
 .public-brand strong {
-  padding: 0;
-  color: #111111;
-  background: transparent;
-  font-size: 24px;
-  letter-spacing: -0.04em;
+  color: #ffffff !important;
+  background: transparent !important;
+  font-size: 19px !important;
+  line-height: 0.88 !important;
+  text-transform: lowercase !important;
 }
 
 .public-brand strong::after {
-  content: 'RED CURATION';
-  margin-left: 8px;
-  color: #ff0036;
-  font-size: 9px;
-  letter-spacing: 0.14em;
+  content: 'drop market' !important;
+  color: var(--ssen-red) !important;
+  font-size: 9px !important;
+  letter-spacing: 0.18em !important;
 }
 
-.public-category-nav,
-.public-search,
-.public-slider-track,
-.public-top-strip button,
-.public-post-card,
-.public-reader,
-.product-detail-hero,
-.product-detail-image,
-.product-buy-panel,
-.product-bottom-buy-bar,
-.public-quick-actions {
-  border: 1px solid #111111;
-  border-radius: 0;
-  box-shadow: none;
+.public-header-drop span {
+  color: rgba(255, 255, 255, 0.54) !important;
+  font-size: 10px !important;
+}
+
+.public-header-drop strong {
+  color: #ffffff !important;
+  font-size: 15px !important;
+}
+
+.public-category-nav {
+  padding: 5px !important;
+  border: 1px solid rgba(255, 255, 255, 0.16) !important;
+  border-radius: 999px !important;
+  background: rgba(255, 255, 255, 0.07) !important;
+  box-shadow: none !important;
+}
+
+.public-category-nav button {
+  border-radius: 999px !important;
+  color: rgba(255, 255, 255, 0.66) !important;
+  background: transparent !important;
 }
 
 .public-category-nav button.is-active,
-.public-category-nav button:hover,
-.public-slide span,
-.public-rank,
-.product-price-preview,
-.public-reader .product-price-preview {
-  color: #ffffff;
-  background: #ff0036;
+.public-category-nav button:hover {
+  color: var(--ssen-black) !important;
+  background: #ffffff !important;
+}
+
+.public-header-search,
+.public-search {
+  border: 1px solid rgba(255, 255, 255, 0.16) !important;
+  border-radius: 999px !important;
+  color: rgba(255, 255, 255, 0.7) !important;
+  background: rgba(255, 255, 255, 0.08) !important;
+  box-shadow: none !important;
+}
+
+.public-search input {
+  color: #ffffff !important;
+}
+
+.public-main,
+.public-ad-stack {
+  width: min(100%, 1540px) !important;
+}
+
+.public-main {
+  padding: clamp(28px, 5vw, 70px) clamp(16px, 4vw, 56px) 64px !important;
+}
+
+.public-ad-strip.has-image {
+  height: clamp(72px, 10vw, 116px) !important;
+}
+
+.public-ad-strip.has-image img {
+  object-fit: contain !important;
+}
+
+.public-hero {
+  display: grid !important;
+  grid-template-columns: minmax(280px, 0.74fr) minmax(0, 1.26fr) !important;
+  gap: clamp(18px, 3vw, 34px) !important;
 }
 
 .public-hero-copy {
-  border: 1px solid #111111;
-  border-radius: 0;
+  min-height: 600px !important;
+  border: 1px solid rgba(255, 255, 255, 0.16) !important;
+  border-radius: 2px !important;
+  color: #ffffff !important;
   background:
-    linear-gradient(135deg, rgba(255, 0, 54, 0.92) 0 42%, transparent 42%),
-    radial-gradient(circle at 78% 20%, rgba(255, 255, 255, 0.22), transparent 22%),
-    #111111;
-  box-shadow: none;
+    linear-gradient(145deg, rgba(240, 0, 47, 0.92) 0 38%, transparent 38%),
+    radial-gradient(circle at 78% 14%, rgba(255, 255, 255, 0.18), transparent 20%),
+    linear-gradient(160deg, #171717, #050505) !important;
+  box-shadow: var(--ssen-shadow) !important;
 }
 
 .public-hero-copy::before {
-  content: 'K-POP AUDIENCE PICK';
-  top: 18px;
-  right: 18px;
-  padding: 7px 10px;
-  color: #ffffff;
-  background: #ff0036;
-  font-size: 10px;
-  letter-spacing: 0.16em;
-  transform: none;
+  content: 'price compare / affiliate select' !important;
+  position: static !important;
+  width: max-content !important;
+  padding: 8px 10px !important;
+  color: var(--ssen-black) !important;
+  background: #ffffff !important;
+  transform: rotate(-2deg) !important;
+}
+
+.public-kicker {
+  color: #ffffff !important;
+  background: rgba(255, 255, 255, 0.08) !important;
 }
 
 .public-hero-copy h1 {
-  color: #ffffff;
-  font-size: clamp(48px, 7vw, 86px);
-  line-height: 0.86;
-  letter-spacing: -0.07em;
-  text-transform: uppercase;
-  text-shadow: none;
+  max-width: 9ch;
+  color: #ffffff !important;
+  font-size: clamp(62px, 9vw, 132px) !important;
+  line-height: 0.78 !important;
+  letter-spacing: -0.09em !important;
+  text-transform: lowercase !important;
+  text-shadow: 4px 4px 0 var(--ssen-red-dark) !important;
 }
 
-.public-slide button,
-.public-slide button::before,
+.public-hero-copy p {
+  color: rgba(255, 255, 255, 0.76) !important;
+}
+
+.public-slider-track,
+.public-slide button {
+  min-height: 600px !important;
+  height: 600px !important;
+  border-radius: 2px !important;
+}
+
+.public-slider-track {
+  border: 1px solid var(--ssen-line) !important;
+  background: var(--ssen-paper) !important;
+  box-shadow: var(--ssen-shadow) !important;
+}
+
+.public-slide button {
+  color: #ffffff !important;
+  background: #0b0b0b !important;
+}
+
+.public-slide img,
+.public-slide .public-image-fallback,
 .public-post-card img,
-.public-post-card .public-image-fallback,
-.product-buy-list a,
-.product-buy-list a.is-primary,
-.product-bottom-buy-bar a,
-.product-bottom-buy-bar a.is-primary {
-  border-radius: 0;
+.public-post-card .public-image-fallback {
+  position: absolute !important;
+  inset: 0 !important;
+  width: 100% !important;
+  height: 100% !important;
+  border-radius: 0 !important;
+  object-fit: cover !important;
+}
+
+.public-slide button::before,
+.public-post-card::before {
+  border-radius: 0 !important;
+}
+
+.public-slide button::after {
+  content: 'SSEN DROP' !important;
+  color: #ffffff !important;
+  background: var(--ssen-red) !important;
+}
+
+.public-rank,
+.public-post-card span {
+  color: #ffffff !important;
+  background: var(--ssen-red) !important;
 }
 
 .public-slide h2,
 .public-post-card h3,
 .public-reader-title {
-  letter-spacing: -0.05em;
-  text-transform: uppercase;
-  text-shadow: none;
-  text-decoration: none;
+  color: #ffffff !important;
+  letter-spacing: -0.065em !important;
+  text-transform: uppercase !important;
+  text-shadow: none !important;
+}
+
+.product-price-preview,
+.public-reader .product-price-preview {
+  border-radius: 0 !important;
+  color: #ffffff !important;
+  background: var(--ssen-red) !important;
+}
+
+.public-slider-controls button,
+.public-slider-count {
+  color: #ffffff !important;
+  background: rgba(255, 255, 255, 0.08) !important;
+  border: 1px solid rgba(255, 255, 255, 0.2) !important;
+}
+
+.public-slider-controls button:hover:not(:disabled),
+.public-slider-dots button.is-active {
+  background: var(--ssen-red) !important;
+}
+
+.public-slider-count strong {
+  color: #ffffff !important;
+}
+
+.public-top-strip {
+  display: grid !important;
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+  gap: 8px;
+}
+
+.public-top-strip button {
+  border: 1px solid var(--ssen-line) !important;
+  border-radius: 0 !important;
+  color: var(--ssen-ink) !important;
+  background: rgba(255, 250, 241, 0.82) !important;
+}
+
+.public-top-strip button:hover,
+.public-top-strip button.is-active {
+  color: #ffffff !important;
+  background: var(--ssen-black) !important;
 }
 
 .public-section-head h2 {
-  color: #111111;
-  background: transparent;
-  box-shadow: none;
-  font-size: clamp(36px, 5vw, 64px);
-  letter-spacing: -0.06em;
-  text-transform: uppercase;
+  color: var(--ssen-ink) !important;
+  background: transparent !important;
+  box-shadow: none !important;
+  font-size: clamp(38px, 5vw, 74px) !important;
+  text-transform: lowercase !important;
 }
 
-.product-detail-image {
+.public-post-grid {
+  grid-template-columns: repeat(4, minmax(0, 1fr)) !important;
+}
+
+.public-post-card {
+  min-height: 430px !important;
+  border: 1px solid var(--ssen-line) !important;
+  border-radius: 2px !important;
+  color: #ffffff !important;
+  background: #101010 !important;
+}
+
+.public-post-card h3 {
+  font-size: clamp(24px, 2vw, 34px) !important;
+}
+
+.public-reader {
+  width: min(1380px, calc(100vw - 72px)) !important;
+  height: min(900px, calc(100vh - 44px)) !important;
+  border-radius: 2px !important;
+  background: var(--ssen-paper) !important;
+}
+
+.product-detail-hero {
+  grid-template-columns: minmax(330px, 0.92fr) minmax(0, 1.08fr) !important;
+  min-height: 560px !important;
+  border: 0 !important;
+  border-radius: 0 !important;
   background:
-    linear-gradient(90deg, rgba(255, 0, 54, 0.06) 1px, transparent 1px) 0 0 / 18px 18px,
-    #f6f6f6;
+    linear-gradient(135deg, rgba(240, 0, 47, 0.12), transparent 36%),
+    #111111 !important;
+}
+
+.product-detail-image,
+.product-buy-panel,
+.product-buy-list a,
+.product-bottom-buy-bar,
+.product-bottom-buy-bar a {
+  border-radius: 0 !important;
+}
+
+.public-reader-description {
+  color: rgba(255, 255, 255, 0.72) !important;
+}
+
+.public-reader .rendered-content {
+  max-width: 1060px !important;
+  color: var(--ssen-ink) !important;
+}
+
+.product-bottom-buy-bar {
+  right: 22px !important;
+  bottom: 18px !important;
+  left: 22px !important;
+  border: 1px solid rgba(0, 0, 0, 0.12) !important;
+  background: rgba(255, 250, 241, 0.92) !important;
+}
+
+.product-bottom-buy-bar > strong {
+  color: #ffffff !important;
+  background: var(--ssen-black) !important;
 }
 
 .product-buy-list a.is-primary,
 .product-bottom-buy-bar a.is-primary {
-  color: #ffffff;
-  background: #ff0036;
+  color: #ffffff !important;
+  background: var(--ssen-red) !important;
 }
 
-.product-buy-list a.is-primary strong,
-.product-buy-list a.is-primary b,
-.product-buy-list a.is-primary small,
-.product-bottom-buy-bar a.is-primary b {
-  color: #ffffff;
+.public-reader-nav-button {
+  width: 58px !important;
+  height: 58px !important;
+  color: #ffffff !important;
+  background: var(--ssen-red) !important;
 }
 
-.product-bottom-buy-bar > strong {
-  border: 0;
-  border-radius: 0;
-  background: #111111;
+.public-reader-nav-button:hover:not(:disabled) {
+  color: var(--ssen-black) !important;
+  background: #ffffff !important;
 }
 
 .public-footer {
-  border-top: 1px solid #ff0036;
+  display: grid !important;
+  grid-template-columns: minmax(0, 1fr) auto;
+  border: 0 !important;
+  color: #ffffff !important;
   background:
-    linear-gradient(135deg, #111111 0 74%, #ff0036 74% 100%);
+    linear-gradient(135deg, var(--ssen-black) 0 66%, var(--ssen-red) 66% 100%) !important;
+}
+
+.public-footer::before {
+  content: 'SSEN DROP MARKET SSEN DROP MARKET' !important;
+}
+
+.public-footer-copy strong {
+  color: #ffffff !important;
+  font-size: clamp(40px, 6vw, 82px) !important;
+  text-transform: lowercase !important;
+}
+
+.public-quick-actions a {
+  color: #ffffff !important;
+  background: var(--ssen-red) !important;
+}
+
+@media (max-width: 1180px) {
+  .public-header {
+    grid-template-columns: auto minmax(0, 1fr) !important;
+  }
+
+  .public-header-drop {
+    display: none !important;
+  }
+
+  .public-category-nav,
+  .public-header-search {
+    grid-column: 1 / -1;
+  }
+
+  .public-hero {
+    grid-template-columns: 1fr !important;
+  }
+
+  .public-post-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+  }
+}
+
+@media (max-width: 720px) {
+  .public-header {
+    padding: 12px 14px !important;
+  }
+
+  .public-brand strong {
+    display: none !important;
+  }
+
+  .public-ssen-logo {
+    width: 108px !important;
+    min-width: 108px !important;
+    min-height: 50px !important;
+  }
+
+  .public-main {
+    padding: 22px 14px 48px !important;
+  }
+
+  .public-hero-copy,
+  .public-slider-track,
+  .public-slide button {
+    min-height: 440px !important;
+    height: auto !important;
+  }
+
+  .public-hero-copy h1 {
+    font-size: clamp(52px, 18vw, 82px) !important;
+  }
+
+  .public-top-strip {
+    grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+  }
+
+  .public-post-grid {
+    grid-template-columns: 1fr !important;
+  }
+
+  .public-reader {
+    width: 100vw !important;
+    height: 100vh !important;
+    border: 0 !important;
+  }
+
+  .product-detail-hero {
+    grid-template-columns: 1fr !important;
+    min-height: 0 !important;
+  }
+
+  .product-bottom-buy-bar {
+    right: 0 !important;
+    bottom: 0 !important;
+    left: 0 !important;
+    grid-template-columns: 1fr !important;
+  }
+
+  .public-footer {
+    grid-template-columns: 1fr !important;
+  }
 }

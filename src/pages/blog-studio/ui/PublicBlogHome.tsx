@@ -195,14 +195,14 @@ export function PublicBlogHome({
         <button className="public-brand" type="button" aria-label="SSEN 홈" onClick={() => selectCategory('all')}>
           <span className="public-ssen-logo" aria-hidden="true">
             <span>SSEN</span>
-            <small>street select</small>
+            <small>drop market</small>
           </span>
           <strong>SSEN</strong>
         </button>
 
         <div className="public-header-drop" aria-hidden="true">
-          <span>LIVE DROP</span>
-          <strong>RED PRICE CLUB</strong>
+          <span>DROP INDEX</span>
+          <strong>PRICE RADAR</strong>
         </div>
 
         <nav className="public-category-nav" aria-label="상품 카테고리">
@@ -240,10 +240,10 @@ export function PublicBlogHome({
         <section className="public-hero" aria-label="실시간 상품 TOP 10">
           <div className="public-hero-copy">
             <span className="public-kicker">
-              <Trophy size={16} /> 실시간 딜 TOP 10
+              <Trophy size={16} /> 오늘의 센 가격 TOP 10
             </span>
-            <h1>SSEN STREET DROP</h1>
-            <p>무대 앞 열기처럼 강렬한 상품과 제휴몰 가격을 한 번에 확인하세요.</p>
+            <h1>SSEN PRICE DROP</h1>
+            <p>힙한 상품을 먼저 고르고, 제휴몰 가격은 가장 빠르게 비교합니다.</p>
 
           </div>
 
@@ -267,7 +267,7 @@ export function PublicBlogHome({
                       <h2>{post.title}</h2>
                       <p>{post.excerpt || '지금 비교하기 좋은 상품입니다.'}</p>
                       <ProductPricePreview post={post} />
-                      <em>정답 확인</em>
+                      <em>가격 보기</em>
                     </button>
                   </article>
                 ))}
@@ -444,9 +444,9 @@ export function PublicBlogHome({
 
       <footer className="public-footer">
         <div className="public-footer-copy">
-          <span>SSEN CREW</span>
+          <span>SSEN DROP CLUB</span>
           <strong>SSEN</strong>
-          <p>레드 무드로 고른 상품, 가격, 제휴 링크를 빠르게 큐레이션합니다.</p>
+          <p>강한 제품, 더 강한 가격, 바로 이동 가능한 제휴 링크를 큐레이션합니다.</p>
           <div className="public-footer-tags" aria-label="SSEN 키워드">
             <span>RED DROP</span>
             <span>K-POP MOOD</span>
