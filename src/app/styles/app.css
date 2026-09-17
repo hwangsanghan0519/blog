@@ -8558,7 +8558,7 @@ button.category-row.is-selected,
 .public-category-nav {
   min-width: 0;
   position: relative;
-  padding: 0 78px 20px 0 !important;
+  padding: 0 0 20px !important;
   overflow: hidden !important;
 }
 
@@ -8572,6 +8572,10 @@ button.category-row.is-selected,
   width: 100%;
   overflow: hidden !important;
   cursor: grab;
+  touch-action: pan-y;
+  user-select: none;
+  -webkit-user-select: none;
+  -webkit-overflow-scrolling: touch;
 }
 
 .public-category-track:active {
@@ -8596,33 +8600,9 @@ button.category-row.is-selected,
   background: #111111 !important;
   box-shadow: none !important;
   transform: none !important;
-}
-
-.public-category-controls {
-  position: absolute;
-  right: 0;
-  bottom: 20px;
-  z-index: 4;
-  display: grid;
-  gap: 7px;
-}
-
-.public-category-controls button {
-  display: grid;
-  width: 34px;
-  height: 34px;
-  place-items: center;
-  border: 1px solid rgba(255, 255, 255, 0.24) !important;
-  border-radius: 50% !important;
-  color: #ffffff !important;
-  background: rgba(0, 0, 0, 0.36) !important;
-  box-shadow: none !important;
-  backdrop-filter: blur(12px);
-}
-
-.public-category-controls button:hover {
-  background: var(--ssen-red) !important;
-  transform: translateY(-1px);
+  touch-action: pan-y;
+  user-select: none;
+  -webkit-user-drag: none;
 }
 
 .public-category-slide::after {
@@ -8734,9 +8714,5 @@ button.category-row.is-selected,
     width: 122px !important;
     max-width: 122px !important;
     min-height: 150px !important;
-  }
-
-  .public-category-controls {
-    display: none;
   }
 }

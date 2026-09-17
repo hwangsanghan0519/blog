@@ -62,7 +62,6 @@ export function PublicBlogHome({
   const selectedPost = publishedPosts.find((post) => post.id === selectedId)
   const selectedPostIndex = selectedPost ? publishedPosts.findIndex((post) => post.id === selectedPost.id) : -1
   const activeCategoryIndex = categoryFilter === 'all' ? 0 : Math.max(0, publicCategories.indexOf(categoryFilter) + 1)
-  const categorySlideCount = publicCategories.length + 1
 
   const [sliderRef, slider] = useKeenSlider<HTMLDivElement>({
     loop: topPosts.length > 1,
@@ -71,10 +70,20 @@ export function PublicBlogHome({
       setCurrentSlide(instance.track.details.rel)
     },
   })
+  const categoryDraggingRef = useRef(false)
   const [categorySliderRef, categorySlider] = useKeenSlider<HTMLDivElement>({
+    drag: true,
     mode: 'free-snap',
     rubberband: true,
     slides: { perView: 'auto', spacing: 12 },
+    dragStarted() {
+      categoryDraggingRef.current = true
+    },
+    dragEnded() {
+      window.setTimeout(() => {
+        categoryDraggingRef.current = false
+      }, 120)
+    },
   })
 
   useEffect(() => {
@@ -155,15 +164,9 @@ export function PublicBlogHome({
     slider.current?.moveToIdx(index)
   }
 
-  const moveCategorySlider = (event: MouseEvent<HTMLButtonElement>, direction: -1 | 1) => {
-    event.preventDefault()
-    event.stopPropagation()
-    if (direction < 0) {
-      categorySlider.current?.prev()
-      return
-    }
-
-    categorySlider.current?.next()
+  const selectCategoryFromSlide = (category: string) => {
+    if (categoryDraggingRef.current) return
+    selectCategory(category)
   }
 
   const stopReaderControlEvent = (event: MouseEvent<HTMLButtonElement> | PointerEvent<HTMLButtonElement>) => {
@@ -225,7 +228,7 @@ export function PublicBlogHome({
               className={`keen-slider__slide public-category-slide ${categoryFilter === 'all' ? 'is-active' : ''}`}
               style={getCategoryStyle('전체')}
               type="button"
-              onClick={() => selectCategory('all')}
+              onClick={() => selectCategoryFromSlide('all')}
             >
               <CategoryVisual image={getAllCategoryImage(publicCategories, categoryImages)} label="전체" />
               <span>ALL</span>
@@ -238,7 +241,7 @@ export function PublicBlogHome({
                 key={category}
                 style={getCategoryStyle(category)}
                 type="button"
-                onClick={() => selectCategory(category)}
+                onClick={() => selectCategoryFromSlide(category)}
               >
                 <CategoryVisual image={categoryImages[category]} label={category} />
                 <span>CELEB</span>
@@ -247,16 +250,6 @@ export function PublicBlogHome({
               </button>
             ))}
           </div>
-          {categorySlideCount > 2 && (
-            <div className="public-category-controls" aria-label="셀럽 목록 이동">
-              <button type="button" aria-label="이전 셀럽" onClick={(event) => moveCategorySlider(event, -1)}>
-                <ChevronLeft size={17} />
-              </button>
-              <button type="button" aria-label="다음 셀럽" onClick={(event) => moveCategorySlider(event, 1)}>
-                <ChevronRight size={17} />
-              </button>
-            </div>
-          )}
         </nav>
 
       </header>
