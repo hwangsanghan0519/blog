@@ -72,6 +72,7 @@ const HIGHLIGHT_COLORS = ['#fff3bf', '#fde68a', '#fecdd3', '#bbf7d0', '#bae6fd',
 
 export function PostEditor({ categories, post, onCoverUpload, onUpdate }: PostEditorProps) {
   const inlineImageRef = useRef<HTMLInputElement>(null)
+  const editorContentRef = useRef(normalizeEditorContent(post.content))
   const selectedCategory = post.category.trim()
   const categoryOptions = useMemo(() => {
     const names = [selectedCategory, ...categories]
@@ -138,18 +139,21 @@ export function PostEditor({ categories, post, onCoverUpload, onUpdate }: PostEd
       },
     },
     onUpdate: ({ editor }) => {
-      onUpdate({ content: editor.getHTML() })
+      const content = editor.getHTML()
+      editorContentRef.current = content
+      onUpdate({ content })
     },
   })
 
   useEffect(() => {
-    if (!editor) return
+    if (!editor || editor.isDestroyed) return
 
     const nextContent = normalizeEditorContent(post.content)
-    if (editor.getHTML() !== nextContent) {
-      // 다른 상품을 선택했을 때 에디터 내부 문서를 현재 상품 내용으로 교체합니다.
-      editor.commands.setContent(nextContent, { emitUpdate: false })
-    }
+    if (editorContentRef.current === nextContent) return
+
+    // 다른 상품/서버 데이터로 바뀐 경우에만 에디터 문서를 교체합니다.
+    editorContentRef.current = nextContent
+    editor.commands.setContent(nextContent, { emitUpdate: false })
   }, [editor, post.content, post.id])
 
   const uploadInlineImage = async (event: ChangeEvent<HTMLInputElement>) => {

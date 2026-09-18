@@ -11,8 +11,12 @@ const STORAGE_KEY = 'solo-commerce-blog-posts'
 const SETTINGS_KEY = 'solo-commerce-blog-settings'
 const CATEGORIES_KEY = 'solo-commerce-blog-categories'
 const CATEGORY_IMAGES_KEY = 'solo-commerce-blog-category-images'
+const PUBLIC_STORAGE_KEY = 'solo-commerce-blog-public-summary-v2'
+const PUBLIC_SETTINGS_KEY = 'solo-commerce-blog-public-settings-v2'
+const PUBLIC_CATEGORY_IMAGES_KEY = 'solo-commerce-blog-public-category-images-v2'
 const OWNER_PASSWORD_KEY = 'solo-commerce-blog-owner-password'
 const ADMIN_TOKEN_KEY = 'solo-commerce-blog-admin-token'
+const CLOUD_UPDATE_CHANNEL = 'solo-commerce-blog-cloud-update'
 const CLOUD_DATA_ENDPOINT = '/.netlify/functions/blog-data'
 const PRODUCTION_CLOUD_DATA_ENDPOINT = 'https://unique-rabanadas-3f0f48.netlify.app/.netlify/functions/blog-data'
 const UNCATEGORIZED = '분류 없음'
@@ -51,6 +55,19 @@ type CloudBlogData = {
   heroVideo?: Partial<HeroVideoSettings>
   posts?: Post[]
   savedAt?: string
+}
+
+type CloudBlogSnapshot = {
+  adBanners: AdBannerSettings[]
+  categories: string[]
+  categoryImages: Record<string, string>
+  heroVideo: HeroVideoSettings
+  posts: Post[]
+}
+
+type CloudBlogPatch = Partial<Omit<CloudBlogSnapshot, 'posts'>> & {
+  deletedPostIds?: string[]
+  postChanges?: Array<{ id: string; patch: Partial<Post> }>
 }
 
 export const GMARKET_SAMPLE_BANNER_IMAGE = `data:image/svg+xml,${encodeURIComponent(`
@@ -124,15 +141,16 @@ const DEFAULT_SETTINGS: BlogSettings = {
 export function useBlogStudio() {
   const hostedRuntime = isHostedRuntime()
   const publicSummaryMode = hostedRuntime && !isSecretAdminRuntime()
-  const initialSettings = readSettings()
+  const lightweightCacheMode = hostedRuntime || isSecretAdminRuntime()
+  const initialSettings = readSettings(lightweightCacheMode ? PUBLIC_SETTINGS_KEY : SETTINGS_KEY)
   const [posts, setPosts] = useState<Post[]>(() =>
-    normalizePosts(loadJson<unknown>(STORAGE_KEY, hostedRuntime ? [] : starterPosts), uniqueCategories(starterPosts)),
+    normalizePosts(loadJson<unknown>(lightweightCacheMode ? PUBLIC_STORAGE_KEY : STORAGE_KEY, lightweightCacheMode ? [] : starterPosts), uniqueCategories(starterPosts)),
   )
   const [categories, setCategories] = useState<string[]>(() =>
     normalizeCategories(loadJson<unknown>(CATEGORIES_KEY, uniqueCategories(posts))),
   )
   const [categoryImages, setCategoryImages] = useState<Record<string, string>>(() =>
-    normalizeCategoryImages(loadJson<unknown>(CATEGORY_IMAGES_KEY, {})),
+    normalizeCategoryImages(loadJson<unknown>(lightweightCacheMode ? PUBLIC_CATEGORY_IMAGES_KEY : CATEGORY_IMAGES_KEY, {})),
   )
   const [activeId, setActiveId] = useState(posts[0]?.id ?? '')
   const [query, setQuery] = useState('')
@@ -148,13 +166,14 @@ export function useBlogStudio() {
   const [cloudSynced, setCloudSynced] = useState(false)
   const importRef = useRef<HTMLInputElement>(null)
   const detailedPostsRef = useRef(new Map<string, Post>())
+  const cloudSnapshotRef = useRef<CloudBlogSnapshot | null>(null)
 
   const activePost = posts.find((post) => post.id === activeId) ?? posts[0]
 
   const syncCloudData = useCallback(async (signal?: AbortSignal) => {
     const endpoint = getCloudDataEndpoint()
     const response = await fetch(publicSummaryMode ? `${endpoint}?view=summary` : endpoint, {
-      cache: 'default',
+      cache: publicSummaryMode ? 'no-store' : 'default',
       headers: { accept: 'application/json' },
       signal,
     })
@@ -168,12 +187,25 @@ export function useBlogStudio() {
       (post) => detailedPostsRef.current.get(post.id) ?? post,
     )
     const nextCategories = normalizeCategories([...cloudCategories, ...uniqueCategories(cloudPosts)])
+    const nextCategoryImages = normalizeCategoryImages(data.categoryImages)
+    const nextAdBanners = data.adBanners?.length ? normalizeAdBanners(data.adBanners) : DEFAULT_AD_BANNERS
+    const nextHeroVideo = normalizeHeroVideo(data.heroVideo)
+
+    if (!publicSummaryMode) {
+      cloudSnapshotRef.current = {
+        adBanners: nextAdBanners,
+        categories: nextCategories,
+        categoryImages: nextCategoryImages,
+        heroVideo: nextHeroVideo,
+        posts: cloudPosts,
+      }
+    }
 
     setPosts(cloudPosts)
     setCategories(nextCategories)
-    setCategoryImages(normalizeCategoryImages(data.categoryImages))
-    setAdBanners(data.adBanners?.length ? normalizeAdBanners(data.adBanners) : DEFAULT_AD_BANNERS)
-    setHeroVideo(normalizeHeroVideo(data.heroVideo))
+    setCategoryImages(nextCategoryImages)
+    setAdBanners(nextAdBanners)
+    setHeroVideo(nextHeroVideo)
     setActiveId((current) => (cloudPosts.some((post) => post.id === current) ? current : cloudPosts[0]?.id ?? ''))
     setCloudSynced(true)
     return true
@@ -185,7 +217,7 @@ export function useBlogStudio() {
     try {
       const endpoint = getCloudDataEndpoint()
       const response = await fetch(`${endpoint}?post=${encodeURIComponent(postId)}`, {
-        cache: 'default',
+        cache: 'no-store',
         headers: { accept: 'application/json' },
       })
       if (!response.ok) return
@@ -201,23 +233,43 @@ export function useBlogStudio() {
   }, [publicSummaryMode])
 
   // localStorage는 서버 저장 실패나 로컬 개발 상황을 위한 임시 캐시로만 사용합니다.
-  // 배포 환경에서는 Netlify Function이 내려주는 Supabase 데이터를 우선합니다.
+  // 배포 환경에서는 무거운 본문/인라인 이미지를 제외한 목록 캐시만 저장해 입력 지연을 막습니다.
   useEffect(() => {
-    saveJson(STORAGE_KEY, posts)
-  }, [posts])
+    const timer = window.setTimeout(() => {
+      saveJson(lightweightCacheMode ? PUBLIC_STORAGE_KEY : STORAGE_KEY, lightweightCacheMode ? createLightweightPostCache(posts) : posts)
+    }, 900)
+
+    return () => window.clearTimeout(timer)
+  }, [lightweightCacheMode, posts])
 
   useEffect(() => {
-    saveJson(CATEGORIES_KEY, categories)
+    const timer = window.setTimeout(() => saveJson(CATEGORIES_KEY, categories), 500)
+    return () => window.clearTimeout(timer)
   }, [categories])
 
   useEffect(() => {
-    saveJson(CATEGORY_IMAGES_KEY, categoryImages)
-  }, [categoryImages])
+    const timer = window.setTimeout(() => {
+      saveJson(lightweightCacheMode ? PUBLIC_CATEGORY_IMAGES_KEY : CATEGORY_IMAGES_KEY, lightweightCacheMode ? stripEmbeddedImages(categoryImages) : categoryImages)
+    }, 900)
+
+    return () => window.clearTimeout(timer)
+  }, [categoryImages, lightweightCacheMode])
 
   useEffect(() => {
-    saveJson(SETTINGS_KEY, { darkMode, adBanners, heroVideo })
     document.documentElement.dataset.theme = darkMode ? 'dark' : 'light'
-  }, [adBanners, darkMode, heroVideo])
+  }, [darkMode])
+
+  useEffect(() => {
+    const timer = window.setTimeout(() => {
+      saveJson(lightweightCacheMode ? PUBLIC_SETTINGS_KEY : SETTINGS_KEY, {
+        darkMode,
+        adBanners: lightweightCacheMode ? createLightweightBannerCache(adBanners) : adBanners,
+        heroVideo,
+      })
+    }, 900)
+
+    return () => window.clearTimeout(timer)
+  }, [adBanners, darkMode, heroVideo, lightweightCacheMode])
 
   useEffect(() => {
     const controller = new AbortController()
@@ -264,12 +316,15 @@ export function useBlogStudio() {
       }
     }
 
-    const timer = window.setInterval(refreshPublicData, 120_000)
+    const timer = window.setInterval(refreshPublicData, 15_000)
+    const updateChannel = 'BroadcastChannel' in window ? new BroadcastChannel(CLOUD_UPDATE_CHANNEL) : null
+    updateChannel?.addEventListener('message', refreshPublicData)
     window.addEventListener('focus', refreshPublicData)
     document.addEventListener('visibilitychange', refreshPublicData)
 
     return () => {
       window.clearInterval(timer)
+      updateChannel?.close()
       window.removeEventListener('focus', refreshPublicData)
       document.removeEventListener('visibilitychange', refreshPublicData)
     }
@@ -279,8 +334,18 @@ export function useBlogStudio() {
     if (!cloudReady || !cloudSynced || !ownerMode) return undefined
 
     const timer = window.setTimeout(() => {
-      void saveCloudData({ adBanners, categories, categoryImages, heroVideo, posts })
-    }, 800)
+      const previous = cloudSnapshotRef.current
+      if (!previous) return
+
+      const next = { adBanners, categories, categoryImages, heroVideo, posts }
+      const patch = createCloudPatch(previous, next)
+      if (!hasCloudPatchChanges(patch)) return
+
+      cloudSnapshotRef.current = next
+      void queueCloudPatch(patch, next).then((saved) => {
+        if (!saved && cloudSnapshotRef.current === next) cloudSnapshotRef.current = previous
+      })
+    }, 450)
 
     return () => window.clearTimeout(timer)
   }, [adBanners, categories, categoryImages, cloudReady, cloudSynced, heroVideo, ownerMode, posts])
@@ -677,6 +742,7 @@ export type UpdatePost = (patch: Partial<Post>) => void
 export type ChangeStatus = (status: PostStatus) => void
 
 let cloudSaveWarningShown = false
+let cloudPatchQueue: Promise<boolean> = Promise.resolve(true)
 
 function ensureAdminToken() {
   const savedToken = window.localStorage.getItem(ADMIN_TOKEN_KEY)
@@ -694,7 +760,7 @@ function ensureAdminToken() {
 
 async function saveCloudData(data: Required<Pick<CloudBlogData, 'adBanners' | 'categories' | 'categoryImages' | 'heroVideo' | 'posts'>>) {
   const token = window.localStorage.getItem(ADMIN_TOKEN_KEY)
-  if (!token) return
+  if (!token) return false
 
   try {
     const response = await fetch(getCloudDataEndpoint(), {
@@ -712,10 +778,120 @@ async function saveCloudData(data: Required<Pick<CloudBlogData, 'adBanners' | 'c
         cloudSaveWarningShown = true
         window.alert('Netlify 저장 토큰이 맞지 않아 서버 저장에 실패했습니다. 글쓰기 모드에 다시 들어가 토큰을 확인해 주세요.')
       }
+      return false
     }
+
+    if (response.ok) announceCloudUpdate()
+    return response.ok
   } catch {
     // 네트워크가 없거나 로컬 개발 서버에서는 서버 저장만 건너뜁니다.
+    return false
   }
+}
+
+function queueCloudPatch(patch: CloudBlogPatch, fallbackData: CloudBlogSnapshot) {
+  const queuedSave = cloudPatchQueue.then(() => saveCloudPatch(patch, fallbackData))
+  cloudPatchQueue = queuedSave.catch(() => false)
+  return queuedSave
+}
+
+async function saveCloudPatch(patch: CloudBlogPatch, fallbackData: CloudBlogSnapshot) {
+  const token = window.localStorage.getItem(ADMIN_TOKEN_KEY)
+  if (!token) return false
+
+  try {
+    const response = await fetch(getCloudDataEndpoint(), {
+      method: 'PATCH',
+      headers: {
+        'content-type': 'application/json',
+        'x-blog-admin-token': token,
+      },
+      body: JSON.stringify(patch),
+    })
+
+    if (response.status === 401) {
+      window.localStorage.removeItem(ADMIN_TOKEN_KEY)
+      if (!cloudSaveWarningShown) {
+        cloudSaveWarningShown = true
+        window.alert('Netlify 저장 토큰이 맞지 않아 서버 저장에 실패했습니다. 글쓰기 모드에 다시 들어가 토큰을 확인해 주세요.')
+      }
+      return false
+    }
+
+    // 새 PATCH 함수가 아직 배포되지 않은 로컬 개발 환경에서는 기존 전체 저장으로 한 번만 대체합니다.
+    if (response.status === 404 || response.status === 405) {
+      return saveCloudData(fallbackData)
+    }
+
+    if (response.ok) announceCloudUpdate()
+    return response.ok
+  } catch {
+    return false
+  }
+}
+
+function createCloudPatch(previous: CloudBlogSnapshot, next: CloudBlogSnapshot): CloudBlogPatch {
+  const patch: CloudBlogPatch = {}
+
+  if (previous.adBanners !== next.adBanners) patch.adBanners = next.adBanners
+  if (previous.categories !== next.categories) patch.categories = next.categories
+  if (previous.categoryImages !== next.categoryImages) patch.categoryImages = next.categoryImages
+  if (previous.heroVideo !== next.heroVideo) patch.heroVideo = next.heroVideo
+
+  const previousPosts = new Map(previous.posts.map((post) => [post.id, post]))
+  const nextPostIds = new Set(next.posts.map((post) => post.id))
+  const deletedPostIds = previous.posts.filter((post) => !nextPostIds.has(post.id)).map((post) => post.id)
+  const postChanges = next.posts.flatMap((post) => {
+    const previousPost = previousPosts.get(post.id)
+    if (!previousPost) return [{ id: post.id, patch: post }]
+    if (previousPost === post) return []
+
+    const changedFields: Partial<Post> = {}
+    ;(Object.keys(post) as Array<keyof Post>).forEach((key) => {
+      if (previousPost[key] !== post[key]) Object.assign(changedFields, { [key]: post[key] })
+    })
+
+    return Object.keys(changedFields).length ? [{ id: post.id, patch: changedFields }] : []
+  })
+
+  if (deletedPostIds.length) patch.deletedPostIds = deletedPostIds
+  if (postChanges.length) patch.postChanges = postChanges
+  return patch
+}
+
+function hasCloudPatchChanges(patch: CloudBlogPatch) {
+  return Object.keys(patch).length > 0
+}
+
+function createLightweightPostCache(posts: Post[]) {
+  return posts.map((post) => ({
+    ...post,
+    content: '',
+    coverImage: isEmbeddedImage(post.coverImage) ? '' : post.coverImage,
+  }))
+}
+
+function createLightweightBannerCache(banners: AdBannerSettings[]) {
+  return banners.map((banner) => ({
+    ...banner,
+    image: isEmbeddedImage(banner.image) ? '' : banner.image,
+  }))
+}
+
+function stripEmbeddedImages(images: Record<string, string>) {
+  return Object.fromEntries(Object.entries(images).filter(([, image]) => !isEmbeddedImage(image)))
+}
+
+function isEmbeddedImage(value: string) {
+  return value.startsWith('data:image/')
+}
+
+function announceCloudUpdate() {
+  if (!('BroadcastChannel' in window)) return
+
+  const channel = new BroadcastChannel(CLOUD_UPDATE_CHANNEL)
+  channel.postMessage({ type: 'updated' })
+  channel.close()
 }
 
 function fileToOptimizedCategoryDataUrl(file: File) {
@@ -812,8 +988,8 @@ function normalizePostStatus(value: unknown): PostStatus {
   return value === 'draft' || value === 'published' || value === 'archived' ? value : 'draft'
 }
 
-function readSettings(): BlogSettings {
-  const stored = loadJson<Partial<BlogSettings> & { adBanner?: AdBannerSettings }>(SETTINGS_KEY, DEFAULT_SETTINGS)
+function readSettings(storageKey = SETTINGS_KEY): BlogSettings {
+  const stored = loadJson<Partial<BlogSettings> & { adBanner?: AdBannerSettings }>(storageKey, DEFAULT_SETTINGS)
 
   return {
     darkMode: stored.darkMode ?? DEFAULT_SETTINGS.darkMode,

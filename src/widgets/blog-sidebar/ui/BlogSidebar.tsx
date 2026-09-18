@@ -59,8 +59,9 @@ export function BlogSidebar({
 
   const dropCategory = (event: DragEvent<HTMLDivElement>, targetCategory: string) => {
     event.preventDefault()
-    if (draggedCategory && draggedCategory !== targetCategory) {
-      onReorderCategory(draggedCategory, targetCategory)
+    const sourceCategory = event.dataTransfer.getData('text/plain') || draggedCategory
+    if (sourceCategory && sourceCategory !== targetCategory) {
+      onReorderCategory(sourceCategory, targetCategory)
     }
     finishCategoryDrag()
   }
@@ -121,7 +122,14 @@ export function BlogSidebar({
         {categoryCounts.map((category, index) => (
           <div
             className={`category-row ${categoryFilter === category.name ? 'is-selected' : ''} ${draggedCategory === category.name ? 'is-dragging' : ''} ${dragOverCategory === category.name && draggedCategory !== category.name ? 'is-drag-over' : ''}`}
+            draggable
             key={category.name}
+            onDragStart={(event) => {
+              setDraggedCategory(category.name)
+              event.dataTransfer.effectAllowed = 'move'
+              event.dataTransfer.setData('text/plain', category.name)
+            }}
+            onDragEnd={finishCategoryDrag}
             onDragOver={(event) => {
               event.preventDefault()
               event.dataTransfer.dropEffect = 'move'
@@ -134,26 +142,20 @@ export function BlogSidebar({
           >
             <button type="button" onClick={() => onCategoryFilterChange(category.name)}>
               <span className="category-thumb">
-                {categoryImages[category.name] ? <img src={categoryImages[category.name]} alt="" /> : category.name.slice(0, 1)}
+                {categoryImages[category.name] ? <img src={categoryImages[category.name]} alt="" draggable={false} /> : category.name.slice(0, 1)}
               </span>
               <span>{category.name}</span>
               <small>{category.count}</small>
             </button>
             <div className="category-actions">
-              <button
+              <span
                 className="category-drag-handle"
-                draggable
-                type="button"
+                aria-label="드래그해서 순서 변경"
+                role="img"
                 title="드래그해서 순서 변경"
-                onDragStart={(event) => {
-                  setDraggedCategory(category.name)
-                  event.dataTransfer.effectAllowed = 'move'
-                  event.dataTransfer.setData('text/plain', category.name)
-                }}
-                onDragEnd={finishCategoryDrag}
               >
                 <GripVertical size={14} />
-              </button>
+              </span>
               <button
                 className="category-order-button"
                 type="button"

@@ -8598,6 +8598,12 @@ button.category-row.is-selected,
 }
 
 .category-actions .category-drag-handle {
+  width: 28px;
+  height: 28px;
+  display: grid;
+  flex: 0 0 28px;
+  place-items: center;
+  color: #8a97a6;
   cursor: grab;
   touch-action: none;
 }
@@ -9678,7 +9684,7 @@ button.category-row.is-selected,
 /* Partnership contact: a compact floating editorial action. */
 .public-quick-actions {
   right: clamp(14px, 2.2vw, 28px);
-  bottom: calc(clamp(14px, 2.2vw, 28px) + 20px);
+  bottom: calc(clamp(14px, 2.2vw, 28px) + 30px);
   padding: 0;
   border: 0;
   border-radius: 0;
@@ -9754,7 +9760,7 @@ button.category-row.is-selected,
 @media (max-width: 720px) {
   .public-quick-actions {
     right: 12px;
-    bottom: 32px;
+    bottom: 42px;
     padding: 0;
   }
 
