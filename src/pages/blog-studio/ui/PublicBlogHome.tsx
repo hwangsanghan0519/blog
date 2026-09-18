@@ -403,7 +403,10 @@ export function PublicBlogHome({
     <div className="public-blog">
       <AdStripBanners banners={adBanners} />
 
-      <div ref={headerSlotRef} className="public-header-slot">
+      <div
+        ref={headerSlotRef}
+        className={`public-header-slot ${isHeaderDocked && isHeaderCompact ? 'is-scroll-compact' : ''}`}
+      >
       <header
         ref={headerRef}
         className={`public-header ${isHeaderDocked ? 'is-docked' : ''} ${isHeaderCompact ? 'is-scroll-compact' : ''}`}
@@ -573,13 +576,16 @@ export function PublicBlogHome({
 
         <section
           className="public-browser"
-          data-pouch-label={categoryFilter === 'all' ? 'ALL POUCH' : `${categoryFilter} POUCH`}
+          data-pouch-label={categoryFilter === 'all' ? 'ALL PICK' : `${categoryFilter} PICK`}
           aria-label="상품 탐색"
         >
           <div ref={latestHeadRef} className="public-section-head">
             <div>
               <span>Super Deals</span>
-              <h2>{categoryFilter === 'all' ? '전체 파우치' : `${categoryFilter} 파우치`}</h2>
+              <h2>
+                {categoryFilter === 'all' ? 'ALL ' : `${categoryFilter} `}
+                <span className="public-pick-label">PICK</span>
+              </h2>
             </div>
           </div>
 
@@ -778,6 +784,9 @@ function TrendVideo({ settings }: { settings: HeroVideoSettings }) {
   const isEnabled = settings.visibilityConfigured ? settings.enabled : Boolean(settings.youtubeUrl.trim())
   if (!isEnabled || !videoId) return null
 
+  const stickerHref = getSafeExternalHref(settings.stickerHref)
+  const hasSticker = Boolean(settings.stickerImage.trim() && stickerHref)
+
   const playerUrl = new URL(`https://www.youtube.com/embed/${videoId}`)
   playerUrl.searchParams.set('autoplay', '1')
   playerUrl.searchParams.set('mute', '1')
@@ -790,7 +799,7 @@ function TrendVideo({ settings }: { settings: HeroVideoSettings }) {
   playerUrl.searchParams.set('disablekb', '1')
 
   return (
-    <section className="public-trend-video" aria-label={settings.title || '자동재생 추천 영상'}>
+    <section className={`public-trend-video ${hasSticker ? 'has-sticker' : ''}`} aria-label={settings.title || '자동재생 추천 영상'}>
       <iframe
         allow="autoplay; encrypted-media; picture-in-picture"
         allowFullScreen={false}
@@ -799,6 +808,17 @@ function TrendVideo({ settings }: { settings: HeroVideoSettings }) {
         title={settings.title || 'SSEN 추천 영상'}
       />
       <div className="public-trend-video-shade" aria-hidden="true" />
+      {hasSticker && (
+        <a
+          className="public-trend-video-sticker"
+          href={stickerHref}
+          target="_blank"
+          rel="sponsored noopener noreferrer"
+          aria-label="추천 상품 링크 새 창에서 열기"
+        >
+          <img src={settings.stickerImage} alt="" decoding="async" loading="lazy" />
+        </a>
+      )}
       <div className="public-trend-video-copy">
         <span>{settings.eyebrow || 'NOW PLAYING'}</span>
         <strong>{settings.title || 'SSEN VIDEO PICK'}</strong>
@@ -808,6 +828,15 @@ function TrendVideo({ settings }: { settings: HeroVideoSettings }) {
       </div>
     </section>
   )
+}
+
+function getSafeExternalHref(value: string) {
+  try {
+    const url = new URL(value.trim())
+    return url.protocol === 'https:' || url.protocol === 'http:' ? url.toString() : ''
+  } catch {
+    return ''
+  }
 }
 
 function getYoutubeVideoId(value: string) {

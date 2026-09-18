@@ -42,6 +42,8 @@ export type HeroVideoSettings = {
   youtubeUrl: string
   eyebrow: string
   title: string
+  stickerImage: string
+  stickerHref: string
 }
 
 type BlogSettings = {
@@ -133,6 +135,8 @@ const DEFAULT_HERO_VIDEO: HeroVideoSettings = {
   youtubeUrl: '',
   eyebrow: 'NOW PLAYING',
   title: 'SSEN VIDEO PICK',
+  stickerImage: '',
+  stickerHref: '',
 }
 
 const DEFAULT_SETTINGS: BlogSettings = {
@@ -267,7 +271,7 @@ export function useBlogStudio() {
       saveJson(lightweightCacheMode ? PUBLIC_SETTINGS_KEY : SETTINGS_KEY, {
         darkMode,
         adBanners: lightweightCacheMode ? createLightweightBannerCache(adBanners) : adBanners,
-        heroVideo,
+        heroVideo: lightweightCacheMode ? createLightweightHeroVideoCache(heroVideo) : heroVideo,
       })
     }, 900)
 
@@ -604,6 +608,20 @@ export function useBlogStudio() {
     setHeroVideo((current) => ({ ...current, ...patch }))
   }
 
+  const handleHeroVideoStickerUpload = async (event: ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0]
+    if (!file) return
+
+    try {
+      const stickerImage = await imageFileToOptimizedDataUrl(file, 720, 0.88)
+      updateHeroVideo({ stickerImage })
+    } catch {
+      window.alert('스티커 이미지를 처리하지 못했습니다. 다른 이미지를 선택해 주세요.')
+    } finally {
+      event.target.value = ''
+    }
+  }
+
   const unlockOwnerMode = () => {
     const savedPassword = window.localStorage.getItem(OWNER_PASSWORD_KEY)
 
@@ -708,6 +726,7 @@ export function useBlogStudio() {
     handleCoverUpload,
     handleAdBannerImageUpload,
     handleCategoryImageUpload,
+    handleHeroVideoStickerUpload,
     heroVideo,
     importBackup,
     importRef,
@@ -879,6 +898,13 @@ function createLightweightBannerCache(banners: AdBannerSettings[]) {
     ...banner,
     image: isEmbeddedImage(banner.image) ? '' : banner.image,
   }))
+}
+
+function createLightweightHeroVideoCache(settings: HeroVideoSettings): HeroVideoSettings {
+  return {
+    ...settings,
+    stickerImage: isEmbeddedImage(settings.stickerImage) ? '' : settings.stickerImage,
+  }
 }
 
 function stripEmbeddedImages(images: Record<string, string>) {
@@ -1060,6 +1086,8 @@ function normalizeHeroVideo(value?: Partial<HeroVideoSettings>): HeroVideoSettin
     enabled: visibilityConfigured ? Boolean(value?.enabled) : Boolean(youtubeUrl.trim()),
     eyebrow: typeof value?.eyebrow === 'string' ? value.eyebrow : DEFAULT_HERO_VIDEO.eyebrow,
     title: typeof value?.title === 'string' ? value.title : DEFAULT_HERO_VIDEO.title,
+    stickerImage: typeof value?.stickerImage === 'string' ? value.stickerImage : '',
+    stickerHref: typeof value?.stickerHref === 'string' ? value.stickerHref : '',
     visibilityConfigured,
     youtubeUrl,
   }

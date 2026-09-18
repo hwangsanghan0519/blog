@@ -429,6 +429,17 @@ function createPublicSummary(data: BlogData): BlogData {
         publicAssetUrl('category', category, version, image),
       ]),
     ),
+    heroVideo: isRecord(data.heroVideo)
+      ? {
+          ...data.heroVideo,
+          stickerImage: publicAssetUrl(
+            'hero-video',
+            'sticker',
+            version,
+            typeof data.heroVideo.stickerImage === 'string' ? data.heroVideo.stickerImage : '',
+          ),
+        }
+      : data.heroVideo,
     posts: data.posts
       .filter((post): post is Record<string, unknown> => isRecord(post) && post.status === 'published')
       .map((post) => {
@@ -459,6 +470,12 @@ function findPublicAsset(data: BlogData, kind: string, id: string) {
       return bannerId === id
     })
     return isRecord(banner) && typeof banner.image === 'string' ? banner.image : ''
+  }
+
+  if (kind === 'hero-video' && id === 'sticker') {
+    return isRecord(data.heroVideo) && typeof data.heroVideo.stickerImage === 'string'
+      ? data.heroVideo.stickerImage
+      : ''
   }
 
   return ''
@@ -586,6 +603,10 @@ async function externalizeEmbeddedImages(data: BlogData): Promise<BlogData> {
     Object.entries(data.categoryImages).map(async ([category, image]) => [category, await upload(image, 'category')]),
   ))
 
+  const heroVideo = isRecord(data.heroVideo) && typeof data.heroVideo.stickerImage === 'string'
+    ? { ...data.heroVideo, stickerImage: await upload(data.heroVideo.stickerImage, 'video-sticker') }
+    : data.heroVideo
+
   const posts = await Promise.all(data.posts.map(async (post) => {
     if (!isRecord(post)) return post
 
@@ -594,7 +615,7 @@ async function externalizeEmbeddedImages(data: BlogData): Promise<BlogData> {
     return { ...post, coverImage, content }
   }))
 
-  return { ...data, adBanners, categoryImages, posts }
+  return { ...data, adBanners, categoryImages, heroVideo, posts }
 }
 
 async function externalizeContentImages(content: string, upload: (source: string, kind: string) => Promise<string>) {

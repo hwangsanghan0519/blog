@@ -140,7 +140,11 @@ export function BlogStudioPage() {
             </span>
             <small>유튜브 주소 등록 · 무음 자동재생 · 반복 재생</small>
           </summary>
-          <HeroVideoAdminPanel settings={studio.heroVideo} onUpdate={studio.updateHeroVideo} />
+          <HeroVideoAdminPanel
+            settings={studio.heroVideo}
+            onStickerImageUpload={studio.handleHeroVideoStickerUpload}
+            onUpdate={studio.updateHeroVideo}
+          />
         </details>
 
         {studio.view !== 'preview' && (
@@ -169,9 +173,11 @@ export function BlogStudioPage() {
 
 function HeroVideoAdminPanel({
   settings,
+  onStickerImageUpload,
   onUpdate,
 }: {
   settings: HeroVideoSettings
+  onStickerImageUpload: (event: ChangeEvent<HTMLInputElement>) => void
   onUpdate: (patch: Partial<HeroVideoSettings>) => void
 }) {
   return (
@@ -215,6 +221,29 @@ function HeroVideoAdminPanel({
           }}
         />
         <small>주소를 등록하면 자동 노출됩니다. 직접 노출 스위치를 끈 이후에는 해당 설정을 유지합니다.</small>
+      </label>
+
+      <label className="ad-admin-image hero-video-sticker-image">
+        <span>플로팅 스티커 이미지</span>
+        <input type="file" accept="image/*" onChange={onStickerImageUpload} />
+        {settings.stickerImage ? <img src={settings.stickerImage} alt="등록된 영상 스티커 미리보기" /> : <ImagePlus size={24} />}
+      </label>
+
+      {settings.stickerImage && (
+        <button className="ad-admin-remove hero-video-sticker-remove" type="button" onClick={() => onUpdate({ stickerImage: '' })}>
+          <Trash2 size={16} /> 스티커 삭제
+        </button>
+      )}
+
+      <label className="ad-admin-wide hero-video-sticker-link">
+        스티커 이동 링크
+        <input
+          inputMode="url"
+          value={settings.stickerHref}
+          placeholder="https://link.coupang.com/..."
+          onChange={(event) => onUpdate({ stickerHref: event.target.value })}
+        />
+        <small>이미지와 링크가 모두 등록되면 영상 오른쪽 상단에 클릭 가능한 스티커가 표시됩니다.</small>
       </label>
     </section>
   )
