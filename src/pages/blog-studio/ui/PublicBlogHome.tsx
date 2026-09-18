@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import type { CSSProperties, KeyboardEvent, MouseEvent, PointerEvent, UIEvent } from 'react'
 import * as Dialog from '@radix-ui/react-dialog'
-import { ArrowUp, ChevronLeft, ChevronRight, ExternalLink, Mail, Share2, ShoppingBag, X, Zap } from 'lucide-react'
+import { ArrowUp, Camera, ChevronLeft, ChevronRight, ExternalLink, Mail, Share2, ShoppingBag, ShoppingCart, X, Zap } from 'lucide-react'
 import { useKeenSlider } from 'keen-slider/react'
 import 'keen-slider/keen-slider.min.css'
 import { countWords } from '../../../entities/post/lib/formatters'
@@ -60,7 +60,6 @@ export function PublicBlogHome({
   const [selectedId, setSelectedId] = useState('')
   const [currentSlide, setCurrentSlide] = useState(0)
   const [readingProgress, setReadingProgress] = useState(0)
-  const [isProductBuyBarVisible, setIsProductBuyBarVisible] = useState(false)
   const [isHeaderCompact, setIsHeaderCompact] = useState(false)
   const [isHeaderDocked, setIsHeaderDocked] = useState(false)
   const [loadingDetailId, setLoadingDetailId] = useState('')
@@ -230,7 +229,6 @@ export function PublicBlogHome({
       setSelectedId(targetPost?.id ?? '')
       if (targetPost) requestPostDetail(targetPost.id)
       setReadingProgress(0)
-      setIsProductBuyBarVisible(false)
     }
 
     syncViewFromUrl()
@@ -265,14 +263,12 @@ export function PublicBlogHome({
     setSelectedId(post.id)
     requestPostDetail(post.id)
     setReadingProgress(0)
-    setIsProductBuyBarVisible(false)
     syncPostParam(post.slug || post.id)
   }
 
   const closeReader = () => {
     setSelectedId('')
     setReadingProgress(0)
-    setIsProductBuyBarVisible(false)
     syncPostParam('', categoryFilter === 'all' ? '' : categoryFilter)
   }
 
@@ -346,17 +342,6 @@ export function PublicBlogHome({
     const target = event.currentTarget
     const maxScroll = target.scrollHeight - target.clientHeight
     setReadingProgress(maxScroll > 0 ? Math.min(100, Math.round((target.scrollTop / maxScroll) * 100)) : 100)
-
-    const detailBody = target.querySelector<HTMLElement>('.product-detail-body')
-    if (!detailBody) {
-      setIsProductBuyBarVisible(false)
-      return
-    }
-
-    const scrollBounds = target.getBoundingClientRect()
-    const detailBounds = detailBody.getBoundingClientRect()
-    const entryLine = scrollBounds.bottom - Math.min(140, target.clientHeight * 0.18)
-    setIsProductBuyBarVisible(detailBounds.top <= entryLine)
   }
 
   // 이전/다음 버튼은 화면상 모달 밖에 두되, Dialog의 바깥 클릭 닫힘으로 처리되지 않게 제외합니다.
@@ -397,6 +382,12 @@ export function PublicBlogHome({
         scrollToHeaderEdge(latestHeadRef.current, headerRef.current)
       }
     }, 40)
+  }
+
+  const browseReaderCategory = (category: string) => {
+    setSelectedId('')
+    setReadingProgress(0)
+    selectCategory(category)
   }
 
   return (
@@ -658,7 +649,9 @@ export function PublicBlogHome({
                       </div>
                       <div className="product-detail-summary">
                         <div className="public-reader-meta">
-                          <span>{selectedPost.category}</span>
+                          <button type="button" onClick={() => browseReaderCategory(selectedPost.category)}>
+                            {selectedPost.category}
+                          </button>
                         </div>
                         <Dialog.Title className={`public-reader-title ${getProductTitleSizeClass(selectedPost.title)}`}>
                           {selectedPost.title}
@@ -675,11 +668,17 @@ export function PublicBlogHome({
                       </div>
                     </section>
                     <section className="product-detail-body" aria-label="상품 상세 정보">
-                      <header>
-                        <span>PRODUCT STORY</span>
-                        <h2>상품 상세</h2>
-                        <p>구매 전에 알아두면 좋은 핵심 정보를 확인하세요.</p>
-                      </header>
+                      <div className="product-detail-side">
+                        <header>
+                          <span>PRODUCT STORY</span>
+                          <h2>상품 상세</h2>
+                          <p>구매 전에 알아두면 좋은 핵심 정보</p>
+                        </header>
+                        <ProductDetailSideFooter
+                          post={selectedPost}
+                          onCategorySelect={() => browseReaderCategory(selectedPost.category)}
+                        />
+                      </div>
                       {loadingDetailId === selectedPost.id ? (
                         <div className="product-detail-loading" aria-live="polite">상품 상세를 준비하고 있습니다.</div>
                       ) : (
@@ -689,7 +688,6 @@ export function PublicBlogHome({
                   </div>
                 </div>
               </div>
-              {isProductBuyBarVisible && <ProductBottomBuyBar post={selectedPost} />}
             </Dialog.Content>
           )}
           {selectedPost && (
@@ -1018,6 +1016,8 @@ function ProductImageGallery({ post }: { post: Post }) {
     [post.coverImage, post.detailImages],
   )
   const [activeIndex, setActiveIndex] = useState(0)
+  const thumbsRef = useRef<HTMLDivElement>(null)
+  const thumbDragRef = useRef({ active: false, moved: false, scrollLeft: 0, startX: 0 })
   const [galleryRef, gallery] = useKeenSlider<HTMLDivElement>({
     rubberband: false,
     slides: { perView: 1 },
@@ -1034,6 +1034,53 @@ function ProductImageGallery({ post }: { post: Post }) {
     })
     return () => window.cancelAnimationFrame(frame)
   }, [gallery, images.length, post.id])
+
+  useEffect(() => {
+    const rail = thumbsRef.current
+    const activeThumb = rail?.querySelector<HTMLElement>('[aria-current="true"]')
+    if (!rail || !activeThumb) return
+
+    const nextLeft = activeThumb.offsetLeft - (rail.clientWidth - activeThumb.offsetWidth) / 2
+    rail.scrollTo({ behavior: 'smooth', left: Math.max(0, nextLeft) })
+  }, [activeIndex])
+
+  const startThumbDrag = (event: PointerEvent<HTMLDivElement>) => {
+    if (event.pointerType !== 'mouse' || event.button !== 0) return
+
+    const rail = event.currentTarget
+    thumbDragRef.current = {
+      active: true,
+      moved: false,
+      scrollLeft: rail.scrollLeft,
+      startX: event.clientX,
+    }
+  }
+
+  const moveThumbDrag = (event: PointerEvent<HTMLDivElement>) => {
+    const drag = thumbDragRef.current
+    if (!drag.active) return
+
+    const distance = event.clientX - drag.startX
+    if (Math.abs(distance) > 3 && !drag.moved) {
+      drag.moved = true
+      event.currentTarget.setPointerCapture(event.pointerId)
+      event.currentTarget.classList.add('is-dragging')
+    }
+    if (!drag.moved) return
+
+    event.preventDefault()
+    event.currentTarget.scrollLeft = drag.scrollLeft - distance
+  }
+
+  const endThumbDrag = (event: PointerEvent<HTMLDivElement>) => {
+    if (!thumbDragRef.current.active) return
+
+    thumbDragRef.current.active = false
+    if (event.currentTarget.hasPointerCapture(event.pointerId)) {
+      event.currentTarget.releasePointerCapture(event.pointerId)
+    }
+    event.currentTarget.classList.remove('is-dragging')
+  }
 
   if (images.length === 0) {
     return (
@@ -1080,19 +1127,41 @@ function ProductImageGallery({ post }: { post: Post }) {
               <ChevronRight size={19} />
             </button>
           </div>
-          <div className="product-gallery-thumbs" aria-label="상품 이미지 선택">
-            {images.map((image, index) => (
-              <button
-                className={activeIndex === index ? 'is-active' : ''}
-                type="button"
-                aria-label={`${index + 1}번 이미지 보기`}
-                aria-current={activeIndex === index ? 'true' : undefined}
-                key={`${image.src.slice(0, 48)}-${index}`}
-                onClick={() => gallery.current?.moveToIdx(index)}
-              >
-                <img src={image.src} alt="" decoding="async" loading="lazy" />
-              </button>
-            ))}
+          <div
+            ref={thumbsRef}
+            className="product-gallery-thumbs"
+            aria-label="상품 이미지 선택"
+            onPointerCancel={endThumbDrag}
+            onPointerDown={startThumbDrag}
+            onPointerMove={moveThumbDrag}
+            onPointerUp={endThumbDrag}
+            onWheel={(event) => {
+              if (event.currentTarget.scrollWidth <= event.currentTarget.clientWidth) return
+              event.preventDefault()
+              event.currentTarget.scrollLeft += Math.abs(event.deltaY) > Math.abs(event.deltaX) ? event.deltaY : event.deltaX
+            }}
+          >
+            <div className="product-gallery-thumbs-track">
+              {images.map((image, index) => (
+                <button
+                  className={activeIndex === index ? 'is-active' : ''}
+                  type="button"
+                  aria-label={`${index + 1}번 이미지 보기`}
+                  aria-current={activeIndex === index ? 'true' : undefined}
+                  key={`${image.src.slice(0, 48)}-${index}`}
+                  onClick={(event) => {
+                    if (thumbDragRef.current.moved) {
+                      event.preventDefault()
+                      thumbDragRef.current.moved = false
+                      return
+                    }
+                    gallery.current?.moveToIdx(index)
+                  }}
+                >
+                  <img src={image.src} alt="" decoding="async" draggable={false} loading="lazy" />
+                </button>
+              ))}
+            </div>
           </div>
           <span className="product-gallery-swipe" aria-hidden="true">SWIPE TO VIEW →</span>
         </>
@@ -1113,12 +1182,11 @@ function ProductDetailContent({ post }: { post: Post }) {
   return (
     <section className="ssen-four-cut" aria-label="쎈네컷 상품 상세">
       <header>
-        <span>SSEN PRODUCT STORY</span>
-        <strong>FOUR CUT DETAIL</strong>
+        <strong><Camera aria-hidden="true" />최저가로 구매하는데 4컷이면 충분</strong>
       </header>
       <ol>
         {frames.map((frame, index) => (
-          <li key={`${frame.image.slice(0, 48)}-${index}`}>
+          <li data-four-cut-index={index} key={`${frame.image.slice(0, 48)}-${index}`}>
             <figure>
               <img src={frame.image} alt={`${post.title} 상세 ${index + 1}`} decoding="async" loading="lazy" />
               <span>{String(index + 1).padStart(2, '0')}</span>
@@ -1260,33 +1328,28 @@ function ProductLinkPanel({ post }: { post: Post }) {
   )
 }
 
-function ProductBottomBuyBar({ post }: { post: Post }) {
-  const links = post.productLinks.filter((link) => link.href.trim())
-
-  if (!links.length) return null
-
-  const primaryLink = getBestProductLink(post) ?? links[0]
-  const orderedLinks = [primaryLink, ...links.filter((link) => link.id !== primaryLink.id)]
+function ProductDetailSideFooter({ post, onCategorySelect }: { post: Post; onCategorySelect: () => void }) {
+  const primaryLink = getBestProductLink(post)
 
   return (
-    <nav className="product-bottom-buy-bar" aria-label="제휴몰 바로가기">
-      <p className="product-bottom-buy-summary">
-        <span>{post.excerpt || post.title}</span>
-      </p>
-      <strong>
-        {primaryLink.mall.trim() && <small>{primaryLink.mall}</small>}
-        <span>{primaryLink.price || '가격 확인'}</span>
-      </strong>
-      <div>
-        {orderedLinks.map((link, index) => (
-          <a className={index === 0 ? 'is-primary' : ''} href={link.href} key={link.id} target="_blank" rel="noreferrer sponsored">
-            <span>{index === 0 ? post.purchaseTitle || '최저가 바로가기' : link.mall || '쇼핑몰'}</span>
-            <b>{index === 0 ? '바로 구매' : link.price || '가격 확인'}</b>
-            {index === 0 && <ExternalLink size={16} />}
-          </a>
-        ))}
+    <aside className="product-detail-side-footer" aria-label="상품 상세 푸터">
+      <button className="product-detail-side-footer-category" type="button" onClick={onCategorySelect}>
+        <span>{post.category || 'SSEN PICK'}</span>
+      </button>
+      <div className="product-detail-side-footer-copy">
+        <strong>{post.title}</strong>
+        <p>{post.excerpt || '쎈이 고른 상품의 핵심 정보를 네 컷으로 확인하세요.'}</p>
       </div>
-    </nav>
+      <div className="product-detail-side-footer-price">
+        <strong>{primaryLink?.price || '가격 확인'}</strong>
+      </div>
+      {primaryLink?.href.trim() && (
+        <a href={primaryLink.href} target="_blank" rel="noreferrer sponsored">
+          <span>최저가 보기</span>
+          <ShoppingCart aria-hidden="true" />
+        </a>
+      )}
+    </aside>
   )
 }
 
