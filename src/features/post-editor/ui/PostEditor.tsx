@@ -47,7 +47,7 @@ import { useEffect, useMemo, useRef } from 'react'
 import { normalizeEditorContent } from '../../../entities/post/lib/content'
 import { slugify } from '../../../entities/post/lib/formatters'
 import type { Post, PostStatus, ProductLink } from '../../../entities/post/model/types'
-import { fileToDataUrl } from '../../../shared/lib/file'
+import { imageFileToOptimizedDataUrl } from '../../../shared/lib/file'
 
 type PostEditorProps = {
   categories: string[]
@@ -156,7 +156,7 @@ export function PostEditor({ categories, post, onCoverUpload, onUpdate }: PostEd
     const file = event.target.files?.[0]
     if (!file || !editor) return
 
-    const src = await fileToDataUrl(file)
+    const src = await imageFileToOptimizedDataUrl(file, 1600, 0.78)
     editor.chain().focus().setImage({ src, alt: file.name }).run()
     event.target.value = ''
   }

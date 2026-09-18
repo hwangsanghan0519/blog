@@ -1,7 +1,6 @@
 import { Eye, ImagePlus, Lock, PenLine, Play, Plus, Settings2, Trash2, X } from 'lucide-react'
 import type { ChangeEvent } from 'react'
-import { useEffect, useRef } from 'react'
-import { PostEditor } from '../../../features/post-editor/ui/PostEditor'
+import { lazy, Suspense, useEffect, useRef } from 'react'
 import { EmptyState } from '../../../shared/ui/EmptyState'
 import { BlogSidebar } from '../../../widgets/blog-sidebar/ui/BlogSidebar'
 import { PostPreview } from '../../../widgets/post-preview/ui/PostPreview'
@@ -10,6 +9,11 @@ import type { AdBannerSettings, HeroVideoSettings } from '../model/useBlogStudio
 import { GMARKET_SAMPLE_BANNER, GMARKET_SAMPLE_BANNER_IMAGE } from '../model/useBlogStudio'
 import { useBlogStudio } from '../model/useBlogStudio'
 import { PublicBlogHome } from './PublicBlogHome'
+
+const PostEditor = lazy(async () => {
+  const module = await import('../../../features/post-editor/ui/PostEditor')
+  return { default: module.PostEditor }
+})
 
 export function BlogStudioPage() {
   const studio = useBlogStudio()
@@ -24,16 +28,6 @@ export function BlogStudioPage() {
     }
   }, [isSecretAdminPath, studio])
 
-  if (!studio.cloudReady) {
-    return (
-      <main className="blog-loading-screen">
-        <span aria-hidden="true" />
-        <strong>Supabase에서 상품 데이터를 불러오는 중입니다.</strong>
-        <p>방문자 화면과 관리자 화면 모두 같은 상품/제휴 링크 데이터를 사용합니다.</p>
-      </main>
-    )
-  }
-
   if (!studio.ownerMode) {
     return (
       <PublicBlogHome
@@ -44,6 +38,7 @@ export function BlogStudioPage() {
         heroVideo={studio.heroVideo}
         posts={studio.posts}
         onCategoryFilterChange={studio.setCategoryFilter}
+        onRequestPost={studio.loadPostDetail}
       />
     )
   }
@@ -67,6 +62,8 @@ export function BlogStudioPage() {
         onCreate={() => studio.createPost()}
         onCreateCategory={studio.createCategory}
         onDeleteCategory={studio.deleteCategory}
+        onMoveCategory={studio.moveCategory}
+        onReorderCategory={studio.reorderCategory}
         onCategoryImageUpload={studio.handleCategoryImageUpload}
         onClearCategoryImage={studio.clearCategoryImage}
         onQueryChange={studio.setQuery}
@@ -139,12 +136,14 @@ export function BlogStudioPage() {
         </details>
 
         {studio.view !== 'preview' && (
-          <PostEditor
-            categories={studio.categories}
-            post={activePost}
-            onCoverUpload={studio.handleCoverUpload}
-            onUpdate={studio.updatePost}
-          />
+          <Suspense fallback={null}>
+            <PostEditor
+              categories={studio.categories}
+              post={activePost}
+              onCoverUpload={studio.handleCoverUpload}
+              onUpdate={studio.updatePost}
+            />
+          </Suspense>
         )}
 
         {studio.view === 'preview' && <PostPreview post={activePost} />}

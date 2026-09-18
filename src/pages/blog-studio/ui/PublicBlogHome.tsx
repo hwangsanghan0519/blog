@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef, useState } from 'react'
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import type { CSSProperties, KeyboardEvent, MouseEvent, PointerEvent, UIEvent } from 'react'
 import * as Dialog from '@radix-ui/react-dialog'
 import { ArrowUp, ChevronLeft, ChevronRight, ExternalLink, Mail, ShoppingBag, X, Zap } from 'lucide-react'
@@ -18,6 +18,7 @@ type PublicBlogHomeProps = {
   heroVideo: HeroVideoSettings
   adBanners: AdBannerSettings[]
   onCategoryFilterChange: (category: string) => void
+  onRequestPost: (postId: string) => Promise<void>
 }
 
 const CATEGORY_COLUMN_SIZE = 2
@@ -53,6 +54,7 @@ export function PublicBlogHome({
   heroVideo,
   adBanners,
   onCategoryFilterChange,
+  onRequestPost,
 }: PublicBlogHomeProps) {
   const [selectedId, setSelectedId] = useState('')
   const [currentSlide, setCurrentSlide] = useState(0)
@@ -60,6 +62,7 @@ export function PublicBlogHome({
   const [isProductBuyBarVisible, setIsProductBuyBarVisible] = useState(false)
   const [isHeaderCompact, setIsHeaderCompact] = useState(false)
   const [isHeaderDocked, setIsHeaderDocked] = useState(false)
+  const [loadingDetailId, setLoadingDetailId] = useState('')
   const headerRef = useRef<HTMLElement>(null)
   const headerSlotRef = useRef<HTMLDivElement>(null)
   const latestHeadRef = useRef<HTMLDivElement>(null)
@@ -200,6 +203,13 @@ export function PublicBlogHome({
     return () => window.clearTimeout(timer)
   }, [categoryFilter, categorySlider, publicCategories])
 
+  const requestPostDetail = useCallback((postId: string) => {
+    setLoadingDetailId(postId)
+    void onRequestPost(postId).finally(() => {
+      setLoadingDetailId((current) => (current === postId ? '' : current))
+    })
+  }, [onRequestPost])
+
   useEffect(() => {
     const syncViewFromUrl = () => {
       const searchParams = new URLSearchParams(window.location.search)
@@ -210,6 +220,7 @@ export function PublicBlogHome({
 
       onCategoryFilterChange(targetCategory)
       setSelectedId(targetPost?.id ?? '')
+      if (targetPost) requestPostDetail(targetPost.id)
       setReadingProgress(0)
       setIsProductBuyBarVisible(false)
     }
@@ -218,7 +229,7 @@ export function PublicBlogHome({
     window.addEventListener('popstate', syncViewFromUrl)
 
     return () => window.removeEventListener('popstate', syncViewFromUrl)
-  }, [onCategoryFilterChange, publicCategories, publishedPosts])
+  }, [onCategoryFilterChange, publicCategories, publishedPosts, requestPostDetail])
 
   useEffect(() => {
     const pendingScroll = pendingCategoryScrollRef.current
@@ -244,6 +255,7 @@ export function PublicBlogHome({
     if (!post) return
 
     setSelectedId(post.id)
+    requestPostDetail(post.id)
     setReadingProgress(0)
     setIsProductBuyBarVisible(false)
     syncPostParam(post.slug || post.id)
@@ -451,7 +463,7 @@ export function PublicBlogHome({
                   >
                     <button type="button" onClick={() => selectPost(post.id)}>
                       <div className="public-best-v2-media" data-rank={String(index + 1).padStart(2, '0')}>
-                        <PostImage post={post} />
+                        <PostImage post={post} priority={index === 0} />
                         <strong className="public-rank">
                           <small>TOP</small>
                           <b>{String(index + 1).padStart(2, '0')}</b>
@@ -614,7 +626,11 @@ export function PublicBlogHome({
                         <h2>상품 상세</h2>
                         <p>구매 전에 알아두면 좋은 핵심 정보를 확인하세요.</p>
                       </header>
-                      <RenderedContent content={selectedPost.content} />
+                      {loadingDetailId === selectedPost.id ? (
+                        <div className="product-detail-loading" aria-live="polite">상품 상세를 준비하고 있습니다.</div>
+                      ) : (
+                        <RenderedContent content={selectedPost.content} />
+                      )}
                     </section>
                   </div>
                 </div>
@@ -696,7 +712,7 @@ function CategoryVisual({ image, label }: { image?: string; label: string }) {
   if (image) {
     return (
       <span className="public-category-visual" style={{ '--celeb-image': `url(${image})` } as CSSProperties} aria-hidden="true">
-        <img src={image} alt="" />
+        <img src={image} alt="" decoding="async" loading="lazy" />
       </span>
     )
   }
@@ -729,7 +745,7 @@ function TrendVideo({ settings }: { settings: HeroVideoSettings }) {
       <iframe
         allow="autoplay; encrypted-media; picture-in-picture"
         allowFullScreen={false}
-        loading="eager"
+        loading="lazy"
         src={playerUrl.toString()}
         title={settings.title || 'SSEN 추천 영상'}
       />
@@ -814,7 +830,7 @@ function AdStripBanner({ banner }: { banner: AdBannerSettings }) {
     <>
       {banner.image ? (
         <figure>
-          <img src={banner.image} alt="" />
+          <img src={banner.image} alt="" decoding="async" loading="lazy" />
         </figure>
       ) : (
         <>
@@ -852,9 +868,17 @@ function AdStripBanner({ banner }: { banner: AdBannerSettings }) {
   )
 }
 
-function PostImage({ post }: { post: Post }) {
+function PostImage({ post, priority = false }: { post: Post; priority?: boolean }) {
   if (post.coverImage) {
-    return <img src={post.coverImage} alt="" />
+    return (
+      <img
+        src={post.coverImage}
+        alt=""
+        decoding="async"
+        fetchPriority={priority ? 'high' : 'auto'}
+        loading={priority ? 'eager' : 'lazy'}
+      />
+    )
   }
 
   return (

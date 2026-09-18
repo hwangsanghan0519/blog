@@ -1181,47 +1181,6 @@ button.category-row.is-selected {
   background: var(--canvas);
 }
 
-.blog-loading-screen {
-  min-height: 100vh;
-  display: grid;
-  place-content: center;
-  gap: 12px;
-  padding: 24px;
-  text-align: center;
-  color: #111827;
-  background:
-    linear-gradient(135deg, rgba(53, 197, 240, 0.14), transparent 34%),
-    linear-gradient(315deg, rgba(255, 106, 0, 0.12), transparent 38%),
-    #f7f8fb;
-}
-
-.blog-loading-screen span {
-  width: 42px;
-  height: 42px;
-  margin: 0 auto 4px;
-  border: 3px solid rgba(17, 24, 39, 0.12);
-  border-top-color: #35c5f0;
-  border-radius: 999px;
-  animation: loading-spin 800ms linear infinite;
-}
-
-.blog-loading-screen strong {
-  font-size: 1.05rem;
-  font-weight: 900;
-}
-
-.blog-loading-screen p {
-  margin: 0;
-  color: #697386;
-  font-size: 0.9rem;
-}
-
-@keyframes loading-spin {
-  to {
-    transform: rotate(360deg);
-  }
-}
-
 .scrim {
   display: none;
 }
@@ -8623,6 +8582,38 @@ button.category-row.is-selected,
   display: none;
 }
 
+.category-actions button:disabled {
+  opacity: 0.28;
+  cursor: not-allowed;
+}
+
+.category-actions button:disabled:hover {
+  color: inherit;
+  background: transparent;
+}
+
+.category-actions .category-order-button:not(:disabled):hover {
+  color: #f0002f;
+  background: rgba(240, 0, 47, 0.08);
+}
+
+.category-actions .category-drag-handle {
+  cursor: grab;
+  touch-action: none;
+}
+
+.category-actions .category-drag-handle:active {
+  cursor: grabbing;
+}
+
+.category-row.is-dragging {
+  opacity: 0.42;
+}
+
+.category-row.is-drag-over {
+  box-shadow: inset 0 2px 0 #f0002f;
+}
+
 @media (max-width: 1180px) {
   .public-header {
     grid-template-columns: auto minmax(0, 1fr) !important;
@@ -9687,7 +9678,7 @@ button.category-row.is-selected,
 /* Partnership contact: a compact floating editorial action. */
 .public-quick-actions {
   right: clamp(14px, 2.2vw, 28px);
-  bottom: clamp(14px, 2.2vw, 28px);
+  bottom: calc(clamp(14px, 2.2vw, 28px) + 20px);
   padding: 0;
   border: 0;
   border-radius: 0;
@@ -9763,7 +9754,7 @@ button.category-row.is-selected,
 @media (max-width: 720px) {
   .public-quick-actions {
     right: 12px;
-    bottom: 12px;
+    bottom: 32px;
     padding: 0;
   }
 
@@ -10267,6 +10258,15 @@ button.category-row.is-selected,
   padding: 0 !important;
   border: 0;
   color: #282522 !important;
+}
+
+.public-reader .product-detail-loading {
+  min-height: 220px;
+  display: grid;
+  place-items: center;
+  color: #746f68;
+  font-size: 15px;
+  font-weight: 750;
 }
 
 .public-reader .product-detail-body .rendered-content > :first-child {

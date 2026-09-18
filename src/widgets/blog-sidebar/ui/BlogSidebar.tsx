@@ -1,5 +1,6 @@
-import type { ChangeEvent } from 'react'
-import { FilePlus2, FolderPlus, ImagePlus, Pencil, Search, Trash2, X } from 'lucide-react'
+import { useState } from 'react'
+import type { ChangeEvent, DragEvent } from 'react'
+import { ChevronDown, ChevronUp, FilePlus2, FolderPlus, GripVertical, ImagePlus, Pencil, Search, Trash2, X } from 'lucide-react'
 import type { Post, PostStatusFilter } from '../../../entities/post/model/types'
 import { formatDate, statusLabel } from '../../../entities/post/lib/formatters'
 
@@ -18,6 +19,8 @@ type BlogSidebarProps = {
   onCategoryImageUpload: (category: string, event: ChangeEvent<HTMLInputElement>) => void
   onClearCategoryImage: (category: string) => void
   onDeleteCategory: (category: string) => void
+  onMoveCategory: (category: string, direction: -1 | 1) => void
+  onReorderCategory: (category: string, targetCategory: string) => void
   onQueryChange: (query: string) => void
   onRenameCategory: (category: string) => void
   onSelectPost: (postId: string) => void
@@ -39,11 +42,29 @@ export function BlogSidebar({
   onCategoryImageUpload,
   onClearCategoryImage,
   onDeleteCategory,
+  onMoveCategory,
+  onReorderCategory,
   onQueryChange,
   onRenameCategory,
   onSelectPost,
   onStatusFilterChange,
 }: BlogSidebarProps) {
+  const [draggedCategory, setDraggedCategory] = useState('')
+  const [dragOverCategory, setDragOverCategory] = useState('')
+
+  const finishCategoryDrag = () => {
+    setDraggedCategory('')
+    setDragOverCategory('')
+  }
+
+  const dropCategory = (event: DragEvent<HTMLDivElement>, targetCategory: string) => {
+    event.preventDefault()
+    if (draggedCategory && draggedCategory !== targetCategory) {
+      onReorderCategory(draggedCategory, targetCategory)
+    }
+    finishCategoryDrag()
+  }
+
   return (
     <aside className={`sidebar ${isOpen ? 'is-open' : ''}`}>
       <div className="brand">
@@ -97,8 +118,20 @@ export function BlogSidebar({
           <small>{categoryCounts.reduce((sum, category) => sum + category.count, 0)}</small>
         </button>
 
-        {categoryCounts.map((category) => (
-          <div className={`category-row ${categoryFilter === category.name ? 'is-selected' : ''}`} key={category.name}>
+        {categoryCounts.map((category, index) => (
+          <div
+            className={`category-row ${categoryFilter === category.name ? 'is-selected' : ''} ${draggedCategory === category.name ? 'is-dragging' : ''} ${dragOverCategory === category.name && draggedCategory !== category.name ? 'is-drag-over' : ''}`}
+            key={category.name}
+            onDragOver={(event) => {
+              event.preventDefault()
+              event.dataTransfer.dropEffect = 'move'
+              setDragOverCategory(category.name)
+            }}
+            onDragLeave={(event) => {
+              if (!event.currentTarget.contains(event.relatedTarget as Node | null)) setDragOverCategory('')
+            }}
+            onDrop={(event) => dropCategory(event, category.name)}
+          >
             <button type="button" onClick={() => onCategoryFilterChange(category.name)}>
               <span className="category-thumb">
                 {categoryImages[category.name] ? <img src={categoryImages[category.name]} alt="" /> : category.name.slice(0, 1)}
@@ -107,6 +140,38 @@ export function BlogSidebar({
               <small>{category.count}</small>
             </button>
             <div className="category-actions">
+              <button
+                className="category-drag-handle"
+                draggable
+                type="button"
+                title="드래그해서 순서 변경"
+                onDragStart={(event) => {
+                  setDraggedCategory(category.name)
+                  event.dataTransfer.effectAllowed = 'move'
+                  event.dataTransfer.setData('text/plain', category.name)
+                }}
+                onDragEnd={finishCategoryDrag}
+              >
+                <GripVertical size={14} />
+              </button>
+              <button
+                className="category-order-button"
+                type="button"
+                title="위로 이동"
+                disabled={index === 0}
+                onClick={() => onMoveCategory(category.name, -1)}
+              >
+                <ChevronUp size={13} />
+              </button>
+              <button
+                className="category-order-button"
+                type="button"
+                title="아래로 이동"
+                disabled={index === categoryCounts.length - 1}
+                onClick={() => onMoveCategory(category.name, 1)}
+              >
+                <ChevronDown size={13} />
+              </button>
               <label title="셀럽 사진 첨부">
                 <ImagePlus size={13} />
                 <input accept="image/*" type="file" onChange={(event) => onCategoryImageUpload(category.name, event)} />

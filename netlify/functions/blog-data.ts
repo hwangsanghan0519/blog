@@ -31,13 +31,13 @@ const emptyData: BlogData = {
   savedAt: null,
 }
 
-const json = (statusCode: number, body: unknown) => ({
+const json = (statusCode: number, body: unknown, cacheControl = 'no-store') => ({
   statusCode,
   headers: {
     'access-control-allow-headers': 'content-type, x-blog-admin-token',
     'access-control-allow-methods': 'GET, PUT, DELETE, OPTIONS',
     'access-control-allow-origin': '*',
-    'cache-control': 'no-store',
+    'cache-control': cacheControl,
     'content-type': 'application/json; charset=utf-8',
   },
   body: JSON.stringify(body),
@@ -61,7 +61,19 @@ export async function handler(event: NetlifyEvent) {
     }
 
     if (event.httpMethod === 'GET') {
-      return json(200, await readSupabaseData())
+      const data = await readSupabaseData()
+      const requestedPost = event.queryStringParameters?.post?.trim()
+
+      if (requestedPost) {
+        const post = data.posts.find((item) => isMatchingPublishedPost(item, requestedPost))
+        return post ? json(200, post, 'private, max-age=60') : json(404, { message: '상품을 찾을 수 없습니다.' })
+      }
+
+      if (event.queryStringParameters?.view === 'summary') {
+        return json(200, createPublicSummary(data), 'public, max-age=30, stale-while-revalidate=120')
+      }
+
+      return json(200, data)
     }
 
     if (event.httpMethod !== 'PUT' && event.httpMethod !== 'DELETE') {
@@ -206,12 +218,30 @@ function mergeBlogRows(rows: BlogContentRow[]): BlogData {
 
   return {
     adBanners,
-    categories: Array.from(categories).sort((a, b) => a.localeCompare(b, 'ko')),
+    categories: Array.from(categories),
     categoryImages,
     heroVideo,
     posts: Array.from(posts.values()),
     savedAt,
   }
+}
+
+function createPublicSummary(data: BlogData): BlogData {
+  return {
+    ...data,
+    posts: data.posts
+      .filter((post): post is Record<string, unknown> => isRecord(post) && post.status === 'published')
+      .map((post) => ({ ...post, content: '' })),
+  }
+}
+
+function isMatchingPublishedPost(value: unknown, requestedPost: string) {
+  if (!isRecord(value) || value.status !== 'published') return false
+  return value.id === requestedPost || value.slug === requestedPost
+}
+
+function isRecord(value: unknown): value is Record<string, unknown> {
+  return value !== null && typeof value === 'object' && !Array.isArray(value)
 }
 
 function isStringRecord(value: unknown): value is Record<string, string> {

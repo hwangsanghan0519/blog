@@ -3,7 +3,7 @@ import type { ChangeEvent } from 'react'
 import { createEmptyPost, starterPosts } from '../../../entities/post/model/factory'
 import type { Post, PostStatus, PostStatusFilter, ProductLink } from '../../../entities/post/model/types'
 import { countWords } from '../../../entities/post/lib/formatters'
-import { downloadJson, fileToDataUrl } from '../../../shared/lib/file'
+import { downloadJson, imageFileToOptimizedDataUrl } from '../../../shared/lib/file'
 import { loadJson, saveJson } from '../../../shared/lib/storage'
 import type { ViewMode } from './types'
 
@@ -123,15 +123,16 @@ const DEFAULT_SETTINGS: BlogSettings = {
 
 export function useBlogStudio() {
   const hostedRuntime = isHostedRuntime()
-  const initialSettings = hostedRuntime ? DEFAULT_SETTINGS : readSettings()
+  const publicSummaryMode = hostedRuntime && !isSecretAdminRuntime()
+  const initialSettings = readSettings()
   const [posts, setPosts] = useState<Post[]>(() =>
-    hostedRuntime ? [] : normalizePosts(loadJson<unknown>(STORAGE_KEY, starterPosts), uniqueCategories(starterPosts)),
+    normalizePosts(loadJson<unknown>(STORAGE_KEY, hostedRuntime ? [] : starterPosts), uniqueCategories(starterPosts)),
   )
   const [categories, setCategories] = useState<string[]>(() =>
-    hostedRuntime ? [] : normalizeCategories(loadJson<unknown>(CATEGORIES_KEY, uniqueCategories(posts))),
+    normalizeCategories(loadJson<unknown>(CATEGORIES_KEY, uniqueCategories(posts))),
   )
   const [categoryImages, setCategoryImages] = useState<Record<string, string>>(() =>
-    hostedRuntime ? {} : normalizeCategoryImages(loadJson<unknown>(CATEGORY_IMAGES_KEY, {})),
+    normalizeCategoryImages(loadJson<unknown>(CATEGORY_IMAGES_KEY, {})),
   )
   const [activeId, setActiveId] = useState(posts[0]?.id ?? '')
   const [query, setQuery] = useState('')
@@ -146,13 +147,14 @@ export function useBlogStudio() {
   const [cloudReady, setCloudReady] = useState(false)
   const [cloudSynced, setCloudSynced] = useState(false)
   const importRef = useRef<HTMLInputElement>(null)
+  const detailedPostsRef = useRef(new Map<string, Post>())
 
   const activePost = posts.find((post) => post.id === activeId) ?? posts[0]
 
   const syncCloudData = useCallback(async (signal?: AbortSignal) => {
     const endpoint = getCloudDataEndpoint()
-    const response = await fetch(`${endpoint}?t=${Date.now()}`, {
-      cache: 'no-store',
+    const response = await fetch(publicSummaryMode ? `${endpoint}?view=summary` : endpoint, {
+      cache: 'default',
       headers: { accept: 'application/json' },
       signal,
     })
@@ -162,7 +164,9 @@ export function useBlogStudio() {
     if (signal?.aborted) return false
 
     const cloudCategories = normalizeCategories(data.categories)
-    const cloudPosts = normalizePosts(data.posts, cloudCategories)
+    const cloudPosts = normalizePosts(data.posts, cloudCategories).map(
+      (post) => detailedPostsRef.current.get(post.id) ?? post,
+    )
     const nextCategories = normalizeCategories([...cloudCategories, ...uniqueCategories(cloudPosts)])
 
     setPosts(cloudPosts)
@@ -173,7 +177,28 @@ export function useBlogStudio() {
     setActiveId((current) => (cloudPosts.some((post) => post.id === current) ? current : cloudPosts[0]?.id ?? ''))
     setCloudSynced(true)
     return true
-  }, [])
+  }, [publicSummaryMode])
+
+  const loadPostDetail = useCallback(async (postId: string) => {
+    if (!publicSummaryMode || detailedPostsRef.current.has(postId)) return
+
+    try {
+      const endpoint = getCloudDataEndpoint()
+      const response = await fetch(`${endpoint}?post=${encodeURIComponent(postId)}`, {
+        cache: 'default',
+        headers: { accept: 'application/json' },
+      })
+      if (!response.ok) return
+
+      const [detailedPost] = normalizePosts([await response.json()])
+      if (!detailedPost) return
+
+      detailedPostsRef.current.set(detailedPost.id, detailedPost)
+      setPosts((current) => current.map((post) => (post.id === detailedPost.id ? detailedPost : post)))
+    } catch {
+      // 목록은 계속 사용할 수 있도록 상세 데이터 요청 실패만 조용히 건너뜁니다.
+    }
+  }, [publicSummaryMode])
 
   // localStorage는 서버 저장 실패나 로컬 개발 상황을 위한 임시 캐시로만 사용합니다.
   // 배포 환경에서는 Netlify Function이 내려주는 Supabase 데이터를 우선합니다.
@@ -239,7 +264,7 @@ export function useBlogStudio() {
       }
     }
 
-    const timer = window.setInterval(refreshPublicData, 15_000)
+    const timer = window.setInterval(refreshPublicData, 120_000)
     window.addEventListener('focus', refreshPublicData)
     document.addEventListener('visibilitychange', refreshPublicData)
 
@@ -315,7 +340,7 @@ export function useBlogStudio() {
     if (patch.category) {
       const category = normalizeCategoryName(patch.category)
       if (category && !categories.includes(category)) {
-        setCategories((current) => [...current, category].sort((a, b) => a.localeCompare(b, 'ko')))
+        setCategories((current) => [...current, category])
       }
     }
 
@@ -339,7 +364,7 @@ export function useBlogStudio() {
     const normalized = normalizeCategoryName(name)
     if (!normalized || categories.includes(normalized)) return
 
-    setCategories((current) => [...current, normalized].sort((a, b) => a.localeCompare(b, 'ko')))
+    setCategories((current) => [...current, normalized])
     setCategoryFilter(normalized)
   }
 
@@ -347,7 +372,7 @@ export function useBlogStudio() {
     const nextName = normalizeCategoryName(window.prompt('셀럽/인플루언서 이름을 변경하세요.', category))
     if (!nextName || nextName === category || categories.includes(nextName)) return
 
-    setCategories((current) => current.map((name) => (name === category ? nextName : name)).sort((a, b) => a.localeCompare(b, 'ko')))
+    setCategories((current) => current.map((name) => (name === category ? nextName : name)))
     setCategoryImages((current) => {
       const { [category]: image, ...rest } = current
       return image ? { ...rest, [nextName]: image } : rest
@@ -382,6 +407,35 @@ export function useBlogStudio() {
       ),
     )
     setCategoryFilter((current) => (current === category ? 'all' : current))
+  }
+
+  const moveCategory = (category: string, direction: -1 | 1) => {
+    setCategories((current) => {
+      const orderedCategories = normalizeCategories([...current, ...uniqueCategories(posts)])
+      const currentIndex = orderedCategories.indexOf(category)
+      const nextIndex = currentIndex + direction
+
+      if (currentIndex < 0 || nextIndex < 0 || nextIndex >= orderedCategories.length) return current
+
+      const nextCategories = [...orderedCategories]
+      ;[nextCategories[currentIndex], nextCategories[nextIndex]] = [nextCategories[nextIndex], nextCategories[currentIndex]]
+      return nextCategories
+    })
+  }
+
+  const reorderCategory = (category: string, targetCategory: string) => {
+    setCategories((current) => {
+      const orderedCategories = normalizeCategories([...current, ...uniqueCategories(posts)])
+      const sourceIndex = orderedCategories.indexOf(category)
+      const targetIndex = orderedCategories.indexOf(targetCategory)
+
+      if (sourceIndex < 0 || targetIndex < 0 || sourceIndex === targetIndex) return current
+
+      const nextCategories = [...orderedCategories]
+      const [movedCategory] = nextCategories.splice(sourceIndex, 1)
+      nextCategories.splice(targetIndex, 0, movedCategory)
+      return nextCategories
+    })
   }
 
   const createPost = (template: Partial<Post> = {}) => {
@@ -433,7 +487,7 @@ export function useBlogStudio() {
     const file = event.target.files?.[0]
     if (!file) return
 
-    updatePost({ coverImage: await fileToDataUrl(file) })
+    updatePost({ coverImage: await imageFileToOptimizedDataUrl(file, 1600, 0.8) })
     event.target.value = ''
   }
 
@@ -590,6 +644,9 @@ export function useBlogStudio() {
     importBackup,
     importRef,
     lockOwnerMode,
+    loadPostDetail,
+    moveCategory,
+    reorderCategory,
     ownerMode,
     query,
     posts,
@@ -662,46 +719,11 @@ async function saveCloudData(data: Required<Pick<CloudBlogData, 'adBanners' | 'c
 }
 
 function fileToOptimizedCategoryDataUrl(file: File) {
-  return resizeImageToDataUrl(file, 720, 0.84)
+  return imageFileToOptimizedDataUrl(file, 720, 0.84)
 }
 
 function fileToOptimizedBannerDataUrl(file: File) {
-  return resizeImageToDataUrl(file, 2100, 0.82)
-}
-
-function resizeImageToDataUrl(file: File, maxWidth: number, quality: number) {
-  return new Promise<string>((resolve, reject) => {
-    const image = new Image()
-    const objectUrl = URL.createObjectURL(file)
-
-    image.onload = () => {
-      URL.revokeObjectURL(objectUrl)
-
-      const targetWidth = Math.min(image.width, maxWidth)
-      const targetHeight = Math.round((targetWidth / image.width) * image.height)
-      const canvas = document.createElement('canvas')
-      const context = canvas.getContext('2d')
-
-      if (!context) {
-        reject(new Error('Canvas context is not available.'))
-        return
-      }
-
-      canvas.width = targetWidth
-      canvas.height = targetHeight
-      context.fillStyle = '#ffffff'
-      context.fillRect(0, 0, targetWidth, targetHeight)
-      context.drawImage(image, 0, 0, targetWidth, targetHeight)
-      resolve(canvas.toDataURL('image/webp', quality))
-    }
-
-    image.onerror = () => {
-      URL.revokeObjectURL(objectUrl)
-      reject(new Error('Failed to load image.'))
-    }
-
-    image.src = objectUrl
-  })
+  return imageFileToOptimizedDataUrl(file, 2100, 0.82)
 }
 
 function normalizeCategoryName(value: string | null) {
@@ -718,7 +740,7 @@ function normalizeCategories(values: unknown) {
         .map((value) => normalizeCategoryName(value))
         .filter(Boolean),
     ),
-  ).sort((a, b) => a.localeCompare(b, 'ko'))
+  )
 }
 
 function normalizeCategoryImages(value: unknown) {
@@ -804,6 +826,12 @@ function isHostedRuntime() {
   if (typeof window === 'undefined') return false
 
   return !['localhost', '127.0.0.1'].includes(window.location.hostname)
+}
+
+function isSecretAdminRuntime() {
+  if (typeof window === 'undefined') return false
+
+  return window.location.pathname === '/secret/sanghan' || window.location.pathname === '/blog/secret/sanghan'
 }
 
 function getCloudDataEndpoint() {
