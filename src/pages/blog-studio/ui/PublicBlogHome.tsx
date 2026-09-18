@@ -1,10 +1,10 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
-import type { CSSProperties, MouseEvent, PointerEvent, UIEvent } from 'react'
+import type { CSSProperties, KeyboardEvent, MouseEvent, PointerEvent, UIEvent } from 'react'
 import * as Dialog from '@radix-ui/react-dialog'
-import { ArrowUp, CalendarDays, ChevronLeft, ChevronRight, ExternalLink, Mail, ShoppingBag, X, Zap } from 'lucide-react'
+import { ArrowUp, ChevronLeft, ChevronRight, ExternalLink, Mail, ShoppingBag, X, Zap } from 'lucide-react'
 import { useKeenSlider } from 'keen-slider/react'
 import 'keen-slider/keen-slider.min.css'
-import { countWords, formatDate } from '../../../entities/post/lib/formatters'
+import { countWords } from '../../../entities/post/lib/formatters'
 import type { Post } from '../../../entities/post/model/types'
 import { RenderedContent } from '../../../shared/ui/RenderedContent'
 import ssenLogoImage from '../../../assets/ssen-logo.svg'
@@ -57,6 +57,7 @@ export function PublicBlogHome({
   const [selectedId, setSelectedId] = useState('')
   const [currentSlide, setCurrentSlide] = useState(0)
   const [readingProgress, setReadingProgress] = useState(0)
+  const [isProductBuyBarVisible, setIsProductBuyBarVisible] = useState(false)
   const [isHeaderCompact, setIsHeaderCompact] = useState(false)
   const [isHeaderDocked, setIsHeaderDocked] = useState(false)
   const headerRef = useRef<HTMLElement>(null)
@@ -146,7 +147,6 @@ export function PublicBlogHome({
   useEffect(() => {
     let previousScrollY = window.scrollY
     let downwardDistance = 0
-    let upwardDistance = 0
 
     const applyHeaderMode = (compact: boolean) => {
       if (headerCompactRef.current === compact) return
@@ -155,31 +155,24 @@ export function PublicBlogHome({
       setIsHeaderCompact(compact)
     }
 
-    const restoreHeader = () => applyHeaderMode(false)
     const handleScroll = () => {
       const currentScrollY = window.scrollY
       const delta = currentScrollY - previousScrollY
       const headerStart = headerSlotRef.current?.offsetTop ?? 0
-      const maxScrollY = Math.max(0, document.documentElement.scrollHeight - window.innerHeight)
       const shouldDockHeader = currentScrollY >= headerStart
       const isAtTop = currentScrollY <= 12
-      const isAtBottom = maxScrollY > 0 && currentScrollY >= maxScrollY - 2
 
       setIsHeaderDocked(shouldDockHeader)
 
-      if (!shouldDockHeader || isAtTop || isAtBottom) {
+      if (!shouldDockHeader || isAtTop) {
         downwardDistance = 0
-        upwardDistance = 0
-        restoreHeader()
+        applyHeaderMode(false)
       } else if (performance.now() >= headerDirectionLockRef.current) {
         if (delta > 1) {
           downwardDistance += delta
-          upwardDistance = 0
           if (downwardDistance >= 12) applyHeaderMode(true)
         } else if (delta < -1) {
-          upwardDistance += Math.abs(delta)
           downwardDistance = 0
-          if (upwardDistance >= 28) restoreHeader()
         }
       }
 
@@ -218,6 +211,7 @@ export function PublicBlogHome({
       onCategoryFilterChange(targetCategory)
       setSelectedId(targetPost?.id ?? '')
       setReadingProgress(0)
+      setIsProductBuyBarVisible(false)
     }
 
     syncViewFromUrl()
@@ -251,12 +245,14 @@ export function PublicBlogHome({
 
     setSelectedId(post.id)
     setReadingProgress(0)
+    setIsProductBuyBarVisible(false)
     syncPostParam(post.slug || post.id)
   }
 
   const closeReader = () => {
     setSelectedId('')
     setReadingProgress(0)
+    setIsProductBuyBarVisible(false)
     syncPostParam('')
   }
 
@@ -301,6 +297,17 @@ export function PublicBlogHome({
     const target = event.currentTarget
     const maxScroll = target.scrollHeight - target.clientHeight
     setReadingProgress(maxScroll > 0 ? Math.min(100, Math.round((target.scrollTop / maxScroll) * 100)) : 100)
+
+    const detailBody = target.querySelector<HTMLElement>('.product-detail-body')
+    if (!detailBody) {
+      setIsProductBuyBarVisible(false)
+      return
+    }
+
+    const scrollBounds = target.getBoundingClientRect()
+    const detailBounds = detailBody.getBoundingClientRect()
+    const entryLine = scrollBounds.bottom - Math.min(140, target.clientHeight * 0.18)
+    setIsProductBuyBarVisible(detailBounds.top <= entryLine)
   }
 
   // 이전/다음 버튼은 화면상 모달 밖에 두되, Dialog의 바깥 클릭 닫힘으로 처리되지 않게 제외합니다.
@@ -455,15 +462,11 @@ export function PublicBlogHome({
                         </div>
                       </div>
                       <div className="public-best-v2-content">
-                        <div className="public-best-v2-meta">
-                          <span className="public-best-v2-eyebrow">SELLER PICK</span>
-                        </div>
                         <h2>{post.title}</h2>
                         <p>{post.excerpt || '지금 비교하기 좋은 상품입니다.'}</p>
+                        <BestSliderPrice post={post} />
                         <div className="public-best-v2-buy">
-                          <strong className="product-price-preview public-best-v2-lowest-cta">
-                            <Zap size={18} /> 최저가 구매
-                          </strong>
+                          <BestSliderLowestLink post={post} />
                           <em>
                             상품 상세보기 <ExternalLink size={17} />
                           </em>
@@ -506,7 +509,7 @@ export function PublicBlogHome({
                     onClick={(event) => moveSliderTo(event, index)}
                   >
                     <strong>{index + 1}</strong>
-                    <span>{post.title}</span>
+                    <span>{post.category || '분류 없음'}</span>
                   </button>
                 ))}
               </div>
@@ -519,11 +522,15 @@ export function PublicBlogHome({
           )}
         </section>
 
-        <section className="public-browser" aria-label="상품 탐색">
+        <section
+          className="public-browser"
+          data-pouch-label={categoryFilter === 'all' ? 'ALL POUCH' : `${categoryFilter} POUCH`}
+          aria-label="상품 탐색"
+        >
           <div ref={latestHeadRef} className="public-section-head">
             <div>
-              <span>Fresh Deals</span>
-              <h2>최근 상품</h2>
+              <span>Super Deals</span>
+              <h2>{categoryFilter === 'all' ? '전체 파우치' : `${categoryFilter} 파우치`}</h2>
             </div>
           </div>
 
@@ -531,20 +538,15 @@ export function PublicBlogHome({
             <div className="public-post-grid">
               {filteredPosts.map((post) => (
                 <button
-                  className={`public-post-card ${selectedId === post.id ? 'is-active' : ''}`}
+                  aria-label={`${post.title} 상품 상세 보기`}
+                  className={`public-post-card ${categoryFilter === 'all' ? 'is-all-pouch' : 'is-category-pouch'} ${selectedId === post.id ? 'is-active' : ''}`}
                   key={post.id}
                   style={getCategoryStyle(post.category)}
                   type="button"
                   onClick={() => selectPost(post.id)}
                 >
                   <PostImage post={post} />
-                  <span>{post.category}</span>
-                  <h3>{post.title}</h3>
-                  <p>{post.excerpt || '지금 가격을 비교해보세요.'}</p>
-                  <ProductPricePreview post={post} />
-                  <small>
-                    <CalendarDays size={14} /> {formatDate(post.updatedAt)}
-                  </small>
+                  <PouchCardOverlay post={post} showCategory={categoryFilter === 'all'} />
                 </button>
               ))}
             </div>
@@ -591,26 +593,33 @@ export function PublicBlogHome({
                       <div className="product-detail-summary">
                         <div className="public-reader-meta">
                           <span>{selectedPost.category}</span>
-                          <span>{formatDate(selectedPost.updatedAt)}</span>
                         </div>
-                        <Dialog.Title className="public-reader-title">{selectedPost.title}</Dialog.Title>
-                        <ProductPricePreview post={selectedPost} />
-                        <ProductLinkPanel post={selectedPost} />
+                        <Dialog.Title className={`public-reader-title ${getProductTitleSizeClass(selectedPost.title)}`}>
+                          {selectedPost.title}
+                        </Dialog.Title>
                         <Dialog.Description id="reader-description" className="public-reader-description">
                           {selectedPost.excerpt}
                         </Dialog.Description>
-                        <div className="public-reader-tags">
-                          {selectedPost.tags.map((tag) => (
-                            <span key={tag}>#{tag}</span>
-                          ))}
+                        <ProductLinkPanel post={selectedPost} />
+                        <div className="product-detail-assurance" aria-label="구매 안내">
+                          <span>실시간 가격 비교</span>
+                          <span>등록된 제휴몰로 바로 이동</span>
+                          <span>새 창에서 안전하게 확인</span>
                         </div>
                       </div>
                     </section>
-                    <RenderedContent content={selectedPost.content} />
+                    <section className="product-detail-body" aria-label="상품 상세 정보">
+                      <header>
+                        <span>PRODUCT STORY</span>
+                        <h2>상품 상세</h2>
+                        <p>구매 전에 알아두면 좋은 핵심 정보를 확인하세요.</p>
+                      </header>
+                      <RenderedContent content={selectedPost.content} />
+                    </section>
                   </div>
                 </div>
               </div>
-              <ProductBottomBuyBar post={selectedPost} />
+              {isProductBuyBarVisible && <ProductBottomBuyBar post={selectedPost} />}
             </Dialog.Content>
           )}
           {selectedPost && (
@@ -674,9 +683,9 @@ export function PublicBlogHome({
       </footer>
 
       <div className="public-quick-actions" aria-label="빠른 기능">
-        <a href="mailto:nmc2711@naver.com" aria-label="이메일로 문의하기">
+        <a href="mailto:nmc2711@naver.com" aria-label="제휴 문의 이메일 보내기">
           <Mail size={21} />
-          <span>Contact</span>
+          <span>제휴 문의</span>
         </a>
       </div>
     </div>
@@ -796,7 +805,10 @@ function resetAdSpotlight(event: PointerEvent<HTMLElement>) {
 function AdStripBanner({ banner }: { banner: AdBannerSettings }) {
   if (!banner.enabled) return null
   const className = `public-ad-strip ${banner.image ? 'has-image' : ''}`
-  const bannerStyle = { '--ad-banner-bg': banner.backgroundColor || '#ffffff' } as CSSProperties
+  const bannerStyle = {
+    '--ad-banner-bg': banner.backgroundColor || '#ffffff',
+    ...(banner.image ? { '--ad-banner-image': `url(${JSON.stringify(banner.image)})` } : {}),
+  } as CSSProperties
 
   const content = (
     <>
@@ -852,20 +864,65 @@ function PostImage({ post }: { post: Post }) {
   )
 }
 
-function ProductPricePreview({ post }: { post: Post }) {
+function PouchCardOverlay({ post, showCategory }: { post: Post; showCategory: boolean }) {
   const bestLink = getBestProductLink(post)
+  const price = bestLink?.price.trim() || '가격 준비중'
 
-  if (!bestLink) {
+  return (
+    <div className={`public-pouch-overlay ${showCategory ? 'is-all' : 'is-category'}`}>
+      {showCategory && <span>{post.category}</span>}
+      <strong>
+        {!showCategory && <em>{post.title}</em>}
+        {showCategory && <small>최저가</small>}
+        <b>{price}</b>
+      </strong>
+    </div>
+  )
+}
+
+function BestSliderPrice({ post }: { post: Post }) {
+  const bestLink = getBestProductLink(post)
+  const price = bestLink?.price.trim()
+
+  if (!price) return null
+
+  return (
+    <div className="public-best-v2-price" aria-label={`최저가 ${price}`}>
+      <strong>{price}</strong>
+    </div>
+  )
+}
+
+function BestSliderLowestLink({ post }: { post: Post }) {
+  const bestLink = getBestProductLink(post)
+  const href = bestLink?.href.trim()
+
+  if (!href) {
     return (
-      <strong className="product-price-preview">
-        <Zap size={15} /> 가격 준비중
+      <strong className="product-price-preview public-best-v2-lowest-cta">
+        <Zap size={18} /> 링크 준비중
       </strong>
     )
   }
 
+  const openLink = (event: MouseEvent<HTMLElement> | KeyboardEvent<HTMLElement>) => {
+    if ('key' in event && event.key !== 'Enter' && event.key !== ' ') return
+
+    event.preventDefault()
+    event.stopPropagation()
+    window.open(href, '_blank', 'noopener,noreferrer')
+  }
+
   return (
-    <strong className="product-price-preview">
-      <Zap size={15} /> <span>최저가</span> {bestLink.price || '가격 확인'} <small>{bestLink.mall}</small>
+    <strong
+      aria-label={`${bestLink.mall || '최저가 상품'} 링크로 이동`}
+      className="product-price-preview public-best-v2-lowest-cta"
+      role="link"
+      tabIndex={0}
+      onClick={openLink}
+      onKeyDown={openLink}
+    >
+      <Zap size={18} /> 최저가 바로가기
     </strong>
   )
 }
@@ -875,7 +932,7 @@ function ProductLinkPanel({ post }: { post: Post }) {
 
   if (!links.length) {
     return (
-      <section className="product-buy-panel">
+      <section className="product-buy-panel is-empty">
         <div>
           <span>
             <ShoppingBag size={16} /> 구매 링크
@@ -886,28 +943,45 @@ function ProductLinkPanel({ post }: { post: Post }) {
     )
   }
 
+  const primaryLink = getBestProductLink(post) ?? links[0]
+  const comparisonLinks = links.filter((link) => link.id !== primaryLink.id)
+
   return (
     <section className="product-buy-panel" aria-label="구매처 비교">
-      <div>
-        <span>
-          <ShoppingBag size={16} /> 따라다니는 구매 버튼
-        </span>
-        <strong>최저가 제휴 링크로 바로 이동하세요.</strong>
+      <div className="product-buy-primary">
+        <div className="product-buy-primary-head">
+          <span>
+            <Zap size={16} /> 지금 최저가
+          </span>
+          {primaryLink.mall.trim() && <small>{primaryLink.mall}</small>}
+          <strong>{primaryLink.price || '가격 확인'}</strong>
+        </div>
+        <a href={primaryLink.href} target="_blank" rel="noreferrer sponsored">
+          <ShoppingBag size={18} /> {primaryLink.label || '최저가 바로가기'} <ExternalLink size={16} />
+        </a>
       </div>
-      <div className="product-buy-list">
-        {links.map((link, index) => (
-          <a className={index === 0 ? 'is-primary' : ''} href={link.href} key={link.id} target="_blank" rel="noreferrer sponsored">
-            <span>
-              <b>{link.mall || '쇼핑몰'}</b>
-              <em>{index === 0 ? '최저가' : link.badge || '비교가'}</em>
-            </span>
-            <strong>{link.price || '가격 확인'}</strong>
-            <small>
-              {link.label || '구매하러 가기'} <ExternalLink size={14} />
-            </small>
-          </a>
-        ))}
-      </div>
+      {comparisonLinks.length > 0 && (
+        <div className="product-buy-compare">
+          <div className="product-buy-compare-head">
+            <strong>다른 구매처 비교</strong>
+            <small>{comparisonLinks.length}곳</small>
+          </div>
+          <div className="product-buy-list">
+            {comparisonLinks.map((link) => (
+              <a href={link.href} key={link.id} target="_blank" rel="noreferrer sponsored">
+                <span>
+                  <b>{link.mall || '쇼핑몰'}</b>
+                  {link.badge && <em>{link.badge}</em>}
+                </span>
+                <strong>{link.price || '가격 확인'}</strong>
+                <small aria-label={`${link.mall || '쇼핑몰'}에서 확인`}>
+                  <ExternalLink size={14} />
+                </small>
+              </a>
+            ))}
+          </div>
+        </div>
+      )}
     </section>
   )
 }
@@ -917,14 +991,24 @@ function ProductBottomBuyBar({ post }: { post: Post }) {
 
   if (!links.length) return null
 
+  const primaryLink = getBestProductLink(post) ?? links[0]
+  const orderedLinks = [primaryLink, ...links.filter((link) => link.id !== primaryLink.id)]
+
   return (
     <nav className="product-bottom-buy-bar" aria-label="제휴몰 바로가기">
-      <strong>{post.purchaseTitle || '최저가 제휴몰 바로가기'}</strong>
+      <p className="product-bottom-buy-summary">
+        <span>{post.excerpt || post.title}</span>
+      </p>
+      <strong>
+        {primaryLink.mall.trim() && <small>{primaryLink.mall}</small>}
+        <span>{primaryLink.price || '가격 확인'}</span>
+      </strong>
       <div>
-        {links.map((link, index) => (
+        {orderedLinks.map((link, index) => (
           <a className={index === 0 ? 'is-primary' : ''} href={link.href} key={link.id} target="_blank" rel="noreferrer sponsored">
-            <span>{link.mall || '쇼핑몰'}</span>
-            <b>{link.price || '가격 확인'}</b>
+            <span>{index === 0 ? post.purchaseTitle || '최저가 바로가기' : link.mall || '쇼핑몰'}</span>
+            <b>{index === 0 ? '바로 구매' : link.price || '가격 확인'}</b>
+            {index === 0 && <ExternalLink size={16} />}
           </a>
         ))}
       </div>
@@ -933,7 +1017,29 @@ function ProductBottomBuyBar({ post }: { post: Post }) {
 }
 
 function getBestProductLink(post: Post) {
-  return post.productLinks.find((link) => link.price || link.href) ?? post.productLinks[0]
+  const linkedProducts = post.productLinks.filter((link) => link.href.trim())
+  const pricedProducts = linkedProducts
+    .map((link) => ({ link, price: parseProductPrice(link.price) }))
+    .filter((entry) => Number.isFinite(entry.price))
+    .sort((a, b) => a.price - b.price)
+
+  return pricedProducts[0]?.link
+    ?? linkedProducts[0]
+    ?? post.productLinks.find((link) => link.price.trim())
+    ?? post.productLinks[0]
+}
+
+function parseProductPrice(price: string) {
+  const numericPrice = Number(price.replace(/[^\d]/g, ''))
+  return numericPrice > 0 ? numericPrice : Number.POSITIVE_INFINITY
+}
+
+function getProductTitleSizeClass(title: string) {
+  const length = Array.from(title.trim()).length
+
+  if (length >= 46) return 'is-very-long'
+  if (length >= 28) return 'is-long'
+  return ''
 }
 
 function getTopPosts(posts: Post[]) {

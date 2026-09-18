@@ -63,7 +63,7 @@ export function BlogStudioPage() {
         posts={studio.filteredPosts}
         query={studio.query}
         statusFilter={studio.statusFilter}
-        onCategoryFilterChange={studio.setCategoryFilter}
+        onCategoryFilterChange={studio.selectAdminCategory}
         onCreate={() => studio.createPost()}
         onCreateCategory={studio.createCategory}
         onDeleteCategory={studio.deleteCategory}

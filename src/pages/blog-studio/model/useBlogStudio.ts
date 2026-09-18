@@ -291,6 +291,12 @@ export function useBlogStudio() {
       .sort((a, b) => Date.parse(b.updatedAt) - Date.parse(a.updatedAt))
   }, [categoryFilter, posts, query, statusFilter])
 
+  const selectAdminCategory = (category: string) => {
+    setCategoryFilter(category)
+    setQuery('')
+    setStatusFilter('all')
+  }
+
   const stats = useMemo(
     () => ({
       total: posts.length,
@@ -587,6 +593,7 @@ export function useBlogStudio() {
     ownerMode,
     query,
     posts,
+    selectAdminCategory,
     setActiveId,
     setCategoryFilter,
     setDarkMode,

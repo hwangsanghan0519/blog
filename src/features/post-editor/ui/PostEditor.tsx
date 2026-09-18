@@ -226,7 +226,7 @@ export function PostEditor({ categories, post, onCoverUpload, onUpdate }: PostEd
           id: crypto.randomUUID(),
           mall: '쿠팡',
           price: '',
-          label: '최저가 보러가기',
+          label: '최저가 구매하기',
           href: '',
           badge: '추천',
         },
@@ -448,7 +448,7 @@ export function PostEditor({ categories, post, onCoverUpload, onUpdate }: PostEd
                 </label>
                 <label>
                   버튼 문구
-                  <input value={link.label} placeholder="최저가 보러가기" onChange={(event) => updateProductLink(link.id, { label: event.target.value })} />
+                  <input value={link.label} placeholder="최저가 구매하기" onChange={(event) => updateProductLink(link.id, { label: event.target.value })} />
                 </label>
                 <label>
                   배지

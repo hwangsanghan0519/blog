@@ -127,24 +127,41 @@ export function BlogSidebar({
         ))}
       </section>
 
-      <div className="post-list">
-        {posts.map((post) => (
-          <button
-            className={`post-row ${post.id === activePostId ? 'is-selected' : ''}`}
-            key={post.id}
-            type="button"
-            onClick={() => onSelectPost(post.id)}
-          >
-            <span className={`status-dot ${post.status}`} />
-            <span>
-              <strong>{post.title}</strong>
-              <small>
-                {post.category || '분류 없음'} · {formatDate(post.updatedAt)}
-              </small>
-            </span>
-          </button>
-        ))}
-      </div>
+      <section className="post-list-section" aria-label="수정할 상품 선택">
+        <div className="post-list-header">
+          <strong>{categoryFilter === 'all' ? '전체 상품' : categoryFilter}</strong>
+          <small>{posts.length}개 · 최근 수정순</small>
+        </div>
+
+        {posts.length > 0 ? (
+          <div className="post-list">
+            {posts.map((post) => (
+              <button
+                className={`post-row ${post.id === activePostId ? 'is-selected' : ''}`}
+                key={post.id}
+                type="button"
+                onClick={() => onSelectPost(post.id)}
+              >
+                <span className={`status-dot ${post.status}`} />
+                <span>
+                  <strong>{post.title}</strong>
+                  <small>
+                    {post.category || '분류 없음'} · {formatDate(post.updatedAt)}
+                  </small>
+                </span>
+              </button>
+            ))}
+          </div>
+        ) : (
+          <div className="sidebar-empty-posts">
+            <p>조건에 맞는 상품이 없습니다.</p>
+            <button type="button" onClick={onCreate}>
+              <FilePlus2 size={15} />
+              {categoryFilter === 'all' ? '새 상품 등록' : `${categoryFilter}에 상품 등록`}
+            </button>
+          </div>
+        )}
+      </section>
     </aside>
   )
 }
