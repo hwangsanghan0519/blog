@@ -1,9 +1,10 @@
 import type { Post } from './types'
+import { createId } from '../../../shared/lib/id'
 
 // 앱을 처음 열었을 때 빈 화면 대신 바로 기능을 만져볼 수 있는 샘플 상품입니다.
 export const starterPosts: Post[] = [
   {
-    id: crypto.randomUUID(),
+    id: createId(),
     title: '로지텍 MX Master 3S',
     slug: 'logitech-mx-master-3s',
     excerpt: '사무용 끝판왕 무선 마우스\n쿠팡/지마켓/11번가 가격을 한 번에 비교하세요.',
@@ -15,7 +16,7 @@ export const starterPosts: Post[] = [
     purchaseTitle: '지금 제일 쎈 가격으로 이동',
     productLinks: [
       {
-        id: crypto.randomUUID(),
+        id: createId(),
         mall: '쿠팡',
         price: '129,000원',
         label: '쿠팡에서 보기',
@@ -23,7 +24,7 @@ export const starterPosts: Post[] = [
         badge: '로켓배송',
       },
       {
-        id: crypto.randomUUID(),
+        id: createId(),
         mall: 'G마켓',
         price: '126,500원',
         label: 'G마켓 최저가 보기',
@@ -38,7 +39,7 @@ export const starterPosts: Post[] = [
 ]
 
 export const createEmptyPost = (): Post => ({
-  id: crypto.randomUUID(),
+  id: createId(),
   title: '새 상품',
   slug: `product-${Date.now()}`,
   excerpt: '',

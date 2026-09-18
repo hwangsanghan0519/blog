@@ -354,11 +354,13 @@ function response(statusCode: number, body: string, contentType: string, cacheCo
 }
 
 function readOrigin(event: NetlifyEvent) {
-  const configuredUrl = process.env.URL?.trim()
-  if (configuredUrl) return configuredUrl.replace(/\/$/, '')
-  const host = event.headers['x-forwarded-host'] ?? event.headers.host ?? 'localhost:8888'
-  const protocol = event.headers['x-forwarded-proto'] ?? (host.includes('localhost') ? 'http' : 'https')
-  return `${protocol}://${host}`.replace(/\/$/, '')
+  const host = event.headers['x-forwarded-host'] ?? event.headers.host
+  if (host) {
+    const protocol = event.headers['x-forwarded-proto'] ?? (host.includes('localhost') ? 'http' : 'https')
+    return `${protocol}://${host}`.replace(/\/$/, '')
+  }
+
+  return process.env.URL?.trim().replace(/\/$/, '') || 'http://localhost:8888'
 }
 
 function readPublicImage(value: unknown, origin: string) {

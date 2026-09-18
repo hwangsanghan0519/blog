@@ -48,6 +48,7 @@ import { normalizeEditorContent } from '../../../entities/post/lib/content'
 import { slugify } from '../../../entities/post/lib/formatters'
 import type { Post, PostStatus, ProductLink } from '../../../entities/post/model/types'
 import { imageFileToOptimizedDataUrl } from '../../../shared/lib/file'
+import { createId } from '../../../shared/lib/id'
 
 type PostEditorProps = {
   categories: string[]
@@ -227,7 +228,7 @@ export function PostEditor({ categories, post, onCoverUpload, onUpdate }: PostEd
       productLinks: [
         ...post.productLinks,
         {
-          id: crypto.randomUUID(),
+          id: createId(),
           mall: '쿠팡',
           price: '',
           label: '최저가 구매하기',

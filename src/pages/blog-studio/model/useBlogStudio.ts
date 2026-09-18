@@ -3,6 +3,7 @@ import type { ChangeEvent } from 'react'
 import { createEmptyPost, starterPosts } from '../../../entities/post/model/factory'
 import type { Post, PostStatus, PostStatusFilter, ProductLink } from '../../../entities/post/model/types'
 import { countWords } from '../../../entities/post/lib/formatters'
+import { createId } from '../../../shared/lib/id'
 import { downloadJson, imageFileToOptimizedDataUrl } from '../../../shared/lib/file'
 import { loadJson, saveJson } from '../../../shared/lib/storage'
 import type { ViewMode } from './types'
@@ -512,7 +513,7 @@ export function useBlogStudio() {
       ...createEmptyPost(),
       ...safeTemplate,
       category: normalizeCategoryName(safeTemplate.category ?? selectedCategory) || UNCATEGORIZED,
-      id: crypto.randomUUID(),
+      id: createId(),
       createdAt: new Date().toISOString(),
       updatedAt: new Date().toISOString(),
     }
@@ -537,7 +538,7 @@ export function useBlogStudio() {
 
     const copy: Post = {
       ...activePost,
-      id: crypto.randomUUID(),
+      id: createId(),
       title: `${activePost.title} 복사본`,
       slug: `${activePost.slug}-copy-${Date.now()}`,
       status: 'draft',
