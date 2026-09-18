@@ -29,6 +29,40 @@
   [headers.values]
     Cache-Control = "public, max-age=31536000, immutable"
 
+[[headers]]
+  for = "/secret/*"
+  [headers.values]
+    X-Robots-Tag = "noindex, nofollow, noarchive"
+
+[[headers]]
+  for = "/blog/secret/*"
+  [headers.values]
+    X-Robots-Tag = "noindex, nofollow, noarchive"
+
+[[redirects]]
+  from = "/robots.txt"
+  to = "/.netlify/functions/blog-data?format=robots"
+  status = 200
+  force = true
+
+[[redirects]]
+  from = "/sitemap.xml"
+  to = "/.netlify/functions/blog-data?format=sitemap"
+  status = 200
+  force = true
+
+[[redirects]]
+  from = "/product/:slug"
+  to = "/.netlify/functions/seo-page?kind=product&value=:slug"
+  status = 200
+  force = true
+
+[[redirects]]
+  from = "/celeb/:name"
+  to = "/.netlify/functions/seo-page?kind=category&value=:name"
+  status = 200
+  force = true
+
 [[redirects]]
   from = "/*"
   to = "/index.html"

@@ -9270,6 +9270,7 @@ button.category-row.is-selected,
   display: block;
   overflow: hidden;
   padding: 0;
+  text-decoration: none;
 }
 
 .public-post-card.is-all-pouch::after,
@@ -9894,6 +9895,42 @@ button.category-row.is-selected,
 .public-reader-close svg {
   width: 22px;
   height: 22px;
+}
+
+.public-reader-share {
+  position: absolute;
+  top: 18px;
+  right: 76px;
+  z-index: 83;
+  width: 46px;
+  height: 46px;
+  display: inline-grid;
+  place-items: center;
+  border: 1px solid rgba(255, 255, 255, 0.28);
+  border-radius: 50%;
+  color: #ffffff;
+  background: rgba(8, 8, 8, 0.76);
+  backdrop-filter: blur(14px);
+  cursor: pointer;
+}
+
+.public-reader-share:hover,
+.public-reader-share:focus-visible {
+  background: #f0002f;
+}
+
+.public-reader-share span {
+  position: absolute;
+  top: calc(100% + 8px);
+  right: 0;
+  width: max-content;
+  padding: 7px 10px;
+  border-radius: 999px;
+  color: #fff;
+  background: #090909;
+  font-size: 12px;
+  font-weight: 700;
+  white-space: nowrap;
 }
 
 .public-reader-scroll {
@@ -10541,6 +10578,13 @@ button.category-row.is-selected,
   .public-reader-close {
     top: 12px;
     right: 12px;
+    width: 42px;
+    height: 42px;
+  }
+
+  .public-reader-share {
+    top: 12px;
+    right: 62px;
     width: 42px;
     height: 42px;
   }

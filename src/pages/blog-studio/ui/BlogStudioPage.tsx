@@ -22,6 +22,14 @@ export function BlogStudioPage() {
   const secretUnlockAttemptedRef = useRef(false)
 
   useEffect(() => {
+    if (!isSecretAdminPath) return
+
+    document.title = 'SSEN 관리자'
+    setRobotsMeta('robots', 'noindex,nofollow,noarchive')
+    setRobotsMeta('googlebot', 'noindex,nofollow,noarchive')
+  }, [isSecretAdminPath, studio.ownerMode])
+
+  useEffect(() => {
     if (isSecretAdminPath && !studio.ownerMode && !secretUnlockAttemptedRef.current) {
       secretUnlockAttemptedRef.current = true
       studio.unlockOwnerMode()
@@ -214,6 +222,16 @@ function HeroVideoAdminPanel({
 
 function isSecretPath(pathname: string) {
   return pathname === '/secret/sanghan' || pathname === '/blog/secret/sanghan'
+}
+
+function setRobotsMeta(name: string, content: string) {
+  let meta = document.head.querySelector<HTMLMetaElement>(`meta[name="${name}"]`)
+  if (!meta) {
+    meta = document.createElement('meta')
+    meta.name = name
+    document.head.append(meta)
+  }
+  meta.content = content
 }
 
 function leaveOwnerMode(lockOwnerMode: () => void) {

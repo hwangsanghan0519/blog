@@ -1,11 +1,12 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import type { CSSProperties, KeyboardEvent, MouseEvent, PointerEvent, UIEvent } from 'react'
 import * as Dialog from '@radix-ui/react-dialog'
-import { ArrowUp, ChevronLeft, ChevronRight, ExternalLink, Mail, ShoppingBag, X, Zap } from 'lucide-react'
+import { ArrowUp, ChevronLeft, ChevronRight, ExternalLink, Mail, Share2, ShoppingBag, X, Zap } from 'lucide-react'
 import { useKeenSlider } from 'keen-slider/react'
 import 'keen-slider/keen-slider.min.css'
 import { countWords } from '../../../entities/post/lib/formatters'
 import type { Post } from '../../../entities/post/model/types'
+import { applyPublicSeo, getCategoryPath, getProductPath, readSeoRoute } from '../../../shared/lib/seo'
 import { RenderedContent } from '../../../shared/ui/RenderedContent'
 import ssenLogoImage from '../../../assets/ssen-logo.svg'
 import type { AdBannerSettings, HeroVideoSettings } from '../model/useBlogStudio'
@@ -63,6 +64,7 @@ export function PublicBlogHome({
   const [isHeaderCompact, setIsHeaderCompact] = useState(false)
   const [isHeaderDocked, setIsHeaderDocked] = useState(false)
   const [loadingDetailId, setLoadingDetailId] = useState('')
+  const [shareFeedback, setShareFeedback] = useState('')
   const headerRef = useRef<HTMLElement>(null)
   const headerSlotRef = useRef<HTMLDivElement>(null)
   const latestHeadRef = useRef<HTMLDivElement>(null)
@@ -121,6 +123,11 @@ export function PublicBlogHome({
     rubberband: false,
     slides: { perView: 'auto', spacing: 3 },
   })
+
+  useEffect(() => {
+    applyPublicSeo({ category: categoryFilter, posts: publishedPosts, selectedPost })
+  }, [categoryFilter, publishedPosts, selectedPost])
+
   useEffect(() => {
     if (topPosts.length < 2) return undefined
 
@@ -213,8 +220,9 @@ export function PublicBlogHome({
   useEffect(() => {
     const syncViewFromUrl = () => {
       const searchParams = new URLSearchParams(window.location.search)
-      const postParam = searchParams.get('post')
-      const categoryParam = searchParams.get('category')
+      const route = readSeoRoute(window.location.pathname)
+      const postParam = route.product || searchParams.get('post')
+      const categoryParam = route.category || searchParams.get('category')
       const targetPost = postParam ? publishedPosts.find((post) => post.slug === postParam || post.id === postParam) : undefined
       const targetCategory = categoryParam && publicCategories.includes(categoryParam) ? categoryParam : 'all'
 
@@ -265,7 +273,36 @@ export function PublicBlogHome({
     setSelectedId('')
     setReadingProgress(0)
     setIsProductBuyBarVisible(false)
-    syncPostParam('')
+    syncPostParam('', categoryFilter === 'all' ? '' : categoryFilter)
+  }
+
+  const sharePost = async (post: Post) => {
+    const url = new URL(getProductPath(post.slug || post.id), window.location.origin).href
+    const shareData = {
+      title: `${post.title} | ${post.category} 핫템 - SSEN`,
+      text: `${post.category}가 소개·착용한 ${post.title}${post.excerpt ? ` — ${post.excerpt}` : ''}`,
+      url,
+    }
+
+    try {
+      if (navigator.share && (!navigator.canShare || navigator.canShare(shareData))) {
+        await navigator.share(shareData)
+        setShareFeedback('공유했어요')
+      } else {
+        await navigator.clipboard.writeText(url)
+        setShareFeedback('링크 복사됨')
+      }
+      window.setTimeout(() => setShareFeedback(''), 1800)
+    } catch (error) {
+      if (error instanceof DOMException && error.name === 'AbortError') return
+      try {
+        await navigator.clipboard.writeText(url)
+        setShareFeedback('링크 복사됨')
+        window.setTimeout(() => setShareFeedback(''), 1800)
+      } catch {
+        window.prompt('아래 상품 링크를 복사해 주세요.', url)
+      }
+    }
   }
 
   const moveReaderPost = (direction: -1 | 1) => {
@@ -549,17 +586,20 @@ export function PublicBlogHome({
           {filteredPosts.length > 0 ? (
             <div className="public-post-grid">
               {filteredPosts.map((post) => (
-                <button
+                <a
                   aria-label={`${post.title} 상품 상세 보기`}
                   className={`public-post-card ${categoryFilter === 'all' ? 'is-all-pouch' : 'is-category-pouch'} ${selectedId === post.id ? 'is-active' : ''}`}
+                  href={getProductPath(post.slug || post.id)}
                   key={post.id}
                   style={getCategoryStyle(post.category)}
-                  type="button"
-                  onClick={() => selectPost(post.id)}
+                  onClick={(event) => {
+                    event.preventDefault()
+                    selectPost(post.id)
+                  }}
                 >
                   <PostImage post={post} />
                   <PouchCardOverlay post={post} showCategory={categoryFilter === 'all'} />
-                </button>
+                </a>
               ))}
             </div>
           ) : (
@@ -583,6 +623,15 @@ export function PublicBlogHome({
               onInteractOutside={keepReaderOpenForNavControls}
               onPointerDownOutside={keepReaderOpenForNavControls}
             >
+              <button
+                className="public-reader-share"
+                type="button"
+                aria-label={`${selectedPost.title} 공유하기`}
+                onClick={() => sharePost(selectedPost)}
+              >
+                <Share2 size={19} aria-hidden="true" />
+                {shareFeedback && <span aria-live="polite">{shareFeedback}</span>}
+              </button>
               <Dialog.Close className="public-reader-close" aria-label="상품 상세 닫기">
                 <X size={20} />
               </Dialog.Close>
@@ -1128,26 +1177,34 @@ function scrollToHeaderEdge(target: HTMLElement | null, header: HTMLElement | nu
   })
 }
 
-function syncPostParam(slug: string) {
+function syncPostParam(slug: string, fallbackCategory = '') {
   const url = new URL(window.location.href)
+  const basePath = url.pathname.startsWith('/blog/') ? '/blog/' : '/'
 
   if (slug) {
-    url.searchParams.set('post', slug)
+    url.pathname = `${basePath.replace(/\/$/, '')}${getProductPath(slug)}`
+  } else if (fallbackCategory) {
+    url.pathname = `${basePath.replace(/\/$/, '')}${getCategoryPath(fallbackCategory)}`
   } else {
-    url.searchParams.delete('post')
+    url.pathname = basePath
   }
+  url.searchParams.delete('post')
+  url.searchParams.delete('category')
 
   window.history.pushState(null, '', `${url.pathname}${url.search}${url.hash}`)
 }
 
 function syncCategoryParam(category: string) {
   const url = new URL(window.location.href)
+  const basePath = url.pathname.startsWith('/blog/') ? '/blog' : ''
 
   if (category) {
-    url.searchParams.set('category', category)
+    url.pathname = `${basePath}${getCategoryPath(category)}`
   } else {
-    url.searchParams.delete('category')
+    url.pathname = `${basePath}/`
   }
+  url.searchParams.delete('category')
+  url.searchParams.delete('post')
 
   window.history.pushState(null, '', `${url.pathname}${url.search}${url.hash}`)
 }

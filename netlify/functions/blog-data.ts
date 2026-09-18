@@ -62,6 +62,29 @@ export async function handler(event: NetlifyEvent) {
       return json(204, null)
     }
 
+    if (event.httpMethod === 'GET' && event.queryStringParameters?.format === 'robots') {
+      const origin = readRequestOrigin(event)
+      return text(200, [
+        'User-agent: *',
+        'Allow: /',
+        'Disallow: /secret/',
+        'Disallow: /blog/secret/',
+        `Sitemap: ${origin}/sitemap.xml`,
+        '',
+      ].join('\n'), 'text/plain; charset=utf-8', 'public, max-age=3600, s-maxage=3600')
+    }
+
+    if (event.httpMethod === 'GET' && event.queryStringParameters?.format === 'sitemap') {
+      const storedSummary = await readSupabaseSummary()
+      const data = storedSummary ?? createPublicSummary(await readSupabaseData())
+      return text(
+        200,
+        createSitemapXml(data, readRequestOrigin(event)),
+        'application/xml; charset=utf-8',
+        'public, max-age=300, s-maxage=300, stale-while-revalidate=600',
+      )
+    }
+
     if (event.httpMethod === 'GET' && event.queryStringParameters?.debug === 'env') {
       const source = await readSupabaseSourceDebug()
 
@@ -186,6 +209,93 @@ export async function handler(event: NetlifyEvent) {
   } catch (error) {
     return json(500, { message: error instanceof Error ? error.message : '서버 저장소 오류가 발생했습니다.' })
   }
+}
+
+const text = (statusCode: number, body: string, contentType: string, cacheControl: string) => ({
+  statusCode,
+  headers: {
+    'access-control-allow-origin': '*',
+    'cache-control': cacheControl,
+    'content-type': contentType,
+  },
+  body,
+})
+
+function readRequestOrigin(event: NetlifyEvent) {
+  const configuredUrl = process.env.URL?.trim()
+  if (configuredUrl) return configuredUrl.replace(/\/$/, '')
+
+  const host = event.headers['x-forwarded-host'] ?? event.headers.host ?? 'localhost:8888'
+  const protocol = event.headers['x-forwarded-proto'] ?? (host.includes('localhost') ? 'http' : 'https')
+  return `${protocol}://${host}`.replace(/\/$/, '')
+}
+
+function createSitemapXml(data: BlogData, origin: string) {
+  const publishedPosts = data.posts.filter((post): post is Record<string, unknown> => (
+    isRecord(post) && post.status === 'published'
+  ))
+  const categories = Array.from(new Set(
+    publishedPosts.map((post) => typeof post.category === 'string' ? post.category.trim() : '').filter(Boolean),
+  ))
+  const entries: Array<{ image?: string; lastmod?: string; loc: string }> = [
+    { loc: `${origin}/`, lastmod: normalizeLastModified(data.savedAt) },
+    ...categories.map((category) => ({
+      loc: `${origin}/celeb/${encodeURIComponent(category)}`,
+      lastmod: normalizeLastModified(data.savedAt),
+    })),
+    ...publishedPosts.flatMap((post) => {
+      const slug = typeof post.slug === 'string' && post.slug.trim()
+        ? post.slug.trim()
+        : typeof post.id === 'string' ? post.id : ''
+      if (!slug) return []
+      const coverImage = typeof post.coverImage === 'string' && post.coverImage && !post.coverImage.startsWith('data:')
+        ? toAbsoluteUrl(post.coverImage, origin)
+        : undefined
+      const lastmod = normalizeLastModified(
+        typeof post.updatedAt === 'string' ? post.updatedAt : typeof post.publishedAt === 'string' ? post.publishedAt : data.savedAt,
+      )
+      return [{ loc: `${origin}/product/${encodeURIComponent(slug)}`, lastmod, image: coverImage }]
+    }),
+  ]
+
+  const nodes = entries.map(({ image, lastmod, loc }) => [
+    '  <url>',
+    `    <loc>${escapeXml(loc)}</loc>`,
+    lastmod ? `    <lastmod>${escapeXml(lastmod)}</lastmod>` : '',
+    image ? `    <image:image><image:loc>${escapeXml(image)}</image:loc></image:image>` : '',
+    '  </url>',
+  ].filter(Boolean).join('\n')).join('\n')
+
+  return [
+    '<?xml version="1.0" encoding="UTF-8"?>',
+    '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9" xmlns:image="http://www.google.com/schemas/sitemap-image/1.1">',
+    nodes,
+    '</urlset>',
+    '',
+  ].join('\n')
+}
+
+function normalizeLastModified(value: unknown) {
+  if (typeof value !== 'string' || !value.trim()) return undefined
+  const timestamp = Date.parse(value)
+  return Number.isNaN(timestamp) ? undefined : new Date(timestamp).toISOString()
+}
+
+function toAbsoluteUrl(value: string, origin: string) {
+  try {
+    return new URL(value, origin).href
+  } catch {
+    return undefined
+  }
+}
+
+function escapeXml(value: string) {
+  return value
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&apos;')
 }
 
 async function readSupabaseData() {
