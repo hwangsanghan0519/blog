@@ -654,8 +654,7 @@ export function PublicBlogHome({
                   <div className="public-reader-page">
                     <section className="product-detail-hero" style={getCategoryStyle(selectedPost.category)}>
                       <div className="product-detail-image">
-                        <PostImage post={selectedPost} />
-                        <span>SSEN PICK</span>
+                        <ProductImageGallery post={selectedPost} />
                       </div>
                       <div className="product-detail-summary">
                         <div className="public-reader-meta">
@@ -1004,6 +1003,95 @@ function PostImage({ post, priority = false }: { post: Post; priority?: boolean 
   return (
     <div className="public-image-fallback">
       <span>{post.title.slice(0, 2).toUpperCase()}</span>
+    </div>
+  )
+}
+
+function ProductImageGallery({ post }: { post: Post }) {
+  const images = useMemo(
+    () => [
+      ...(post.coverImage ? [{ label: 'COVER', src: post.coverImage }] : []),
+      ...post.detailImages.map((src, index) => ({ label: `DETAIL ${String(index + 1).padStart(2, '0')}`, src })),
+    ],
+    [post.coverImage, post.detailImages],
+  )
+  const [activeIndex, setActiveIndex] = useState(0)
+  const [galleryRef, gallery] = useKeenSlider<HTMLDivElement>({
+    rubberband: false,
+    slides: { perView: 1 },
+    slideChanged(instance) {
+      setActiveIndex(instance.track.details.rel)
+    },
+  })
+
+  useEffect(() => {
+    const frame = window.requestAnimationFrame(() => {
+      setActiveIndex(0)
+      gallery.current?.update()
+      gallery.current?.moveToIdx(0, true, { duration: 0 })
+    })
+    return () => window.cancelAnimationFrame(frame)
+  }, [gallery, images.length, post.id])
+
+  if (images.length === 0) {
+    return (
+      <>
+        <PostImage post={post} />
+        <span className="product-gallery-pick">SSEN PICK</span>
+      </>
+    )
+  }
+
+  return (
+    <div className="product-gallery">
+      <div ref={galleryRef} className="keen-slider product-gallery-track">
+        {images.map((image, index) => (
+          <figure className="keen-slider__slide product-gallery-slide" key={`${image.src}-${index}`}>
+            <img
+              src={image.src}
+              alt={`${post.title} ${index === 0 && post.coverImage ? '대표' : `상세 ${post.coverImage ? index : index + 1}`} 이미지`}
+              decoding="async"
+            />
+          </figure>
+        ))}
+      </div>
+
+      <div className="product-gallery-topline" aria-hidden="true">
+        <span>SSEN PICK</span>
+        <em>{images[activeIndex]?.label}</em>
+      </div>
+
+      {images.length > 1 && (
+        <>
+          <div className="product-gallery-counter" aria-live="polite">
+            <strong>{String(activeIndex + 1).padStart(2, '0')}</strong>
+            <span>/ {String(images.length).padStart(2, '0')}</span>
+          </div>
+          <div className="product-gallery-arrows">
+            <button type="button" aria-label="이전 상품 이미지" disabled={activeIndex === 0} onClick={() => gallery.current?.prev()}>
+              <ChevronLeft size={19} />
+            </button>
+            <button type="button" aria-label="다음 상품 이미지" disabled={activeIndex === images.length - 1} onClick={() => gallery.current?.next()}>
+              <ChevronRight size={19} />
+            </button>
+          </div>
+          <div className="product-gallery-thumbs" aria-label="상품 이미지 선택">
+            {images.map((image, index) => (
+              <button
+                className={activeIndex === index ? 'is-active' : ''}
+                type="button"
+                aria-label={`${index + 1}번 이미지 보기`}
+                aria-current={activeIndex === index ? 'true' : undefined}
+                key={`${image.src.slice(0, 48)}-${index}`}
+                onClick={() => gallery.current?.moveToIdx(index)}
+              >
+                <img src={image.src} alt="" decoding="async" loading="lazy" />
+              </button>
+            ))}
+          </div>
+          <span className="product-gallery-swipe" aria-hidden="true">SWIPE TO VIEW →</span>
+        </>
+      )}
     </div>
   )
 }

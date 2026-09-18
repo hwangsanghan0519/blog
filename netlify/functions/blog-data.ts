@@ -445,7 +445,12 @@ function createPublicSummary(data: BlogData): BlogData {
       .map((post) => {
         const postId = typeof post.id === 'string' ? post.id : ''
         const coverImage = typeof post.coverImage === 'string' ? post.coverImage : ''
-        return { ...post, content: '', coverImage: publicAssetUrl('post', postId, version, coverImage) }
+        const detailImages = Array.isArray(post.detailImages)
+          ? post.detailImages.map((image, index) => (
+              typeof image === 'string' ? publicAssetUrl('post-detail', `${postId}:${index}`, version, image) : ''
+            )).filter(Boolean)
+          : []
+        return { ...post, content: '', coverImage: publicAssetUrl('post', postId, version, coverImage), detailImages }
       }),
   }
 }
@@ -462,6 +467,15 @@ function findPublicAsset(data: BlogData, kind: string, id: string) {
   }
 
   if (kind === 'category') return data.categoryImages[id] ?? ''
+
+  if (kind === 'post-detail') {
+    const separatorIndex = id.lastIndexOf(':')
+    const postId = separatorIndex >= 0 ? id.slice(0, separatorIndex) : ''
+    const imageIndex = Number(id.slice(separatorIndex + 1))
+    const post = data.posts.find((item) => isMatchingPublishedPost(item, postId))
+    if (!isRecord(post) || !Array.isArray(post.detailImages) || !Number.isInteger(imageIndex)) return ''
+    return typeof post.detailImages[imageIndex] === 'string' ? post.detailImages[imageIndex] : ''
+  }
 
   if (kind === 'banner') {
     const banner = data.adBanners.find((item, index) => {
@@ -611,8 +625,11 @@ async function externalizeEmbeddedImages(data: BlogData): Promise<BlogData> {
     if (!isRecord(post)) return post
 
     const coverImage = typeof post.coverImage === 'string' ? await upload(post.coverImage, 'post') : post.coverImage
+    const detailImages = Array.isArray(post.detailImages)
+      ? await Promise.all(post.detailImages.map((image) => typeof image === 'string' ? upload(image, 'post-detail') : image))
+      : []
     const content = typeof post.content === 'string' ? await externalizeContentImages(post.content, upload) : post.content
-    return { ...post, coverImage, content }
+    return { ...post, coverImage, content, detailImages }
   }))
 
   return { ...data, adBanners, categoryImages, heroVideo, posts }

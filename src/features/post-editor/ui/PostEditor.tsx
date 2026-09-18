@@ -21,6 +21,8 @@ import {
   AlignRight,
   Bold,
   Braces,
+  ChevronLeft,
+  ChevronRight,
   Code2,
   Eraser,
   ExternalLink,
@@ -164,6 +166,40 @@ export function PostEditor({ categories, post, onCoverUpload, onUpdate }: PostEd
     const src = await imageFileToOptimizedDataUrl(file, 1600, 0.78)
     editor.chain().focus().setImage({ src, alt: file.name }).run()
     event.target.value = ''
+  }
+
+  const uploadDetailImages = async (event: ChangeEvent<HTMLInputElement>) => {
+    const files = Array.from(event.target.files ?? [])
+    const remainingSlots = Math.max(0, 5 - post.detailImages.length)
+    event.target.value = ''
+
+    if (!files.length || remainingSlots === 0) return
+
+    try {
+      const images = await Promise.all(
+        files.slice(0, remainingSlots).map((file) => imageFileToOptimizedDataUrl(file, 1600, 0.8)),
+      )
+      onUpdate({ detailImages: [...post.detailImages, ...images].slice(0, 5) })
+
+      if (files.length > remainingSlots) {
+        window.alert(`상세 이미지는 최대 5장까지 등록할 수 있어 ${remainingSlots}장만 추가했습니다.`)
+      }
+    } catch {
+      window.alert('상세 이미지를 처리하지 못했습니다. 다른 이미지를 선택해 주세요.')
+    }
+  }
+
+  const removeDetailImage = (index: number) => {
+    onUpdate({ detailImages: post.detailImages.filter((_, imageIndex) => imageIndex !== index) })
+  }
+
+  const moveDetailImage = (index: number, direction: -1 | 1) => {
+    const targetIndex = index + direction
+    if (targetIndex < 0 || targetIndex >= post.detailImages.length) return
+
+    const images = [...post.detailImages]
+    ;[images[index], images[targetIndex]] = [images[targetIndex], images[index]]
+    onUpdate({ detailImages: images })
   }
 
   const setLink = () => {
@@ -473,10 +509,54 @@ export function PostEditor({ categories, post, onCoverUpload, onUpdate }: PostEd
           )}
         </section>
         <label className="cover-uploader">
-          <span>상품 이미지</span>
+          <span>대표 이미지</span>
           <input type="file" accept="image/*" onChange={onCoverUpload} />
-          {post.coverImage ? <img src={post.coverImage} alt="" /> : <ImagePlus size={32} />}
+          {post.coverImage ? (
+            <img src={post.coverImage} alt="" />
+          ) : (
+            <span className="cover-uploader-empty" aria-hidden="true">
+              <strong>COVER</strong>
+              <b>+</b>
+              <small>01 / MAIN</small>
+            </span>
+          )}
         </label>
+        <section className="detail-image-admin" aria-label="상품 상세 이미지 관리">
+          <div className="detail-image-admin-head">
+            <span>상세 이미지</span>
+            <strong>{post.detailImages.length} / 5</strong>
+          </div>
+          <p>상품 상세에서 대표 이미지 다음 슬라이드로 보여요.</p>
+          {post.detailImages.length > 0 && (
+            <div className="detail-image-list">
+              {post.detailImages.map((image, index) => (
+                <article key={`${image.slice(0, 48)}-${index}`}>
+                  <img src={image} alt={`상세 이미지 ${index + 1}`} />
+                  <span>{String(index + 1).padStart(2, '0')}</span>
+                  <div>
+                    <button type="button" aria-label="앞으로 이동" disabled={index === 0} onClick={() => moveDetailImage(index, -1)}>
+                      <ChevronLeft size={14} />
+                    </button>
+                    <button type="button" aria-label="뒤로 이동" disabled={index === post.detailImages.length - 1} onClick={() => moveDetailImage(index, 1)}>
+                      <ChevronRight size={14} />
+                    </button>
+                    <button type="button" aria-label={`상세 이미지 ${index + 1} 삭제`} onClick={() => removeDetailImage(index)}>
+                      <Trash2 size={14} />
+                    </button>
+                  </div>
+                </article>
+              ))}
+            </div>
+          )}
+          {post.detailImages.length < 5 && (
+            <label className="detail-image-add">
+              <input type="file" accept="image/*" multiple onChange={uploadDetailImages} />
+              <ImagePlus size={18} />
+              <span>이미지 추가</span>
+              <small>여러 장 동시 선택</small>
+            </label>
+          )}
+        </section>
       </aside>
     </section>
   )

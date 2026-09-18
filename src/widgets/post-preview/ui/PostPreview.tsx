@@ -7,9 +7,17 @@ type PostPreviewProps = {
 }
 
 export function PostPreview({ post }: PostPreviewProps) {
+  const previewImages = [post.coverImage, ...post.detailImages].filter(Boolean)
+
   return (
     <article className="preview">
-      {post.coverImage && <img className="preview-cover" src={post.coverImage} alt="" />}
+      {previewImages.length > 0 && (
+        <div className="preview-image-strip" aria-label="상품 이미지 미리보기">
+          {previewImages.map((image, index) => (
+            <img className="preview-cover" src={image} alt={`${post.title} ${index === 0 ? '대표' : `상세 ${index}`} 이미지`} key={`${image.slice(0, 48)}-${index}`} />
+          ))}
+        </div>
+      )}
       <span className={`status-badge ${post.status}`}>{statusLabel(post.status)}</span>
       <h2>{post.title}</h2>
       <p className="preview-excerpt">{post.excerpt}</p>
