@@ -817,6 +817,7 @@ function TrendVideo({ settings }: { settings: HeroVideoSettings }) {
           aria-label="추천 상품 링크 새 창에서 열기"
         >
           <img src={settings.stickerImage} alt="" decoding="async" loading="lazy" />
+          <span>구매하기 →</span>
         </a>
       )}
       <div className="public-trend-video-copy">
