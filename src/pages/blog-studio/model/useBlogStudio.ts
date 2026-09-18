@@ -19,7 +19,7 @@ const OWNER_PASSWORD_KEY = 'solo-commerce-blog-owner-password'
 const ADMIN_TOKEN_KEY = 'solo-commerce-blog-admin-token'
 const CLOUD_UPDATE_CHANNEL = 'solo-commerce-blog-cloud-update'
 const CLOUD_DATA_ENDPOINT = '/.netlify/functions/blog-data'
-const PRODUCTION_CLOUD_DATA_ENDPOINT = 'https://unique-rabanadas-3f0f48.netlify.app/.netlify/functions/blog-data'
+const PRODUCTION_CLOUD_DATA_ENDPOINT = 'https://ssenshop.netlify.app/.netlify/functions/blog-data'
 const UNCATEGORIZED = '분류 없음'
 
 export type AdBannerSettings = {
@@ -890,7 +890,7 @@ function createLightweightPostCache(posts: Post[]) {
     ...post,
     content: '',
     coverImage: isEmbeddedImage(post.coverImage) ? '' : post.coverImage,
-    detailImages: post.detailImages.filter((image) => !isEmbeddedImage(image)),
+    detailImages: post.detailImages.map((image) => (isEmbeddedImage(image) ? '' : image)),
   }))
 }
 
@@ -985,9 +985,8 @@ function normalizePosts(values: unknown, categoryHints: unknown = []): Post[] {
           : [],
         content: readString(value.content, '<h1>새 글</h1><p></p>'),
         coverImage: readString(value.coverImage, ''),
-        detailImages: Array.isArray(value.detailImages)
-          ? value.detailImages.filter((image): image is string => typeof image === 'string' && Boolean(image))
-          : [],
+        detailImages: normalizeFixedStringSlots(value.detailImages, 4),
+        detailDescriptions: normalizeFixedStringSlots(value.detailDescriptions, 4),
         purchaseTitle: readString(value.purchaseTitle, '최저가 제휴몰 바로가기'),
         productLinks: normalizeProductLinks(value.productLinks),
         status: normalizePostStatus(value.status),
@@ -995,6 +994,14 @@ function normalizePosts(values: unknown, categoryHints: unknown = []): Post[] {
         updatedAt: readString(value.updatedAt, new Date().toISOString()),
       }
     })
+}
+
+function normalizeFixedStringSlots(values: unknown, length: number) {
+  const normalized = Array.from({ length }, (_, index) => (
+    Array.isArray(values) && typeof values[index] === 'string' ? values[index] : ''
+  ))
+
+  return normalized
 }
 
 function normalizeProductLinks(values: unknown): ProductLink[] {
@@ -1046,7 +1053,7 @@ function isSecretAdminRuntime() {
 function getCloudDataEndpoint() {
   if (typeof window === 'undefined') return CLOUD_DATA_ENDPOINT
 
-  return ['localhost', '127.0.0.1'].includes(window.location.hostname) && window.location.port === '5173'
+  return ['localhost', '127.0.0.1'].includes(window.location.hostname)
     ? PRODUCTION_CLOUD_DATA_ENDPOINT
     : CLOUD_DATA_ENDPOINT
 }

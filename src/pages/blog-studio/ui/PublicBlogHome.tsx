@@ -683,7 +683,7 @@ export function PublicBlogHome({
                       {loadingDetailId === selectedPost.id ? (
                         <div className="product-detail-loading" aria-live="polite">상품 상세를 준비하고 있습니다.</div>
                       ) : (
-                        <RenderedContent content={selectedPost.content} />
+                        <ProductDetailContent post={selectedPost} />
                       )}
                     </section>
                   </div>
@@ -1011,7 +1011,9 @@ function ProductImageGallery({ post }: { post: Post }) {
   const images = useMemo(
     () => [
       ...(post.coverImage ? [{ label: 'COVER', src: post.coverImage }] : []),
-      ...post.detailImages.map((src, index) => ({ label: `DETAIL ${String(index + 1).padStart(2, '0')}`, src })),
+      ...post.detailImages.flatMap((src, index) => (
+        src ? [{ label: `CUT ${String(index + 1).padStart(2, '0')}`, src }] : []
+      )),
     ],
     [post.coverImage, post.detailImages],
   )
@@ -1046,7 +1048,10 @@ function ProductImageGallery({ post }: { post: Post }) {
     <div className="product-gallery">
       <div ref={galleryRef} className="keen-slider product-gallery-track">
         {images.map((image, index) => (
-          <figure className="keen-slider__slide product-gallery-slide" key={`${image.src}-${index}`}>
+          <figure
+            className={`keen-slider__slide product-gallery-slide ${activeIndex === index ? 'is-active' : ''}`}
+            key={`${image.src}-${index}`}
+          >
             <img
               src={image.src}
               alt={`${post.title} ${index === 0 && post.coverImage ? '대표' : `상세 ${post.coverImage ? index : index + 1}`} 이미지`}
@@ -1093,6 +1098,43 @@ function ProductImageGallery({ post }: { post: Post }) {
         </>
       )}
     </div>
+  )
+}
+
+function ProductDetailContent({ post }: { post: Post }) {
+  const frames = Array.from({ length: 4 }, (_, index) => ({
+    description: post.detailDescriptions[index]?.trim() ?? '',
+    image: post.detailImages[index] ?? '',
+  }))
+  const hasCompleteFourCut = frames.every((frame) => frame.image && frame.description)
+
+  if (!hasCompleteFourCut) return <RenderedContent content={post.content} />
+
+  return (
+    <section className="ssen-four-cut" aria-label="쎈네컷 상품 상세">
+      <header>
+        <span>SSEN PRODUCT STORY</span>
+        <strong>FOUR CUT DETAIL</strong>
+      </header>
+      <ol>
+        {frames.map((frame, index) => (
+          <li key={`${frame.image.slice(0, 48)}-${index}`}>
+            <figure>
+              <img src={frame.image} alt={`${post.title} 상세 ${index + 1}`} decoding="async" loading="lazy" />
+              <span>{String(index + 1).padStart(2, '0')}</span>
+            </figure>
+            <div>
+              <small>CUT {String(index + 1).padStart(2, '0')}</small>
+              <p>{frame.description}</p>
+            </div>
+          </li>
+        ))}
+      </ol>
+      <footer>
+        <span>SSEN FOUR CUT</span>
+        <strong>쎈네컷</strong>
+      </footer>
+    </section>
   )
 }
 

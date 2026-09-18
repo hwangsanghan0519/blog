@@ -21,8 +21,6 @@ import {
   AlignRight,
   Bold,
   Braces,
-  ChevronLeft,
-  ChevronRight,
   Code2,
   Eraser,
   ExternalLink,
@@ -72,6 +70,19 @@ const FONT_SIZES = [
 
 const TEXT_COLORS = ['#111827', '#475569', '#ef4444', '#f97316', '#f59e0b', '#10b981', '#0ea5e9', '#6366f1', '#a855f7']
 const HIGHLIGHT_COLORS = ['#fff3bf', '#fde68a', '#fecdd3', '#bbf7d0', '#bae6fd', '#ddd6fe']
+const DETAIL_FRAME_COUNT = 4
+
+function replaceDetailSlot(values: string[], index: number, value: string) {
+  return Array.from({ length: DETAIL_FRAME_COUNT }, (_, slotIndex) => (
+    slotIndex === index ? value : values[slotIndex] ?? ''
+  ))
+}
+
+function hasCompleteFourCut(post: Post) {
+  return Array.from({ length: DETAIL_FRAME_COUNT }, (_, index) => (
+    Boolean(post.detailImages[index]) && Boolean(post.detailDescriptions[index]?.trim())
+  )).every(Boolean)
+}
 
 export function PostEditor({ categories, post, onCoverUpload, onUpdate }: PostEditorProps) {
   const inlineImageRef = useRef<HTMLInputElement>(null)
@@ -168,38 +179,35 @@ export function PostEditor({ categories, post, onCoverUpload, onUpdate }: PostEd
     event.target.value = ''
   }
 
-  const uploadDetailImages = async (event: ChangeEvent<HTMLInputElement>) => {
-    const files = Array.from(event.target.files ?? [])
-    const remainingSlots = Math.max(0, 5 - post.detailImages.length)
+  const uploadDetailFrameImage = async (index: number, event: ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0]
     event.target.value = ''
 
-    if (!files.length || remainingSlots === 0) return
+    if (!file) return
 
     try {
-      const images = await Promise.all(
-        files.slice(0, remainingSlots).map((file) => imageFileToOptimizedDataUrl(file, 1600, 0.8)),
-      )
-      onUpdate({ detailImages: [...post.detailImages, ...images].slice(0, 5) })
-
-      if (files.length > remainingSlots) {
-        window.alert(`상세 이미지는 최대 5장까지 등록할 수 있어 ${remainingSlots}장만 추가했습니다.`)
-      }
+      const image = await imageFileToOptimizedDataUrl(file, 1600, 0.8)
+      onUpdate({ detailImages: replaceDetailSlot(post.detailImages, index, image) })
     } catch {
       window.alert('상세 이미지를 처리하지 못했습니다. 다른 이미지를 선택해 주세요.')
     }
   }
 
-  const removeDetailImage = (index: number) => {
-    onUpdate({ detailImages: post.detailImages.filter((_, imageIndex) => imageIndex !== index) })
+  const clearDetailFrameImage = (index: number) => {
+    onUpdate({ detailImages: replaceDetailSlot(post.detailImages, index, '') })
   }
 
-  const moveDetailImage = (index: number, direction: -1 | 1) => {
-    const targetIndex = index + direction
-    if (targetIndex < 0 || targetIndex >= post.detailImages.length) return
+  const updateDetailFrameDescription = (index: number, description: string) => {
+    onUpdate({ detailDescriptions: replaceDetailSlot(post.detailDescriptions, index, description) })
+  }
 
-    const images = [...post.detailImages]
-    ;[images[index], images[targetIndex]] = [images[targetIndex], images[index]]
-    onUpdate({ detailImages: images })
+  const changePostStatus = (status: PostStatus) => {
+    if (status === 'published' && !hasCompleteFourCut(post)) {
+      window.alert('상품을 발행하려면 쎈네컷 사진 4장과 각 사진의 설명을 모두 등록해 주세요.')
+      return
+    }
+
+    onUpdate({ status })
   }
 
   const setLink = () => {
@@ -301,6 +309,65 @@ export function PostEditor({ categories, post, onCoverUpload, onUpdate }: PostEd
             rows={3}
           />
         </label>
+
+        <section className="ssen-four-cut-admin" aria-label="쎈네컷 상품 상세 등록">
+          <header>
+            <div>
+              <span>PRODUCT DETAIL TEMPLATE</span>
+              <h2>쎈네컷</h2>
+              <p>사진 4장과 각 컷의 상품 설명을 모두 입력해 주세요.</p>
+            </div>
+            <strong>{post.detailImages.filter(Boolean).length} / 4</strong>
+          </header>
+
+          <div className="ssen-four-cut-admin-frames">
+            {Array.from({ length: 4 }, (_, index) => {
+              const image = post.detailImages[index] ?? ''
+              const description = post.detailDescriptions[index] ?? ''
+
+              return (
+                <article className={image && description.trim() ? 'is-complete' : ''} key={index}>
+                  <div className="ssen-four-cut-admin-number">
+                    <span>CUT</span>
+                    <strong>{String(index + 1).padStart(2, '0')}</strong>
+                  </div>
+                  <label className="ssen-four-cut-admin-image">
+                    <input type="file" accept="image/*" onChange={(event) => uploadDetailFrameImage(index, event)} />
+                    {image ? (
+                      <img src={image} alt={`${index + 1}번째 상세 이미지 미리보기`} />
+                    ) : (
+                      <span>
+                        <ImagePlus size={24} />
+                        사진 선택
+                      </span>
+                    )}
+                  </label>
+                  <label className="ssen-four-cut-admin-copy">
+                    <span>이 사진의 상품 설명</span>
+                    <textarea
+                      value={description}
+                      rows={5}
+                      maxLength={240}
+                      placeholder="사진에서 보여주는 특징, 소재, 사용감 등을 설명해 주세요."
+                      onChange={(event) => updateDetailFrameDescription(index, event.target.value)}
+                    />
+                    <small>{description.length} / 240</small>
+                  </label>
+                  {image && (
+                    <button type="button" aria-label={`${index + 1}번째 사진 삭제`} onClick={() => clearDetailFrameImage(index)}>
+                      <Trash2 size={14} /> 사진 삭제
+                    </button>
+                  )}
+                </article>
+              )
+            })}
+          </div>
+
+          <footer>
+            <span>SSEN FOUR CUT</span>
+            <strong>쎈네컷</strong>
+          </footer>
+        </section>
 
         <div className="toolbar rich-toolbar" aria-label="상품 상세 편집 도구">
           <ToolbarButton active={editor?.isActive('bold')} label="굵게" onClick={() => editor?.chain().focus().toggleBold().run()}>
@@ -417,7 +484,7 @@ export function PostEditor({ categories, post, onCoverUpload, onUpdate }: PostEd
         </div>
 
         <label>
-          상품 상세 설명
+          추가 상품 설명 <small>(선택)</small>
           <EditorContent editor={editor} className="rich-editor" />
         </label>
       </div>
@@ -425,7 +492,7 @@ export function PostEditor({ categories, post, onCoverUpload, onUpdate }: PostEd
       <aside className="editor-side">
         <label>
           상태
-          <select value={post.status} onChange={(event) => onUpdate({ status: event.target.value as PostStatus })}>
+          <select value={post.status} onChange={(event) => changePostStatus(event.target.value as PostStatus)}>
             <option value="draft">초안</option>
             <option value="published">발행</option>
             <option value="archived">보관</option>
@@ -521,42 +588,6 @@ export function PostEditor({ categories, post, onCoverUpload, onUpdate }: PostEd
             </span>
           )}
         </label>
-        <section className="detail-image-admin" aria-label="상품 상세 이미지 관리">
-          <div className="detail-image-admin-head">
-            <span>상세 이미지</span>
-            <strong>{post.detailImages.length} / 5</strong>
-          </div>
-          <p>상품 상세에서 대표 이미지 다음 슬라이드로 보여요.</p>
-          {post.detailImages.length > 0 && (
-            <div className="detail-image-list">
-              {post.detailImages.map((image, index) => (
-                <article key={`${image.slice(0, 48)}-${index}`}>
-                  <img src={image} alt={`상세 이미지 ${index + 1}`} />
-                  <span>{String(index + 1).padStart(2, '0')}</span>
-                  <div>
-                    <button type="button" aria-label="앞으로 이동" disabled={index === 0} onClick={() => moveDetailImage(index, -1)}>
-                      <ChevronLeft size={14} />
-                    </button>
-                    <button type="button" aria-label="뒤로 이동" disabled={index === post.detailImages.length - 1} onClick={() => moveDetailImage(index, 1)}>
-                      <ChevronRight size={14} />
-                    </button>
-                    <button type="button" aria-label={`상세 이미지 ${index + 1} 삭제`} onClick={() => removeDetailImage(index)}>
-                      <Trash2 size={14} />
-                    </button>
-                  </div>
-                </article>
-              ))}
-            </div>
-          )}
-          {post.detailImages.length < 5 && (
-            <label className="detail-image-add">
-              <input type="file" accept="image/*" multiple onChange={uploadDetailImages} />
-              <ImagePlus size={18} />
-              <span>이미지 추가</span>
-              <small>여러 장 동시 선택</small>
-            </label>
-          )}
-        </section>
       </aside>
     </section>
   )

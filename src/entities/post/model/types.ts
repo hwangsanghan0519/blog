@@ -19,6 +19,7 @@ export type Post = {
   content: string
   coverImage: string
   detailImages: string[]
+  detailDescriptions: string[]
   purchaseTitle: string
   productLinks: ProductLink[]
   status: PostStatus

@@ -3,7 +3,7 @@ import { defineConfig } from 'vite'
 
 const isGitHubPages = process.env.GITHUB_PAGES === 'true'
 const appBase = isGitHubPages ? '/blog/' : '/'
-const fallbackSiteUrl = 'https://unique-rabanadas-3f0f48.netlify.app'
+const fallbackSiteUrl = 'https://ssenshop.netlify.app'
 const configuredSiteUrl = process.env.VITE_SITE_URL || process.env.URL || fallbackSiteUrl
 const siteUrl = configuredSiteUrl.replace(/\/$/, '')
 
