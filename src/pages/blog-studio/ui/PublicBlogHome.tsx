@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
 import type { CSSProperties, MouseEvent, PointerEvent, UIEvent } from 'react'
 import * as Dialog from '@radix-ui/react-dialog'
-import { ArrowUp, CalendarDays, ChevronLeft, ChevronRight, ExternalLink, Mail, ShoppingBag, Trophy, X, Zap } from 'lucide-react'
+import { ArrowUp, CalendarDays, ChevronLeft, ChevronRight, ExternalLink, Mail, ShoppingBag, X, Zap } from 'lucide-react'
 import { useKeenSlider } from 'keen-slider/react'
 import 'keen-slider/keen-slider.min.css'
 import { countWords, formatDate } from '../../../entities/post/lib/formatters'
@@ -21,6 +21,29 @@ type PublicBlogHomeProps = {
 }
 
 const CATEGORY_COLUMN_SIZE = 2
+const BEST_RANK_THEMES = [
+  { accent: '#ffd54a', text: '#171717', glow: 'rgba(255, 213, 74, 0.34)', edge: '#f0002f' },
+  { accent: '#dfe4ec', text: '#171717', glow: 'rgba(191, 201, 216, 0.34)', edge: '#f0002f' },
+  { accent: '#d98a55', text: '#171717', glow: 'rgba(217, 138, 85, 0.32)', edge: '#171717' },
+  { accent: '#f0002f', text: '#ffffff', glow: 'rgba(240, 0, 47, 0.3)', edge: '#171717' },
+  { accent: '#df2847', text: '#ffffff', glow: 'rgba(223, 40, 71, 0.28)', edge: '#171717' },
+  { accent: '#c93a53', text: '#ffffff', glow: 'rgba(201, 58, 83, 0.26)', edge: '#171717' },
+  { accent: '#ad4659', text: '#ffffff', glow: 'rgba(173, 70, 89, 0.24)', edge: '#171717' },
+  { accent: '#8f4c5c', text: '#ffffff', glow: 'rgba(143, 76, 92, 0.22)', edge: '#171717' },
+  { accent: '#6f4e59', text: '#ffffff', glow: 'rgba(111, 78, 89, 0.2)', edge: '#171717' },
+  { accent: '#3b3b42', text: '#ffffff', glow: 'rgba(59, 59, 66, 0.22)', edge: '#f0002f' },
+] as const
+
+function getBestRankStyle(index: number) {
+  const theme = BEST_RANK_THEMES[index] ?? BEST_RANK_THEMES[BEST_RANK_THEMES.length - 1]
+
+  return {
+    '--best-rank-accent': theme.accent,
+    '--best-rank-text': theme.text,
+    '--best-rank-glow': theme.glow,
+    '--best-rank-edge': theme.edge,
+  } as CSSProperties
+}
 
 export function PublicBlogHome({
   posts,
@@ -381,13 +404,13 @@ export function PublicBlogHome({
         <section className="public-hero public-best-v2" aria-label="실시간 상품 TOP 10">
           <div className="public-hero-copy">
             <span className="public-kicker">
-              <Trophy size={15} /> SSEN BEST / TOP 10
+              SSEN CURATED / TOP 10
             </span>
             <h1>
               <span>BEST</span>
-              <em>DROP</em>
+              <em>PICKS</em>
             </h1>
-            <p>지금 가장 주목받는 아이템만 빠르게 확인하세요.</p>
+            <p>오늘 가장 주목받는 아이템을 가볍게 둘러보세요.</p>
             <div className="public-best-v2-guide" aria-hidden="true">
               <strong>01 — {String(topPosts.length).padStart(2, '0')}</strong>
               <span>DRAG TO EXPLORE</span>
@@ -404,26 +427,45 @@ export function PublicBlogHome({
                 sliderPausedRef.current = false
               }}
             >
+              <div
+                className="public-best-v2-confetti"
+                aria-hidden="true"
+                key={`best-confetti-${currentSlide}`}
+                style={getBestRankStyle(currentSlide)}
+              >
+                {Array.from({ length: 14 }, (_, index) => <i key={index} />)}
+              </div>
               <div ref={sliderRef} className="keen-slider public-slider-track">
                 {topPosts.map((post, index) => (
-                  <article className="keen-slider__slide public-slide" key={post.id}>
+                  <article
+                    className={`keen-slider__slide public-slide ${currentSlide === index ? 'is-current' : ''}`}
+                    key={post.id}
+                    style={getBestRankStyle(index)}
+                  >
                     <button type="button" onClick={() => selectPost(post.id)}>
-                      <div className="public-best-v2-media">
+                      <div className="public-best-v2-media" data-rank={String(index + 1).padStart(2, '0')}>
                         <PostImage post={post} />
                         <strong className="public-rank">
                           <small>TOP</small>
                           <b>{String(index + 1).padStart(2, '0')}</b>
                         </strong>
-                        <span className="public-best-v2-category">{post.category}</span>
+                        <div className="public-best-v2-category-live">
+                          <span aria-hidden="true"><i /></span>
+                          <strong>{post.category}</strong>
+                        </div>
                       </div>
                       <div className="public-best-v2-content">
-                        <span className="public-best-v2-eyebrow">SSEN CURATED PICK</span>
+                        <div className="public-best-v2-meta">
+                          <span className="public-best-v2-eyebrow">SELLER PICK</span>
+                        </div>
                         <h2>{post.title}</h2>
                         <p>{post.excerpt || '지금 비교하기 좋은 상품입니다.'}</p>
                         <div className="public-best-v2-buy">
-                          <ProductPricePreview post={post} />
+                          <strong className="product-price-preview public-best-v2-lowest-cta">
+                            <Zap size={18} /> 최저가 구매
+                          </strong>
                           <em>
-                            VIEW ITEM <ExternalLink size={14} />
+                            상품 상세보기 <ExternalLink size={17} />
                           </em>
                         </div>
                       </div>
@@ -457,9 +499,10 @@ export function PublicBlogHome({
               <div className="public-top-strip" aria-label="TOP 10 상품 빠른 선택">
                 {topPosts.map((post, index) => (
                   <button
-                    className={currentSlide === index ? 'is-active' : ''}
+                    className={`public-best-v2-rank-tab ${currentSlide === index ? 'is-active' : ''}`}
                     key={post.id}
                     type="button"
+                    style={getBestRankStyle(index)}
                     onClick={(event) => moveSliderTo(event, index)}
                   >
                     <strong>{index + 1}</strong>
