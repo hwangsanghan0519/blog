@@ -1,5 +1,8 @@
+import { createHash } from 'node:crypto'
+
 const ROW_ID = 'main'
 const SUMMARY_ROW_ID = 'main-summary'
+const ASSET_BUCKET = 'blog-assets'
 
 type BlogData = {
   adBanners: unknown[]
@@ -89,7 +92,14 @@ export async function handler(event: NetlifyEvent) {
 
       if (requestedAsset && requestedAssetId) {
         const asset = findPublicAsset(data, requestedAsset, requestedAssetId)
-        return asset ? createAssetResponse(asset) : json(404, { message: '이미지를 찾을 수 없습니다.' })
+        if (!asset) return json(404, { message: '이미지를 찾을 수 없습니다.' })
+
+        if (!isEmbeddedImageData(asset)) return createAssetRedirect(asset)
+
+        const storageUrl = await uploadEmbeddedImage(asset, requestedAsset)
+        if (storageUrl !== asset) return createAssetRedirect(storageUrl)
+
+        return createAssetResponse(asset)
       }
 
       if (requestedPost) {
@@ -360,6 +370,18 @@ function createAssetResponse(dataUrl: string) {
   }
 }
 
+function createAssetRedirect(location: string) {
+  return {
+    statusCode: 302,
+    headers: {
+      'access-control-allow-origin': '*',
+      'cache-control': 'public, max-age=31536000, immutable',
+      location,
+    },
+    body: '',
+  }
+}
+
 function isEmbeddedImageData(value: string) {
   return value.startsWith('data:image/')
 }
@@ -413,11 +435,12 @@ function readPostKey(post: object, rowId: string, index: number) {
 }
 
 async function writeSupabaseData(data: BlogData) {
+  const optimizedData = await externalizeEmbeddedImages(data)
   const updatedAt = new Date().toISOString()
   const response = await supabaseFetch('/rest/v1/blog_content?on_conflict=id', {
     body: JSON.stringify([
-      { data, id: ROW_ID, updated_at: updatedAt },
-      { data: createPublicSummary(data), id: SUMMARY_ROW_ID, updated_at: updatedAt },
+      { data: optimizedData, id: ROW_ID, updated_at: updatedAt },
+      { data: createPublicSummary(optimizedData), id: SUMMARY_ROW_ID, updated_at: updatedAt },
     ]),
     headers: {
       Prefer: 'resolution=merge-duplicates,return=minimal',
@@ -428,6 +451,121 @@ async function writeSupabaseData(data: BlogData) {
   if (!response.ok) {
     throw new Error(await response.text())
   }
+}
+
+async function externalizeEmbeddedImages(data: BlogData): Promise<BlogData> {
+  const uploadCache = new Map<string, Promise<string>>()
+  const upload = (source: string, kind: string) => {
+    if (!isEmbeddedImageData(source)) return Promise.resolve(source)
+
+    const cached = uploadCache.get(source)
+    if (cached) return cached
+
+    const request = uploadEmbeddedImage(source, kind)
+    uploadCache.set(source, request)
+    return request
+  }
+
+  const adBanners = await Promise.all(data.adBanners.map(async (banner) => {
+    if (!isRecord(banner) || typeof banner.image !== 'string') return banner
+    return { ...banner, image: await upload(banner.image, 'banner') }
+  }))
+
+  const categoryImages = Object.fromEntries(await Promise.all(
+    Object.entries(data.categoryImages).map(async ([category, image]) => [category, await upload(image, 'category')]),
+  ))
+
+  const posts = await Promise.all(data.posts.map(async (post) => {
+    if (!isRecord(post)) return post
+
+    const coverImage = typeof post.coverImage === 'string' ? await upload(post.coverImage, 'post') : post.coverImage
+    const content = typeof post.content === 'string' ? await externalizeContentImages(post.content, upload) : post.content
+    return { ...post, coverImage, content }
+  }))
+
+  return { ...data, adBanners, categoryImages, posts }
+}
+
+async function externalizeContentImages(content: string, upload: (source: string, kind: string) => Promise<string>) {
+  const matches = Array.from(content.matchAll(/src=(['"])(data:image\/[^'"]+)\1/g))
+  if (!matches.length) return content
+
+  let nextContent = content
+  const uniqueSources = Array.from(new Set(matches.map((match) => match[2])))
+  await Promise.all(uniqueSources.map(async (source) => {
+    const url = await upload(source, 'content')
+    nextContent = nextContent.split(source).join(url)
+  }))
+  return nextContent
+}
+
+async function uploadEmbeddedImage(source: string, kind: string) {
+  if (!isEmbeddedImageData(source)) return source
+
+  try {
+    const asset = parseImageDataUrl(source)
+    if (!asset) return source
+
+    await ensureAssetBucket()
+    const hash = createHash('sha256').update(asset.buffer).digest('hex').slice(0, 32)
+    const objectPath = `${kind}/${hash}.${extensionForContentType(asset.contentType)}`
+    const response = await supabaseStorageFetch(`/storage/v1/object/${ASSET_BUCKET}/${objectPath}`, {
+      body: asset.buffer,
+      headers: {
+        'content-type': asset.contentType,
+        'x-upsert': 'true',
+      },
+      method: 'POST',
+    })
+
+    if (!response.ok) return source
+    return `${readSupabaseUrl()}/storage/v1/object/public/${ASSET_BUCKET}/${objectPath}`
+  } catch {
+    return source
+  }
+}
+
+let assetBucketReady: Promise<boolean> | null = null
+
+function ensureAssetBucket() {
+  if (assetBucketReady) return assetBucketReady
+
+  assetBucketReady = (async () => {
+    const existing = await supabaseStorageFetch(`/storage/v1/bucket/${ASSET_BUCKET}`)
+    if (existing.ok) return true
+
+    const created = await supabaseStorageFetch('/storage/v1/bucket', {
+      body: JSON.stringify({ id: ASSET_BUCKET, name: ASSET_BUCKET, public: true }),
+      headers: { 'content-type': 'application/json' },
+      method: 'POST',
+    })
+    return created.ok || created.status === 409
+  })()
+
+  return assetBucketReady
+}
+
+function parseImageDataUrl(source: string) {
+  const match = /^data:([^;,]+)(;base64)?,(.*)$/s.exec(source)
+  if (!match) return null
+
+  const [, contentType, base64Marker, payload] = match
+  return {
+    buffer: base64Marker ? Buffer.from(payload, 'base64') : Buffer.from(decodeURIComponent(payload)),
+    contentType,
+  }
+}
+
+function extensionForContentType(contentType: string) {
+  const extensions: Record<string, string> = {
+    'image/avif': 'avif',
+    'image/gif': 'gif',
+    'image/jpeg': 'jpg',
+    'image/png': 'png',
+    'image/svg+xml': 'svg',
+    'image/webp': 'webp',
+  }
+  return extensions[contentType.toLowerCase()] ?? 'img'
 }
 
 async function writeSupabaseSummary(data: BlogData) {
@@ -471,6 +609,24 @@ function supabaseFetch(path: string, init?: RequestInit) {
       apikey: serviceRoleKey,
       authorization: `Bearer ${serviceRoleKey}`,
       'content-type': 'application/json',
+      ...init?.headers,
+    },
+  })
+}
+
+function supabaseStorageFetch(path: string, init?: RequestInit) {
+  const url = readSupabaseUrl()
+  const serviceRoleKey = readSupabaseServiceRoleKey()
+
+  if (!url || !serviceRoleKey) {
+    throw new Error('Supabase Storage 환경변수가 필요합니다.')
+  }
+
+  return fetch(`${url}${path}`, {
+    ...init,
+    headers: {
+      apikey: serviceRoleKey,
+      authorization: `Bearer ${serviceRoleKey}`,
       ...init?.headers,
     },
   })
