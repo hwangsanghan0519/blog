@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
 import type { CSSProperties, MouseEvent, PointerEvent, UIEvent } from 'react'
 import * as Dialog from '@radix-ui/react-dialog'
-import { CalendarDays, ChevronLeft, ChevronRight, ExternalLink, Mail, ShoppingBag, Trophy, X, Zap } from 'lucide-react'
+import { ArrowUp, CalendarDays, ChevronLeft, ChevronRight, ExternalLink, Mail, ShoppingBag, Trophy, X, Zap } from 'lucide-react'
 import { useKeenSlider } from 'keen-slider/react'
 import 'keen-slider/keen-slider.min.css'
 import { countWords, formatDate } from '../../../entities/post/lib/formatters'
@@ -334,7 +334,7 @@ export function PublicBlogHome({
             <img src={ssenLogoImage} alt="" />
           </span>
           <span className="public-brand-message" aria-hidden="true">
-            <span className="public-brand-kicker">SSEN CURATED PICKS</span>
+            <span className="public-brand-kicker">  지금 가장 유행하는  </span>
             <span className="public-brand-title">
               <em>쎈놈들이</em>
               <b>선택한 아이템</b>
@@ -378,14 +378,20 @@ export function PublicBlogHome({
       <TrendVideo settings={heroVideo} />
 
       <main className="public-main">
-        <section className="public-hero" aria-label="실시간 상품 TOP 10">
+        <section className="public-hero public-best-v2" aria-label="실시간 상품 TOP 10">
           <div className="public-hero-copy">
             <span className="public-kicker">
-              <Trophy size={16} /> 오늘의 센 가격 TOP 10
+              <Trophy size={15} /> SSEN BEST / TOP 10
             </span>
-            <h1>SSEN PRICE DROP</h1>
-            <p>셀럽과 인플루언서가 광고한 상품을 모아 보고, 판매사 링크로 바로 이동합니다.</p>
-
+            <h1>
+              <span>BEST</span>
+              <em>DROP</em>
+            </h1>
+            <p>지금 가장 주목받는 아이템만 빠르게 확인하세요.</p>
+            <div className="public-best-v2-guide" aria-hidden="true">
+              <strong>01 — {String(topPosts.length).padStart(2, '0')}</strong>
+              <span>DRAG TO EXPLORE</span>
+            </div>
           </div>
 
           {topPosts.length > 0 ? (
@@ -402,13 +408,25 @@ export function PublicBlogHome({
                 {topPosts.map((post, index) => (
                   <article className="keen-slider__slide public-slide" key={post.id}>
                     <button type="button" onClick={() => selectPost(post.id)}>
-                      <PostImage post={post} />
-                      <strong className="public-rank">TOP {index + 1}</strong>
-                      <span>{post.category}</span>
-                      <h2>{post.title}</h2>
-                      <p>{post.excerpt || '지금 비교하기 좋은 상품입니다.'}</p>
-                      <ProductPricePreview post={post} />
-                      <em>가격 보기</em>
+                      <div className="public-best-v2-media">
+                        <PostImage post={post} />
+                        <strong className="public-rank">
+                          <small>TOP</small>
+                          <b>{String(index + 1).padStart(2, '0')}</b>
+                        </strong>
+                        <span className="public-best-v2-category">{post.category}</span>
+                      </div>
+                      <div className="public-best-v2-content">
+                        <span className="public-best-v2-eyebrow">SSEN CURATED PICK</span>
+                        <h2>{post.title}</h2>
+                        <p>{post.excerpt || '지금 비교하기 좋은 상품입니다.'}</p>
+                        <div className="public-best-v2-buy">
+                          <ProductPricePreview post={post} />
+                          <em>
+                            VIEW ITEM <ExternalLink size={14} />
+                          </em>
+                        </div>
+                      </div>
                     </button>
                   </article>
                 ))}
@@ -583,23 +601,32 @@ export function PublicBlogHome({
 
       <AdStripBanners banners={adBanners} variant="footer" />
 
-      <footer className="public-footer">
-        <div className="public-footer-copy">
-          <span>SSEN DROP CLUB</span>
-          <strong>SSEN</strong>
-          <p>강한 제품, 더 강한 가격, 바로 이동 가능한 제휴 링크를 큐레이션합니다.</p>
-          <div className="public-footer-tags" aria-label="SSEN 키워드">
-            <span>RED DROP</span>
-            <span>K-POP MOOD</span>
-            <span>AFFILIATE SELECT</span>
+      <footer className="public-footer public-footer-v3">
+        <div className="public-footer-v3-main">
+          <button
+            className="public-footer-v3-logo"
+            type="button"
+            aria-label="페이지 맨 위로 이동"
+            onClick={() => window.scrollTo({ left: 0, top: 0, behavior: 'smooth' })}
+          >
+            <img src={ssenLogoImage} alt="SSEN" />
+          </button>
+
+          <div className="public-footer-v3-message">
+            <span>CURATED / SEOUL</span>
+            <strong>PICKED BY SSEN.</strong>
+          </div>
+
+          <div className="public-footer-v3-actions">
+            <button type="button" aria-label="페이지 맨 위로 이동" onClick={() => window.scrollTo({ left: 0, top: 0, behavior: 'smooth' })}>
+              <ArrowUp size={19} aria-hidden="true" />
+            </button>
           </div>
         </div>
 
-        <div className="public-footer-bottom">
-          <small>© {new Date().getFullYear()} SSEN | Contact nmc2711@naver.com</small>
-          <button type="button" onClick={() => window.scrollTo({ left: 0, top: 0, behavior: 'smooth' })}>
-            TOP
-          </button>
+        <div className="public-footer-v3-bottom">
+          <small>© {new Date().getFullYear()} SSEN</small>
+          <span>SEOUL · KR</span>
         </div>
       </footer>
 
@@ -709,6 +736,20 @@ function AdStripBanners({ banners, variant = 'header' }: { banners: AdBannerSett
   )
 }
 
+function moveAdSpotlight(event: PointerEvent<HTMLElement>) {
+  const bounds = event.currentTarget.getBoundingClientRect()
+  const x = ((event.clientX - bounds.left) / bounds.width) * 100
+  const y = ((event.clientY - bounds.top) / bounds.height) * 100
+
+  event.currentTarget.style.setProperty('--ad-pointer-x', `${x}%`)
+  event.currentTarget.style.setProperty('--ad-pointer-y', `${y}%`)
+}
+
+function resetAdSpotlight(event: PointerEvent<HTMLElement>) {
+  event.currentTarget.style.setProperty('--ad-pointer-x', '50%')
+  event.currentTarget.style.setProperty('--ad-pointer-y', '50%')
+}
+
 function AdStripBanner({ banner }: { banner: AdBannerSettings }) {
   if (!banner.enabled) return null
   const className = `public-ad-strip ${banner.image ? 'has-image' : ''}`
@@ -735,14 +776,22 @@ function AdStripBanner({ banner }: { banner: AdBannerSettings }) {
 
   if (banner.href.trim()) {
     return (
-      <a className={className} href={banner.href} style={bannerStyle} target="_blank" rel="noreferrer">
+      <a
+        className={className}
+        href={banner.href}
+        style={bannerStyle}
+        target="_blank"
+        rel="noreferrer"
+        onPointerMove={moveAdSpotlight}
+        onPointerLeave={resetAdSpotlight}
+      >
         {content}
       </a>
     )
   }
 
   return (
-    <div className={className} style={bannerStyle}>
+    <div className={className} style={bannerStyle} onPointerMove={moveAdSpotlight} onPointerLeave={resetAdSpotlight}>
       {content}
     </div>
   )
