@@ -28,6 +28,7 @@ export type AdBannerSettings = {
   title: string
   description: string
   ctaLabel: string
+  embedCode: string
   href: string
   image: string
   backgroundColor: string
@@ -116,6 +117,7 @@ const createDefaultAdBanner = (index: number): AdBannerSettings => ({
   title: `띠배너 영역 ${index + 1}`,
   description: '나중에 광고나 공지 문구를 넣을 수 있습니다.',
   ctaLabel: '자세히 보기',
+  embedCode: '',
   href: '',
   image: '',
   backgroundColor: '#ffffff',
@@ -1029,11 +1031,12 @@ function normalizeAdBanners(banners: Partial<AdBannerSettings>[]) {
   const normalized = DEFAULT_AD_BANNERS.map((fallback, index) => ({
     ...fallback,
     ...banners[index],
+    embedCode: typeof banners[index]?.embedCode === 'string' ? banners[index].embedCode : '',
     id: banners[index]?.id ?? fallback.id,
   }))
 
   const hasConfiguredBanner = normalized.some(
-    (banner) => banner.enabled || banner.image || banner.href || banner.title !== `띠배너 영역 ${Number(banner.id.replace('banner-', '')) || 1}`,
+    (banner) => banner.enabled || banner.embedCode || banner.image || banner.href || banner.title !== `띠배너 영역 ${Number(banner.id.replace('banner-', '')) || 1}`,
   )
 
   if (!hasConfiguredBanner) {

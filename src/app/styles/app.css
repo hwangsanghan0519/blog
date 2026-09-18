@@ -3069,6 +3069,45 @@ button.category-row.is-selected {
   grid-column: span 2;
 }
 
+.ad-admin-embed {
+  grid-column: 1 / -1;
+}
+
+.ad-admin-embed textarea {
+  width: 100%;
+  min-height: 118px;
+  resize: vertical;
+  padding: 11px 12px;
+  border: 1px solid var(--line);
+  border-radius: 13px;
+  color: var(--text-strong);
+  background: var(--surface);
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+  font-size: 12px;
+  font-weight: 600;
+  line-height: 1.55;
+}
+
+.ad-admin-embed small {
+  color: var(--text-soft);
+  font-size: 11px;
+  font-weight: 700;
+}
+
+.ad-admin-embed button {
+  justify-self: start;
+  min-height: 30px;
+  padding: 0 10px;
+  border: 1px solid rgba(240, 0, 47, 0.2);
+  border-radius: 9px;
+  color: #d6002a;
+  background: rgba(240, 0, 47, 0.06);
+  font: inherit;
+  font-size: 11px;
+  font-weight: 900;
+  cursor: pointer;
+}
+
 .ad-admin-color span {
   display: grid;
   grid-template-columns: 42px minmax(0, 1fr);
@@ -9679,6 +9718,27 @@ button.category-row.is-selected,
     height: clamp(72px, 10vw, 116px) !important;
     padding: 0;
   }
+}
+
+/* Third-party affiliate tags run inside an isolated, full-width ad frame. */
+.public-ad-strip.has-embed {
+  width: 100%;
+  height: var(--ad-embed-height, 120px) !important;
+  min-height: 50px;
+  display: block !important;
+  overflow: hidden;
+  padding: 0 !important;
+  border: 0 !important;
+  background: var(--ad-banner-bg, transparent) !important;
+  box-shadow: none !important;
+}
+
+.public-ad-embed-frame {
+  width: 100%;
+  height: 100%;
+  display: block;
+  border: 0;
+  background: transparent;
 }
 
 /* Partnership contact: a compact floating editorial action. */

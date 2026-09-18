@@ -276,6 +276,22 @@ function AdBannerAdminPanel({
         링크
         <input value={banner.href} placeholder="https://example.com" onChange={(event) => onUpdate(index, { href: event.target.value })} />
       </label>
+      <label className="ad-admin-embed">
+        <span>제휴 광고 태그</span>
+        <textarea
+          rows={5}
+          spellCheck={false}
+          value={banner.embedCode}
+          placeholder={'쿠팡 등에서 발급받은 <script>…</script> 또는 <iframe>…</iframe> 코드를 붙여 넣으세요.'}
+          onChange={(event) => onUpdate(index, { embedCode: event.target.value })}
+        />
+        <small>태그가 입력되면 이미지·텍스트 배너보다 우선 표시되며 광고 전용 보안 영역 안에서 실행됩니다.</small>
+        {banner.embedCode && (
+          <button type="button" onClick={() => onUpdate(index, { embedCode: '' })}>
+            태그 비우기
+          </button>
+        )}
+      </label>
       <label className="ad-admin-color">
         배경색
         <span>

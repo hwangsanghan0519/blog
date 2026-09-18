@@ -793,12 +793,12 @@ function AdStripBanners({ banners, variant = 'header' }: { banners: AdBannerSett
   const visibleBanners = banners.filter((banner) => banner.enabled && (banner.placement === 'both' || banner.placement === variant))
 
   if (!visibleBanners.length) return null
-  const hasImageBanner = visibleBanners.some((banner) => banner.image)
+  const hasVisualBanner = visibleBanners.some((banner) => banner.image || banner.embedCode.trim())
 
   return (
-    <div className={`public-ad-stack ${variant === 'footer' ? 'is-footer' : ''} ${hasImageBanner ? 'has-image-banner' : ''}`}>
+    <div className={`public-ad-stack ${variant === 'footer' ? 'is-footer' : ''} ${hasVisualBanner ? 'has-image-banner' : ''}`}>
       {visibleBanners.map((banner) => (
-        <AdStripBanner banner={banner} key={banner.id} />
+        <AdStripBanner banner={banner} key={banner.id} variant={variant} />
       ))}
     </div>
   )
@@ -818,13 +818,29 @@ function resetAdSpotlight(event: PointerEvent<HTMLElement>) {
   event.currentTarget.style.setProperty('--ad-pointer-y', '50%')
 }
 
-function AdStripBanner({ banner }: { banner: AdBannerSettings }) {
+function AdStripBanner({ banner, variant }: { banner: AdBannerSettings; variant: 'header' | 'footer' }) {
   if (!banner.enabled) return null
-  const className = `public-ad-strip ${banner.image ? 'has-image' : ''}`
+  const embedCode = banner.embedCode.trim()
+  const className = `public-ad-strip ${embedCode ? 'has-embed' : banner.image ? 'has-image' : ''}`
   const bannerStyle = {
     '--ad-banner-bg': banner.backgroundColor || '#ffffff',
     ...(banner.image ? { '--ad-banner-image': `url(${JSON.stringify(banner.image)})` } : {}),
+    ...(embedCode ? { '--ad-embed-height': `${getAdEmbedHeight(embedCode, variant)}px` } : {}),
   } as CSSProperties
+
+  if (embedCode) {
+    return (
+      <div className={className} style={bannerStyle}>
+        <iframe
+          className="public-ad-embed-frame"
+          loading={variant === 'header' ? 'eager' : 'lazy'}
+          sandbox="allow-forms allow-popups allow-popups-to-escape-sandbox allow-scripts"
+          srcDoc={createAdEmbedDocument(embedCode, banner.backgroundColor)}
+          title={`${banner.title || '제휴 광고'} ${variant === 'header' ? '상단' : '하단'} 배너`}
+        />
+      </div>
+    )
+  }
 
   const content = (
     <>
@@ -866,6 +882,31 @@ function AdStripBanner({ banner }: { banner: AdBannerSettings }) {
       {content}
     </div>
   )
+}
+
+function getAdEmbedHeight(code: string, variant: 'header' | 'footer') {
+  const iframeHeight = code.match(/<iframe\b[^>]*\bheight\s*=\s*["']?(\d+)/i)?.[1]
+  const dataHeight = code.match(/\bdata-height\s*=\s*["']?(\d+)/i)?.[1]
+  const height = Number(iframeHeight ?? dataHeight ?? (variant === 'header' ? 120 : 100))
+  return Math.min(600, Math.max(50, Number.isFinite(height) ? height : 120))
+}
+
+function createAdEmbedDocument(code: string, backgroundColor: string) {
+  const background = /^#[0-9a-f]{3,8}$/i.test(backgroundColor.trim()) ? backgroundColor.trim() : 'transparent'
+  return `<!doctype html>
+<html lang="ko">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <base target="_blank" />
+    <style>
+      html, body { width: 100%; min-height: 100%; margin: 0; overflow: hidden; background: ${background}; }
+      body { display: flex; align-items: center; justify-content: center; }
+      iframe, img { max-width: 100%; border: 0; }
+    </style>
+  </head>
+  <body>${code}</body>
+</html>`
 }
 
 function PostImage({ post, priority = false }: { post: Post; priority?: boolean }) {
