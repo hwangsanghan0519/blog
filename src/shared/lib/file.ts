@@ -1,12 +1,3 @@
-export function fileToDataUrl(file: File) {
-  return new Promise<string>((resolve, reject) => {
-    const reader = new FileReader()
-    reader.onload = () => resolve(String(reader.result))
-    reader.onerror = reject
-    reader.readAsDataURL(file)
-  })
-}
-
 export function imageFileToOptimizedDataUrl(file: File, maxWidth = 1600, quality = 0.8) {
   return new Promise<string>((resolve, reject) => {
     const image = new Image()

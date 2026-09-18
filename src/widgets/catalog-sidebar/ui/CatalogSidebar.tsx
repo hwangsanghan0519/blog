@@ -4,7 +4,7 @@ import { ChevronDown, ChevronUp, FilePlus2, FolderPlus, GripVertical, ImagePlus,
 import type { Post, PostStatusFilter } from '../../../entities/post/model/types'
 import { formatDate, statusLabel } from '../../../entities/post/lib/formatters'
 
-type BlogSidebarProps = {
+type CatalogSidebarProps = {
   activePostId: string
   categoryFilter: string
   categoryCounts: Array<{ name: string; count: number }>
@@ -27,7 +27,7 @@ type BlogSidebarProps = {
   onStatusFilterChange: (status: PostStatusFilter) => void
 }
 
-export function BlogSidebar({
+export function CatalogSidebar({
   activePostId,
   categoryFilter,
   categoryCounts,
@@ -48,7 +48,7 @@ export function BlogSidebar({
   onRenameCategory,
   onSelectPost,
   onStatusFilterChange,
-}: BlogSidebarProps) {
+}: CatalogSidebarProps) {
   const [draggedCategory, setDraggedCategory] = useState('')
   const [dragOverCategory, setDragOverCategory] = useState('')
 

@@ -24,7 +24,7 @@ type Product = Record<string, unknown> & {
   updatedAt?: unknown
 }
 
-type BlogSummary = {
+type CommerceSummary = {
   categories?: unknown
   posts?: unknown
 }
@@ -60,7 +60,7 @@ export async function handler(event: NetlifyEvent) {
       return renderProductPage(shell, origin, product)
     }
 
-    const data = await dataResponse.json() as BlogSummary
+    const data = await dataResponse.json() as CommerceSummary
     return renderCategoryPage(shell, origin, data, value)
   } catch (error) {
     return response(
@@ -146,7 +146,7 @@ function renderProductPage(shell: string, origin: string, product: Product) {
   }))
 }
 
-function renderCategoryPage(shell: string, origin: string, data: BlogSummary, category: string) {
+function renderCategoryPage(shell: string, origin: string, data: CommerceSummary, category: string) {
   const categories = Array.isArray(data.categories) ? data.categories.map(readString).filter(Boolean) : []
   const allPosts = Array.isArray(data.posts) ? data.posts.filter(isRecord) as Product[] : []
   const posts = allPosts.filter((post) => post.status === 'published' && readString(post.category) === category)

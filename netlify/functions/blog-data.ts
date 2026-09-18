@@ -4,7 +4,7 @@ const ROW_ID = 'main'
 const SUMMARY_ROW_ID = 'main-summary'
 const ASSET_BUCKET = 'blog-assets'
 
-type BlogData = {
+type CommerceData = {
   adBanners: unknown[]
   categories: string[]
   categoryImages: Record<string, string>
@@ -13,13 +13,13 @@ type BlogData = {
   savedAt?: string | null
 }
 
-type BlogContentRow = {
-  data?: Partial<BlogData> | null
+type CommerceContentRow = {
+  data?: Partial<CommerceData> | null
   id?: string
   updated_at?: string
 }
 
-type BlogDataPatch = {
+type CommerceDataPatch = {
   adBanners?: unknown[]
   categories?: string[]
   categoryImages?: Record<string, string>
@@ -35,7 +35,7 @@ type NetlifyEvent = {
   queryStringParameters?: Record<string, string | undefined> | null
 }
 
-const emptyData: BlogData = {
+const emptyData: CommerceData = {
   adBanners: [],
   categories: [],
   categoryImages: {},
@@ -150,9 +150,9 @@ export async function handler(event: NetlifyEvent) {
     }
 
     if (event.httpMethod === 'PATCH') {
-      const patch = JSON.parse(event.body ?? '{}') as BlogDataPatch
+      const patch = JSON.parse(event.body ?? '{}') as CommerceDataPatch
 
-      if (!isValidBlogDataPatch(patch)) {
+      if (!isValidCommerceDataPatch(patch)) {
         return json(400, { message: '부분 저장 데이터 형식이 올바르지 않습니다.' })
       }
 
@@ -169,7 +169,7 @@ export async function handler(event: NetlifyEvent) {
         posts.set(change.id, { ...previous, ...change.patch, id: change.id })
       })
 
-      const data: BlogData = {
+      const data: CommerceData = {
         adBanners: patch.adBanners ?? current.adBanners,
         categories: patch.categories ?? current.categories,
         categoryImages: patch.categoryImages ?? current.categoryImages,
@@ -182,7 +182,7 @@ export async function handler(event: NetlifyEvent) {
       return json(200, { savedAt: data.savedAt })
     }
 
-    const payload = JSON.parse(event.body ?? '{}') as BlogData
+    const payload = JSON.parse(event.body ?? '{}') as CommerceData
 
     if (
       !Array.isArray(payload.posts) ||
@@ -194,7 +194,7 @@ export async function handler(event: NetlifyEvent) {
       return json(400, { message: '저장 데이터 형식이 올바르지 않습니다.' })
     }
 
-    const data: BlogData = {
+    const data: CommerceData = {
       adBanners: payload.adBanners,
       categories: payload.categories,
       categoryImages: payload.categoryImages,
@@ -231,7 +231,7 @@ function readRequestOrigin(event: NetlifyEvent) {
   return process.env.URL?.trim().replace(/\/$/, '') || 'http://localhost:8888'
 }
 
-function createSitemapXml(data: BlogData, origin: string) {
+function createSitemapXml(data: CommerceData, origin: string) {
   const publishedPosts = data.posts.filter((post): post is Record<string, unknown> => (
     isRecord(post) && post.status === 'published'
   ))
@@ -301,7 +301,7 @@ function escapeXml(value: string) {
 
 async function readSupabaseData() {
   const rows = await readSupabaseRows()
-  return mergeBlogRows(rows)
+  return mergeCommerceRows(rows)
 }
 
 async function readSupabaseRows() {
@@ -311,20 +311,20 @@ async function readSupabaseRows() {
     throw new Error(await response.text())
   }
 
-  return (await response.json()) as BlogContentRow[]
+  return (await response.json()) as CommerceContentRow[]
 }
 
 async function readSupabaseSummary() {
   const response = await supabaseFetch(`/rest/v1/blog_content?id=eq.${SUMMARY_ROW_ID}&select=data&limit=1`)
   if (!response.ok) throw new Error(await response.text())
 
-  const [row] = (await response.json()) as BlogContentRow[]
-  return row?.data && isBlogData(row.data) ? row.data : null
+  const [row] = (await response.json()) as CommerceContentRow[]
+  return row?.data && isCommerceData(row.data) ? row.data : null
 }
 
 async function readSupabaseSourceDebug() {
   const rows = await readSupabaseRows()
-  const merged = mergeBlogRows(rows)
+  const merged = mergeCommerceRows(rows)
   const mainRow = rows.find((row) => row.id === ROW_ID)
 
   return {
@@ -343,7 +343,7 @@ async function readSupabaseSourceDebug() {
   }
 }
 
-function mergeBlogRows(rows: BlogContentRow[]): BlogData {
+function mergeCommerceRows(rows: CommerceContentRow[]): CommerceData {
   const categories = new Set<string>()
   const categoryImages: Record<string, string> = {}
   const posts = new Map<string, unknown>()
@@ -412,7 +412,7 @@ function mergeBlogRows(rows: BlogContentRow[]): BlogData {
   }
 }
 
-function createPublicSummary(data: BlogData): BlogData {
+function createPublicSummary(data: CommerceData): CommerceData {
   const version = data.savedAt ?? 'latest'
 
   return {
@@ -460,7 +460,7 @@ function publicAssetUrl(kind: string, id: string, version: string, source: strin
   return `/.netlify/functions/blog-data?asset=${encodeURIComponent(kind)}&id=${encodeURIComponent(id)}&v=${encodeURIComponent(version)}`
 }
 
-function findPublicAsset(data: BlogData, kind: string, id: string) {
+function findPublicAsset(data: CommerceData, kind: string, id: string) {
   if (kind === 'post') {
     const post = data.posts.find((item) => isMatchingPublishedPost(item, id))
     return isRecord(post) && typeof post.coverImage === 'string' ? post.coverImage : ''
@@ -537,7 +537,7 @@ function isRecord(value: unknown): value is Record<string, unknown> {
   return value !== null && typeof value === 'object' && !Array.isArray(value)
 }
 
-function isBlogData(value: unknown): value is BlogData {
+function isCommerceData(value: unknown): value is CommerceData {
   if (!isRecord(value)) return false
   return (
     Array.isArray(value.adBanners) &&
@@ -548,7 +548,7 @@ function isBlogData(value: unknown): value is BlogData {
   )
 }
 
-function isValidBlogDataPatch(value: BlogDataPatch) {
+function isValidCommerceDataPatch(value: CommerceDataPatch) {
   return (
     (value.adBanners === undefined || Array.isArray(value.adBanners)) &&
     (value.categories === undefined || (Array.isArray(value.categories) && value.categories.every((item) => typeof item === 'string'))) &&
@@ -576,7 +576,7 @@ function readPostKey(post: object, rowId: string, index: number) {
   return `${rowId}:${index}`
 }
 
-async function writeSupabaseData(data: BlogData) {
+async function writeSupabaseData(data: CommerceData) {
   const optimizedData = await externalizeEmbeddedImages(data)
   const updatedAt = new Date().toISOString()
   const response = await supabaseFetch('/rest/v1/blog_content?on_conflict=id', {
@@ -595,7 +595,7 @@ async function writeSupabaseData(data: BlogData) {
   }
 }
 
-async function externalizeEmbeddedImages(data: BlogData): Promise<BlogData> {
+async function externalizeEmbeddedImages(data: CommerceData): Promise<CommerceData> {
   const uploadCache = new Map<string, Promise<string>>()
   const upload = (source: string, kind: string) => {
     if (!isEmbeddedImageData(source)) return Promise.resolve(source)
@@ -717,7 +717,7 @@ function extensionForContentType(contentType: string) {
   return extensions[contentType.toLowerCase()] ?? 'img'
 }
 
-async function writeSupabaseSummary(data: BlogData) {
+async function writeSupabaseSummary(data: CommerceData) {
   const response = await supabaseFetch('/rest/v1/blog_content?on_conflict=id', {
     body: JSON.stringify({ data, id: SUMMARY_ROW_ID, updated_at: new Date().toISOString() }),
     headers: { Prefer: 'resolution=merge-duplicates,return=minimal' },
