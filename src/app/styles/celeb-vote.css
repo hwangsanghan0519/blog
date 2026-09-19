@@ -10,7 +10,7 @@
   border-top: 1px solid rgba(71, 50, 99, 0.14);
   border-bottom: 1px solid rgba(71, 50, 99, 0.14);
   background:
-    radial-gradient(ellipse at 16% 50%, rgba(255, 77, 166, 0.15), transparent 35%),
+    radial-gradient(ellipse at 16% 50%, rgba(179, 142, 233, 0.15), transparent 35%),
     radial-gradient(ellipse at 84% 50%, rgba(92, 78, 184, 0.14), transparent 35%),
     linear-gradient(110deg, #f3edf5 0 48%, #eceaf7 48% 100%);
 }
@@ -21,7 +21,7 @@
   isolation: isolate;
 }
 
-.public-header .public-category-slide.is-hot-1 { --header-hot-color: #ff137f; }
+.public-header .public-category-slide.is-hot-1 { --header-hot-color: #9b72ea; }
 .public-header .public-category-slide.is-hot-2 { --header-hot-color: #ffd84d; }
 .public-header .public-category-slide.is-hot-3 { --header-hot-color: #ffffff; }
 
@@ -107,7 +107,7 @@
 }
 
 .celeb-vote-stage::before {
-  content: 'SSEN 101  ·  LIVE RANKING  ·  SSEN 101  ·  LIVE RANKING  ·  SSEN 101';
+  content: 'VIOLE 101  ·  LIVE RANKING  ·  VIOLE 101  ·  LIVE RANKING  ·  VIOLE 101';
   top: 10px;
   left: var(--stage-gutter);
 }
@@ -119,8 +119,8 @@
 }
 
 .celeb-vote {
-  --vote-pink: #ff4da6;
-  --vote-hot-pink: #ff137f;
+  --vote-pink: #b38ee9;
+  --vote-hot-pink: #9b72ea;
   --vote-navy: #11142f;
   position: relative;
   isolation: isolate;
@@ -130,7 +130,7 @@
     'head ranking'
     'notice notice';
   overflow: hidden;
-  border: 1px solid rgba(255, 77, 166, 0.55);
+  border: 1px solid rgba(179, 142, 233, 0.55);
   width: min(100%, 1428px);
   margin: 0 auto;
   border-radius: 20px;
@@ -146,7 +146,7 @@
   z-index: -1;
   width: 38%;
   height: 170%;
-  background: linear-gradient(180deg, rgba(255, 255, 255, 0.12), rgba(255, 77, 166, 0.02) 65%, transparent);
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.12), rgba(179, 142, 233, 0.02) 65%, transparent);
   clip-path: polygon(42% 0, 58% 0, 100% 100%, 0 100%);
   pointer-events: none;
 }
@@ -166,7 +166,7 @@
   padding: 25px clamp(21px, 2.2vw, 32px);
   border-right: 1px solid rgba(255, 255, 255, 0.12);
   background:
-    linear-gradient(145deg, rgba(255, 19, 127, 0.34), transparent 48%),
+    linear-gradient(145deg, rgba(155, 114, 234, 0.34), transparent 48%),
     #141735;
 }
 
@@ -178,7 +178,7 @@
   width: clamp(150px, 17vw, 225px);
   aspect-ratio: 1;
   border: 1px solid rgba(255, 255, 255, 0.13);
-  background: linear-gradient(135deg, transparent 48%, rgba(255, 77, 166, 0.13) 49% 51%, transparent 52%);
+  background: linear-gradient(135deg, transparent 48%, rgba(179, 142, 233, 0.13) 49% 51%, transparent 52%);
   clip-path: polygon(50% 0, 100% 100%, 0 100%);
   transform: translate(-49%, -48%);
   pointer-events: none;
@@ -227,7 +227,7 @@
   flex: 0 0 auto;
   border-radius: 50%;
   background: var(--vote-pink);
-  box-shadow: 0 0 0 4px rgba(255, 77, 166, 0.15), 0 0 16px rgba(255, 77, 166, 0.8);
+  box-shadow: 0 0 0 4px rgba(179, 142, 233, 0.15), 0 0 16px rgba(179, 142, 233, 0.8);
   animation: celeb-vote-live 1.5s ease-in-out infinite;
 }
 
@@ -255,12 +255,12 @@
 .celeb-vote-heading h2 em {
   display: block;
   margin-top: 1px;
-  color: #ff77bb;
+  color: #b38ee9;
   font-size: 1.16em;
   font-style: inherit;
   letter-spacing: -0.075em;
   line-height: 0.93;
-  text-shadow: 0 0 28px rgba(255, 77, 166, 0.36);
+  text-shadow: 0 0 28px rgba(179, 142, 233, 0.36);
 }
 
 .celeb-vote-heading p {
@@ -294,11 +294,11 @@
   flex: 0 0 34px;
   display: grid;
   place-items: center;
-  border: 2px solid #ff77bb;
+  border: 2px solid #b38ee9;
   border-radius: 50%;
-  color: #ff77bb;
-  background: rgba(255, 19, 127, 0.055);
-  box-shadow: inset 0 0 0 2px #141735, inset 0 0 0 3px rgba(255, 119, 187, 0.7);
+  color: #b38ee9;
+  background: rgba(155, 114, 234, 0.055);
+  box-shadow: inset 0 0 0 2px #141735, inset 0 0 0 3px rgba(179, 142, 233, 0.7);
   font-family: var(--sans);
   font-size: 9px;
   font-weight: 950;
@@ -307,7 +307,7 @@
   transform: rotate(-9deg);
 }
 
-.celeb-vote-total svg { width: 14px; height: 14px; color: #ff77bb; }
+.celeb-vote-total svg { width: 14px; height: 14px; color: #b38ee9; }
 .celeb-vote-total span { font-weight: 750; letter-spacing: 0.04em; }
 .celeb-vote-total strong {
   max-width: 128px;
@@ -331,7 +331,7 @@
   padding: 21px 14px 16px;
   list-style: none;
   background:
-    linear-gradient(90deg, rgba(255, 77, 166, 0.06), transparent 32%),
+    linear-gradient(90deg, rgba(179, 142, 233, 0.06), transparent 32%),
     repeating-linear-gradient(90deg, transparent 0 79px, rgba(255, 255, 255, 0.025) 80px),
     #10132d;
   scrollbar-color: var(--vote-pink) rgba(255, 255, 255, 0.08);
@@ -363,13 +363,13 @@
 
 .celeb-vote-ranking > li:hover,
 .celeb-vote-ranking > li:focus-within {
-  border-color: rgba(255, 119, 187, 0.7);
-  background: rgba(255, 77, 166, 0.11);
+  border-color: rgba(179, 142, 233, 0.7);
+  background: rgba(179, 142, 233, 0.11);
   transform: translateY(-3px);
 }
 
 .celeb-vote-ranking > li.is-debut-zone {
-  border-color: rgba(255, 77, 166, 0.38);
+  border-color: rgba(179, 142, 233, 0.38);
 }
 
 .celeb-vote-ranking > li.is-debut-zone::before {
@@ -405,14 +405,14 @@
 
 .celeb-vote-ranking > li.is-top-1 {
   min-width: 172px;
-  border-color: #ff77bb;
-  background: linear-gradient(180deg, rgba(255, 77, 166, 0.2), rgba(255, 255, 255, 0.06));
-  box-shadow: inset 0 0 0 1px rgba(255, 119, 187, 0.16), 0 0 28px rgba(255, 19, 127, 0.12);
+  border-color: #b38ee9;
+  background: linear-gradient(180deg, rgba(179, 142, 233, 0.2), rgba(255, 255, 255, 0.06));
+  box-shadow: inset 0 0 0 1px rgba(179, 142, 233, 0.16), 0 0 28px rgba(155, 114, 234, 0.12);
 }
 
 .celeb-vote-ranking > li.is-voted {
   border-color: #ffffff;
-  background: rgba(255, 77, 166, 0.2);
+  background: rgba(179, 142, 233, 0.2);
 }
 
 .celeb-vote-rank,
@@ -440,7 +440,7 @@
 }
 
 .is-top-1 .celeb-vote-rank {
-  border-color: #ffb2d7;
+  border-color: #dccaf2;
   color: #ffffff;
   background: var(--vote-hot-pink);
 }
@@ -599,8 +599,8 @@
   height: 100%;
   display: block;
   border-radius: inherit;
-  background: linear-gradient(90deg, var(--vote-hot-pink), #ff9bce);
-  box-shadow: 0 0 10px rgba(255, 77, 166, 0.6);
+  background: linear-gradient(90deg, var(--vote-hot-pink), #d5c0f3);
+  box-shadow: 0 0 10px rgba(179, 142, 233, 0.6);
   transition: width 450ms ease;
 }
 
@@ -662,7 +662,7 @@
 }
 
 .celeb-vote-notice > span { display: inline-flex; align-items: center; gap: 8px; }
-.celeb-vote-notice strong { color: #ff8cc6; font-size: 8px; font-weight: 800; text-align: right; }
+.celeb-vote-notice strong { color: #c5a7ea; font-size: 8px; font-weight: 800; text-align: right; }
 .celeb-vote-notice.is-complete strong { color: #ffffff; }
 .is-spinning { animation: celeb-vote-spin 750ms linear infinite; }
 
@@ -727,6 +727,164 @@
   }
 }
 
+/* VIOLE light voting board: one continuous pale-lavender system. */
+.celeb-vote-stage {
+  border-color: rgba(155, 114, 234, 0.12) !important;
+  background:
+    radial-gradient(ellipse at 14% 44%, rgba(241, 201, 224, 0.82), transparent 38%),
+    radial-gradient(ellipse at 86% 46%, rgba(197, 170, 234, 0.78), transparent 40%),
+    linear-gradient(110deg, #eadcf7 0 48%, #dbc5ef 48% 100%) !important;
+}
+
+.celeb-vote {
+  --vote-pink: #b38ee9;
+  --vote-hot-pink: #9b72ea;
+  --vote-navy: #604b70;
+  border-color: rgba(155, 114, 234, 0.28) !important;
+  color: #563f68 !important;
+  background: #f8f3ff !important;
+  box-shadow: 0 20px 52px rgba(105, 78, 130, 0.11) !important;
+}
+
+.celeb-vote::before,
+.celeb-vote::after {
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.62), rgba(224, 205, 250, 0.18) 65%, transparent) !important;
+}
+
+.celeb-vote-heading {
+  border-right-color: rgba(155, 114, 234, 0.12) !important;
+  color: #563f68 !important;
+  background:
+    radial-gradient(circle at 16% 18%, rgba(255, 227, 242, 0.84), transparent 42%),
+    linear-gradient(145deg, #faf6ff, #efe6ff) !important;
+}
+
+.celeb-vote-heading::before {
+  border-color: rgba(155, 114, 234, 0.13) !important;
+  background: linear-gradient(135deg, transparent 48%, rgba(191, 164, 235, 0.18) 49% 51%, transparent 52%) !important;
+}
+
+.celeb-vote-heading::after {
+  color: rgba(155, 114, 234, 0.08) !important;
+}
+
+.celeb-vote-kicker {
+  border-color: rgba(155, 114, 234, 0.2) !important;
+  color: #755a88 !important;
+  background: rgba(255, 255, 255, 0.72) !important;
+}
+
+.celeb-vote-heading h2,
+.celeb-vote-total,
+.celeb-vote-total strong {
+  color: #563f68 !important;
+  text-shadow: none !important;
+}
+
+.celeb-vote-heading h2 em,
+.celeb-vote-total svg {
+  color: #9b72ea !important;
+  text-shadow: none !important;
+}
+
+.celeb-vote-heading p {
+  color: #8c789c !important;
+}
+
+.celeb-vote-total::before {
+  border-color: #b38ee9 !important;
+  color: #8d67c7 !important;
+  background: rgba(255, 255, 255, 0.72) !important;
+  box-shadow: inset 0 0 0 2px #f0e7fb, inset 0 0 0 3px rgba(179, 142, 233, 0.46) !important;
+}
+
+.celeb-vote-ranking {
+  background:
+    linear-gradient(90deg, rgba(255, 235, 246, 0.56), transparent 32%),
+    repeating-linear-gradient(90deg, transparent 0 79px, rgba(155, 114, 234, 0.035) 80px),
+    #fbf8ff !important;
+  scrollbar-color: #b38ee9 rgba(155, 114, 234, 0.08);
+}
+
+.celeb-vote-ranking::-webkit-scrollbar-track {
+  background: rgba(155, 114, 234, 0.08) !important;
+}
+
+.celeb-vote-ranking > li,
+.celeb-vote-ranking > li.is-top-1 {
+  border-color: rgba(155, 114, 234, 0.16) !important;
+  color: #563f68 !important;
+  background: rgba(255, 255, 255, 0.84) !important;
+  box-shadow: 0 8px 24px rgba(105, 78, 130, 0.07) !important;
+}
+
+.celeb-vote-ranking > li:hover,
+.celeb-vote-ranking > li:focus-within,
+.celeb-vote-ranking > li.is-top-1,
+.celeb-vote-ranking > li.is-voted {
+  border-color: rgba(155, 114, 234, 0.42) !important;
+  background: linear-gradient(180deg, #ffffff, #f3ebff) !important;
+}
+
+.celeb-vote-rank,
+.is-top-1 .celeb-vote-rank {
+  border-color: #ffffff !important;
+  color: #ffffff !important;
+  background: #aa86e8 !important;
+  box-shadow: 0 4px 14px rgba(105, 78, 130, 0.18) !important;
+}
+
+.celeb-vote-avatar,
+.is-top-1 .celeb-vote-avatar,
+.celeb-vote-avatar > .public-category-visual,
+.is-top-1 .celeb-vote-avatar > .public-category-visual {
+  color: #715985 !important;
+  background: #eee6f7 !important;
+}
+
+.celeb-vote-avatar::after {
+  background: linear-gradient(180deg, transparent 56%, rgba(88, 64, 105, 0.2)) !important;
+}
+
+.celeb-vote-info strong,
+.is-top-1 .celeb-vote-info strong,
+.celeb-vote-infl {
+  color: #563f68 !important;
+}
+
+.celeb-vote-ranking > li.is-top-1 .celeb-vote-infl,
+.celeb-vote-ranking > li.is-top-2 .celeb-vote-infl,
+.celeb-vote-ranking > li.is-top-3 .celeb-vote-infl {
+  color: #9b72ea !important;
+}
+
+.celeb-vote-meter {
+  background: #e9dff5 !important;
+}
+
+.celeb-vote-meter i {
+  background: linear-gradient(90deg, #b38ee9, #d8bff5) !important;
+  box-shadow: 0 0 10px rgba(155, 114, 234, 0.28) !important;
+}
+
+.celeb-vote-ranking button {
+  border-color: rgba(155, 114, 234, 0.26) !important;
+  color: #ffffff !important;
+  background: #ad88e8 !important;
+  box-shadow: 0 4px 14px rgba(105, 78, 130, 0.15) !important;
+}
+
+.celeb-vote-notice {
+  border-top-color: rgba(155, 114, 234, 0.12) !important;
+  color: #8c789c !important;
+  background: #f0e8fa !important;
+}
+
+.celeb-vote-notice strong,
+.celeb-vote-notice.is-complete strong {
+  color: #8662bd !important;
+}
+
 @media (prefers-reduced-motion: reduce) {
   .celeb-vote-kicker i,
   .celeb-vote-notice i,
@@ -747,7 +905,7 @@
     box-shadow: none !important;
   }
 
-  .public-header .public-category-slide.is-hot-1 { --header-hot-color: #ff3b8d; }
+  .public-header .public-category-slide.is-hot-1 { --header-hot-color: #a77fe5; }
   .public-header .public-category-slide.is-hot-2 { --header-hot-color: #ffd84d; }
   .public-header .public-category-slide.is-hot-3 { --header-hot-color: #b9d9f4; }
 
@@ -830,10 +988,10 @@
   }
 
   .celeb-vote-ranking > li.is-top-1 {
-    background: linear-gradient(180deg, rgba(255, 59, 141, 0.19), rgba(255, 255, 255, 0.06));
+    background: linear-gradient(180deg, rgba(167, 127, 229, 0.19), rgba(255, 255, 255, 0.06));
     box-shadow:
-      inset 0 0 0 2px #ff3b8d,
-      0 10px 24px rgba(255, 59, 141, 0.18);
+      inset 0 0 0 2px #a77fe5,
+      0 10px 24px rgba(167, 127, 229, 0.18);
   }
 
   .celeb-vote-ranking > li.is-top-2 {
@@ -888,5 +1046,387 @@
   .celeb-vote-ranking > li.is-top-2::before,
   .celeb-vote-ranking > li.is-top-3::before {
     display: none;
+  }
+}
+
+/* Harmonize podium accents with the VIOLE palette. */
+.celeb-vote-stage .celeb-vote-ranking > li.is-top-1,
+.celeb-vote-stage .celeb-vote-ranking > li.is-top-2,
+.celeb-vote-stage .celeb-vote-ranking > li.is-top-3 {
+  border-color: rgba(142, 95, 206, 0.34) !important;
+  background: linear-gradient(180deg, #fffdfd, #f0e6fa) !important;
+  box-shadow: 0 10px 26px rgba(86, 54, 113, 0.1) !important;
+}
+
+.celeb-vote-stage .celeb-vote-ranking > li.is-top-1 .celeb-vote-rank {
+  border-color: #ffffff !important;
+  color: #ffffff !important;
+  background: #8e5fce !important;
+}
+
+.celeb-vote-stage .celeb-vote-ranking > li.is-top-2 .celeb-vote-rank {
+  border-color: #ffffff !important;
+  color: #ffffff !important;
+  background: #ae8cd8 !important;
+}
+
+.celeb-vote-stage .celeb-vote-ranking > li.is-top-3 .celeb-vote-rank {
+  border-color: #ffffff !important;
+  color: #563f68 !important;
+  background: #ddcff0 !important;
+}
+
+.celeb-vote-stage .celeb-vote-ranking > li.is-debut-zone::before,
+.celeb-vote-stage .celeb-vote-ranking > li.is-top-1::before,
+.celeb-vote-stage .celeb-vote-ranking > li.is-top-2::before,
+.celeb-vote-stage .celeb-vote-ranking > li.is-top-3::before {
+  color: #ffffff !important;
+  background: #8e5fce !important;
+}
+
+/* Slightly deeper lavender pass for clearer hierarchy. */
+.celeb-vote-stage {
+  background:
+    radial-gradient(ellipse at 14% 44%, rgba(229, 177, 207, 0.72), transparent 38%),
+    radial-gradient(ellipse at 86% 46%, rgba(174, 137, 218, 0.76), transparent 40%),
+    linear-gradient(110deg, #dfcbed 0 48%, #cdb0e3 48% 100%) !important;
+}
+
+.celeb-vote {
+  --vote-pink: #a87bda;
+  --vote-hot-pink: #8c5dca;
+  background: #f1e7f8 !important;
+}
+
+.celeb-vote-heading {
+  background:
+    radial-gradient(circle at 16% 18%, rgba(246, 209, 229, 0.78), transparent 42%),
+    linear-gradient(145deg, #f6edfb, #e6d4f4) !important;
+}
+
+.celeb-vote-ranking {
+  background:
+    linear-gradient(90deg, rgba(247, 218, 235, 0.52), transparent 32%),
+    repeating-linear-gradient(90deg, transparent 0 79px, rgba(127, 80, 189, 0.045) 80px),
+    #f5eef9 !important;
+}
+
+.celeb-vote-ranking > li,
+.celeb-vote-ranking > li.is-top-1 {
+  background: rgba(252, 248, 254, 0.9) !important;
+}
+
+.celeb-vote-meter {
+  background: #ddcbed !important;
+}
+
+.celeb-vote-ranking button {
+  background: #976bd2 !important;
+}
+
+.celeb-vote-notice {
+  background: #e5d5f1 !important;
+}
+
+/* Portraits keep their source colors while the surrounding cards carry the theme. */
+.celeb-vote-avatar > .public-category-visual img,
+.is-top-1 .celeb-vote-avatar > .public-category-visual img,
+.celeb-vote-ranking > li:hover .public-category-visual img,
+.celeb-vote-ranking > li:focus-within .public-category-visual img {
+  opacity: 1 !important;
+  filter: contrast(1.03) saturate(1.02) !important;
+}
+
+.celeb-vote-avatar::after {
+  background: linear-gradient(180deg, transparent 72%, rgba(63, 44, 74, 0.12)) !important;
+}
+
+/* Readable voting typography across desktop and handheld layouts. */
+.public-blog .celeb-vote-kicker {
+  font-size: 11px !important;
+  line-height: 1.2 !important;
+}
+
+.public-blog .celeb-vote-heading p {
+  font-size: 14px !important;
+  line-height: 1.45 !important;
+}
+
+.public-blog .celeb-vote-total strong {
+  max-width: 13ch;
+  font-size: 13px !important;
+  line-height: 1.35 !important;
+}
+
+.public-blog .celeb-vote-rank,
+.public-blog .is-top-1 .celeb-vote-rank {
+  font-size: 12px !important;
+}
+
+.public-blog .celeb-vote-info strong,
+.public-blog .is-top-1 .celeb-vote-info strong {
+  font-size: clamp(18px, 1.45vw, 22px) !important;
+  line-height: 1.15 !important;
+}
+
+.public-blog .celeb-vote-infl {
+  font-size: 16px !important;
+  line-height: 1.15 !important;
+}
+
+.public-blog .celeb-vote-ranking button {
+  font-size: 13px !important;
+  line-height: 1 !important;
+}
+
+.public-blog .celeb-vote-notice,
+.public-blog .celeb-vote-notice strong {
+  font-size: 12px !important;
+  line-height: 1.4 !important;
+}
+
+@media (max-width: 760px) {
+  .public-blog .celeb-vote-kicker {
+    font-size: 10px !important;
+  }
+
+  .public-blog .celeb-vote-heading h2 {
+    max-width: 5.5em;
+    font-size: clamp(29px, 8.5vw, 38px) !important;
+    line-height: 0.98 !important;
+  }
+
+  .public-blog .celeb-vote-total strong {
+    max-width: 9em;
+    font-size: 11px !important;
+    line-height: 1.35 !important;
+  }
+
+  .public-blog .celeb-vote-total::before {
+    font-size: 9px !important;
+  }
+
+  .public-blog .celeb-vote-info strong,
+  .public-blog .is-top-1 .celeb-vote-info strong {
+    font-size: 18px !important;
+  }
+
+  .public-blog .celeb-vote-infl {
+    font-size: 15px !important;
+  }
+
+  .public-blog .celeb-vote-ranking button {
+    min-height: 38px;
+    font-size: 13px !important;
+  }
+
+  .public-blog .celeb-vote-notice,
+  .public-blog .celeb-vote-notice strong {
+    font-size: 12px !important;
+    line-height: 1.45 !important;
+  }
+}
+
+/* Voting intro: give the daily pass a clear visual identity and responsive order. */
+.public-blog .celeb-vote-heading {
+  gap: 0;
+}
+
+.public-blog .celeb-vote-total {
+  width: min(100%, 270px);
+  display: grid;
+  grid-template-columns: 58px minmax(0, 1fr);
+  align-items: center;
+  gap: 13px;
+  margin-top: 22px;
+  padding: 10px 14px 10px 10px;
+  border: 1px solid rgba(126, 80, 189, 0.2);
+  border-radius: 18px;
+  color: #563f68;
+  background: rgba(255, 255, 255, 0.68);
+  box-shadow: 0 10px 24px rgba(91, 59, 116, 0.1);
+  backdrop-filter: blur(8px);
+}
+
+.public-blog .celeb-vote-total::before {
+  content: none !important;
+}
+
+.public-blog .celeb-vote-total-icon {
+  position: relative;
+  width: 58px;
+  height: 58px;
+  display: grid;
+  place-items: center;
+  border: 1px solid rgba(255, 255, 255, 0.86);
+  border-radius: 17px;
+  color: #ffffff;
+  background: linear-gradient(145deg, #b894e5 0%, #8658c3 100%);
+  box-shadow: 0 8px 18px rgba(111, 66, 166, 0.24), inset 0 1px 0 rgba(255, 255, 255, 0.36);
+  transform: rotate(-3deg);
+}
+
+.public-blog .celeb-vote-total-icon svg {
+  width: 29px;
+  height: 29px;
+  color: #ffffff !important;
+  fill: rgba(255, 255, 255, 0.14);
+}
+
+.public-blog .celeb-vote-total-icon b {
+  position: absolute;
+  right: -5px;
+  bottom: -5px;
+  width: 24px;
+  height: 24px;
+  display: grid;
+  place-items: center;
+  border: 2px solid #f7effc;
+  border-radius: 50%;
+  color: #ffffff;
+  background: #684093;
+  font-family: var(--mono);
+  font-size: 12px;
+  font-weight: 950;
+  line-height: 1;
+}
+
+.public-blog .celeb-vote-total-copy {
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.public-blog .celeb-vote-total-copy small {
+  color: #8a64b5;
+  font-family: var(--mono);
+  font-size: 10px;
+  font-weight: 900;
+  letter-spacing: 0.12em;
+  line-height: 1;
+}
+
+.public-blog .celeb-vote-total-copy strong {
+  max-width: none;
+  color: #513965 !important;
+  font-family: var(--sans);
+  font-size: clamp(15px, 1.15vw, 17px) !important;
+  font-weight: 850;
+  letter-spacing: -0.045em;
+  line-height: 1.28 !important;
+  word-break: keep-all;
+}
+
+.public-blog .celeb-vote-ranking button {
+  width: 44px;
+  min-width: 44px;
+  height: 44px;
+  min-height: 44px;
+}
+
+.public-blog .celeb-vote-ranking button svg {
+  width: 20px;
+  height: 20px;
+}
+
+@media (max-width: 760px) {
+  .public-blog .celeb-vote-heading {
+    display: grid;
+    grid-template-columns: 1fr;
+    align-items: start;
+    padding: 21px 17px 18px;
+  }
+
+  .public-blog .celeb-vote-heading > div:first-child {
+    display: grid;
+    grid-template-columns: 1fr;
+  }
+
+  .public-blog .celeb-vote-kicker {
+    width: fit-content;
+    margin-bottom: 13px;
+    padding: 7px 10px;
+  }
+
+  .public-blog .celeb-vote-heading h2 {
+    max-width: none;
+    display: block;
+    font-size: clamp(29px, 9vw, 36px) !important;
+    line-height: 0.98 !important;
+    white-space: normal;
+  }
+
+  .public-blog .celeb-vote-heading h2 > span {
+    display: inline;
+  }
+
+  .public-blog .celeb-vote-heading h2 > span:first-child::after {
+    content: ' ';
+  }
+
+  .public-blog .celeb-vote-heading h2 em {
+    display: block;
+    margin-top: 5px;
+  }
+
+  .public-blog .celeb-vote-total {
+    width: 100%;
+    grid-template-columns: 52px minmax(0, 1fr);
+    gap: 13px;
+    margin: 17px 0 0;
+    padding: 9px 13px 9px 9px;
+    border-radius: 17px;
+  }
+
+  .public-blog .celeb-vote-total-icon {
+    width: 52px;
+    height: 52px;
+    border-radius: 15px;
+  }
+
+  .public-blog .celeb-vote-total-icon svg {
+    width: 26px;
+    height: 26px;
+  }
+
+  .public-blog .celeb-vote-total-copy small {
+    font-size: 9px;
+  }
+
+  .public-blog .celeb-vote-total-copy strong {
+    max-width: none;
+    font-size: clamp(15px, 4.5vw, 17px) !important;
+    line-height: 1.25 !important;
+  }
+
+  .public-blog .celeb-vote-ranking {
+    padding-top: 18px;
+  }
+
+  .public-blog .celeb-vote-ranking button {
+    width: 43px;
+    min-width: 43px;
+    height: 43px;
+    min-height: 43px;
+  }
+
+  .public-blog .celeb-vote-ranking button svg {
+    width: 20px;
+    height: 20px;
+  }
+}
+
+@media (max-width: 360px) {
+  .public-blog .celeb-vote-heading {
+    padding-inline: 14px;
+  }
+
+  .public-blog .celeb-vote-heading h2 {
+    font-size: 28px !important;
+  }
+
+  .public-blog .celeb-vote-total-copy strong {
+    font-size: 15px !important;
   }
 }

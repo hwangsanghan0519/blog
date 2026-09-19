@@ -29,8 +29,8 @@ type CommerceSummary = {
   posts?: unknown
 }
 
-const SITE_NAME = 'SSEN'
-const DEFAULT_DESCRIPTION = '유튜브와 인스타그램에서 연예인·인플루언서가 착용하고 소개한 핫템, 잇템, 광고 상품을 모아 제휴몰 최저가 링크로 연결하는 SSEN 큐레이션입니다.'
+const SITE_NAME = '비올레'
+const DEFAULT_DESCRIPTION = '유튜브와 인스타그램에서 연예인·인플루언서가 착용하고 소개한 핫템, 잇템, 광고 상품을 모아 제휴몰 최저가 링크로 연결하는 비올레 큐레이션입니다.'
 
 export async function handler(event: NetlifyEvent) {
   if (event.httpMethod !== 'GET') return response(405, 'Method not allowed', 'text/plain; charset=utf-8', 'no-store')
@@ -81,7 +81,7 @@ function renderProductPage(shell: string, origin: string, product: Product) {
   const canonical = `${origin}/product/${encodeURIComponent(slug)}`
   const description = truncate(`${category}가 유튜브·인스타그램에서 소개하거나 착용한 ${titleText}. ${readString(product.excerpt) || '등록된 제휴몰 가격과 구매 링크를 확인하세요.'}`, 160)
   const pageTitle = truncate(`${titleText} | ${category} 착용·광고 핫템 - ${SITE_NAME}`, 68)
-  const image = readPublicImage(product.coverImage, origin) || `${origin}/ssen-logo.svg`
+  const image = readPublicImage(product.coverImage, origin) || `${origin}/viole-logo.svg`
   const productLinks = Array.isArray(product.productLinks) ? product.productLinks.filter(isRecord) as ProductLink[] : []
   const offers = productLinks.map((link) => createOffer(link)).filter((offer) => offer !== null)
   const productPrice = offers.length ? Math.min(...offers.map((offer) => offer.price)) : undefined
@@ -121,7 +121,7 @@ function renderProductPage(shell: string, origin: string, product: Product) {
   }
   const fallback = `
     <main class="seo-fallback">
-      <nav aria-label="경로"><a href="/">SSEN</a><span>/</span><a href="/celeb/${encodeURIComponent(category)}">${escapeHtml(category)}</a></nav>
+      <nav aria-label="경로"><a href="/">비올레</a><span>/</span><a href="/celeb/${encodeURIComponent(category)}">${escapeHtml(category)}</a></nav>
       <article>
         <div class="seo-fallback-copy">
           <p class="seo-fallback-kicker">${escapeHtml(category)} PICK</p>
@@ -154,8 +154,8 @@ function renderCategoryPage(shell: string, origin: string, data: CommerceSummary
 
   const canonical = `${origin}/celeb/${encodeURIComponent(category)}`
   const pageTitle = truncate(`${category} 착용·광고 상품, 인스타·유튜브 핫템 | ${SITE_NAME}`, 68)
-  const description = `${category}가 유튜브와 인스타그램에서 착용·소개·광고한 상품을 모았습니다. 화제의 핫템과 잇템, 등록된 제휴몰 최저가를 SSEN에서 확인하세요.`
-  const firstImage = posts.map((post) => readPublicImage(post.coverImage, origin)).find(Boolean) || `${origin}/ssen-logo.svg`
+  const description = `${category}가 유튜브와 인스타그램에서 착용·소개·광고한 상품을 모았습니다. 화제의 핫템과 잇템, 등록된 제휴몰 최저가를 비올레에서 확인하세요.`
+  const firstImage = posts.map((post) => readPublicImage(post.coverImage, origin)).find(Boolean) || `${origin}/viole-logo.svg`
   const structuredData = {
     '@context': 'https://schema.org',
     '@graph': [
@@ -191,7 +191,7 @@ function renderCategoryPage(shell: string, origin: string, data: CommerceSummary
   }).join('')
   const fallback = `
     <main class="seo-fallback seo-fallback-category">
-      <nav aria-label="경로"><a href="/">SSEN</a><span>/</span><span>${escapeHtml(category)}</span></nav>
+      <nav aria-label="경로"><a href="/">비올레</a><span>/</span><span>${escapeHtml(category)}</span></nav>
       <header><p class="seo-fallback-kicker">CELEB &amp; INFLUENCER PICKS</p><h1>${escapeHtml(category)} 핫템</h1><p>${escapeHtml(description)}</p></header>
       <ul>${cards || '<li>공개된 상품을 준비하고 있습니다.</li>'}</ul>
     </main>`
@@ -247,7 +247,7 @@ function injectSeo(shell: string, seo: {
     <meta name="twitter:title" content="${escapeHtml(seo.pageTitle)}" />
     <meta name="twitter:description" content="${escapeHtml(seo.description)}" />
     <meta name="twitter:image" content="${escapeHtml(seo.image)}" />
-    <script type="application/ld+json" data-ssen-seo>${safeJson(seo.structuredData)}</script>
+    <script type="application/ld+json" data-viole-seo>${safeJson(seo.structuredData)}</script>
     <style>
       .seo-fallback{box-sizing:border-box;min-height:100vh;background:#f4efe5;color:#080808;padding:32px clamp(20px,6vw,88px);font-family:Arial,sans-serif}.seo-fallback *{box-sizing:border-box}.seo-fallback nav{display:flex;gap:10px;margin-bottom:42px;font-size:14px}.seo-fallback a{color:inherit}.seo-fallback article{display:grid;grid-template-columns:minmax(0,1fr) minmax(280px,42%);gap:clamp(28px,6vw,90px);align-items:center}.seo-fallback article>img{width:100%;max-height:70vh;object-fit:cover}.seo-fallback h1{max-width:900px;margin:8px 0 22px;font-size:clamp(38px,7vw,92px);line-height:.96;letter-spacing:-.06em}.seo-fallback p{max-width:720px;line-height:1.7}.seo-fallback-kicker{font-size:13px!important;font-weight:800;letter-spacing:.12em}.seo-fallback-offers{padding:0;list-style:none}.seo-fallback-offers a{display:flex;justify-content:space-between;gap:18px;padding:16px 0;border-bottom:1px solid #aaa;text-decoration:none}.seo-fallback-category header{max-width:880px}.seo-fallback-category ul{display:grid;grid-template-columns:repeat(auto-fit,minmax(210px,1fr));gap:22px;padding:30px 0;list-style:none}.seo-fallback-category li a{display:grid;gap:10px;text-decoration:none}.seo-fallback-category li img{width:100%;aspect-ratio:4/5;object-fit:cover}.seo-fallback-category li strong{font-size:20px}.seo-fallback-category li span{line-height:1.5}@media(max-width:700px){.seo-fallback article{grid-template-columns:1fr}.seo-fallback article>img{grid-row:1}.seo-fallback{padding-top:20px}}
     </style>`
@@ -288,7 +288,7 @@ function createOrganization(origin: string) {
     '@id': `${origin}/#organization`,
     name: SITE_NAME,
     url: `${origin}/`,
-    logo: `${origin}/ssen-logo.svg`,
+    logo: `${origin}/viole-logo.svg`,
   }
 }
 
@@ -334,7 +334,7 @@ function createKeywords(product: Product, category: string) {
 
 function notFoundPage(origin: string, kind: string, value: string) {
   const title = kind === 'product' ? '상품을 찾을 수 없습니다' : '셀럽 페이지를 찾을 수 없습니다'
-  return response(404, `<!doctype html><html lang="ko-KR"><head><meta charset="utf-8"><meta name="robots" content="noindex,follow"><title>${title} | SSEN</title><link rel="canonical" href="${origin}/"></head><body><main><h1>${title}</h1><p>${escapeHtml(value)}</p><a href="/">SSEN 홈으로</a></main></body></html>`, 'text/html; charset=utf-8', 'no-store')
+  return response(404, `<!doctype html><html lang="ko-KR"><head><meta charset="utf-8"><meta name="robots" content="noindex,follow"><title>${title} | 비올레</title><link rel="canonical" href="${origin}/"></head><body><main><h1>${title}</h1><p>${escapeHtml(value)}</p><a href="/">비올레 홈으로</a></main></body></html>`, 'text/html; charset=utf-8', 'no-store')
 }
 
 function htmlResponse(body: string) {

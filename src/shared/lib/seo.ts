@@ -1,8 +1,8 @@
 import type { Post, ProductLink } from '../../entities/post/model/types'
 
-export const SEO_SITE_NAME = 'SSEN'
-export const SEO_HOME_TITLE = 'SSEN | 연예인·인플루언서 핫템, 잇템, 광고 상품 최저가'
-export const SEO_HOME_DESCRIPTION = '유튜브와 인스타그램에서 연예인·인플루언서가 착용하고 소개한 핫템, 잇템, 광고 상품을 모아 제휴몰 최저가 링크로 연결하는 SSEN 큐레이션입니다.'
+export const SEO_SITE_NAME = '비올레'
+export const SEO_HOME_TITLE = '비올레 | 연예인·인플루언서 핫템, 잇템, 광고 상품 최저가'
+export const SEO_HOME_DESCRIPTION = '유튜브와 인스타그램에서 연예인·인플루언서가 착용하고 소개한 핫템, 잇템, 광고 상품을 모아 제휴몰 최저가 링크로 연결하는 비올레 큐레이션입니다.'
 
 type SeoState = {
   category: string
@@ -20,9 +20,9 @@ export function applyPublicSeo({ category, posts, selectedPost }: SeoState) {
       : '/'
   const canonicalUrl = new URL(canonicalPath, origin).href
   const title = selectedPost
-    ? truncate(`${selectedPost.title} | ${selectedPost.category} 착용·광고 핫템 - SSEN`, 68)
+    ? truncate(`${selectedPost.title} | ${selectedPost.category} 착용·광고 핫템 - 비올레`, 68)
     : isCategory
-      ? `${category} 착용·광고 상품, 인스타·유튜브 핫템 | SSEN`
+      ? `${category} 착용·광고 상품, 인스타·유튜브 핫템 | 비올레`
       : SEO_HOME_TITLE
   const description = selectedPost
     ? truncate(
@@ -30,9 +30,9 @@ export function applyPublicSeo({ category, posts, selectedPost }: SeoState) {
         160,
       )
     : isCategory
-      ? `${category}가 유튜브와 인스타그램에서 착용·소개·광고한 상품을 모았습니다. 화제의 핫템과 잇템, 등록된 제휴몰 최저가를 SSEN에서 확인하세요.`
+      ? `${category}가 유튜브와 인스타그램에서 착용·소개·광고한 상품을 모았습니다. 화제의 핫템과 잇템, 등록된 제휴몰 최저가를 비올레에서 확인하세요.`
       : SEO_HOME_DESCRIPTION
-  const image = selectedPost?.coverImage ? absoluteUrl(selectedPost.coverImage, origin) : `${origin}/ssen-logo.svg`
+  const image = selectedPost?.coverImage ? absoluteUrl(selectedPost.coverImage, origin) : `${origin}/viole-logo.svg`
   const keywords = Array.from(new Set([
     ...(selectedPost ? [selectedPost.title, selectedPost.category, ...selectedPost.tags] : []),
     ...(isCategory ? [category] : posts.slice(0, 12).map((post) => post.category)),
@@ -58,7 +58,7 @@ export function applyPublicSeo({ category, posts, selectedPost }: SeoState) {
   setMeta('property', 'og:url', canonicalUrl)
   setMeta('property', 'og:image', image)
   setMeta('property', 'og:image:secure_url', image)
-  setMeta('property', 'og:image:alt', selectedPost ? `${selectedPost.title} 상품 이미지` : 'SSEN 연예인 인플루언서 핫템 큐레이션')
+  setMeta('property', 'og:image:alt', selectedPost ? `${selectedPost.title} 상품 이미지` : '비올레 연예인 인플루언서 핫템 큐레이션')
   setMeta('name', 'twitter:card', 'summary_large_image')
   setMeta('name', 'twitter:title', title)
   setMeta('name', 'twitter:description', description)
@@ -109,7 +109,7 @@ function createStructuredData({
     '@id': `${origin}/#organization`,
     name: SEO_SITE_NAME,
     url: `${origin}/`,
-    logo: `${origin}/ssen-logo.svg`,
+    logo: `${origin}/viole-logo.svg`,
   }
 
   if (selectedPost) {
@@ -247,11 +247,11 @@ function setLink(rel: string, href: string, hreflang?: string) {
 }
 
 function setJsonLd(value: unknown) {
-  let element = document.head.querySelector<HTMLScriptElement>('script[data-ssen-seo]')
+  let element = document.head.querySelector<HTMLScriptElement>('script[data-viole-seo]')
   if (!element) {
     element = document.createElement('script')
     element.type = 'application/ld+json'
-    element.dataset.ssenSeo = 'true'
+    element.dataset.violeSeo = 'true'
     document.head.append(element)
   }
   element.textContent = JSON.stringify(value).replace(/</g, '\\u003c')
@@ -261,7 +261,7 @@ function absoluteUrl(value: string, origin: string) {
   try {
     return new URL(value, origin).href
   } catch {
-    return `${origin}/ssen-logo.svg`
+    return `${origin}/viole-logo.svg`
   }
 }
 

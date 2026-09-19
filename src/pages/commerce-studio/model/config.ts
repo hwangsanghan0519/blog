@@ -24,7 +24,7 @@ export const GMARKET_SAMPLE_BANNER_IMAGE = `data:image/svg+xml,${encodeURICompon
   <defs>
     <linearGradient id="bg" x1="0" x2="1" y1="0" y2="1">
       <stop offset="0" stop-color="#00c400"/>
-      <stop offset="0.48" stop-color="#35c5f0"/>
+      <stop offset="0.48" stop-color="#9b72ea"/>
       <stop offset="1" stop-color="#0a65ff"/>
     </linearGradient>
     <linearGradient id="shine" x1="0" x2="1">
@@ -54,7 +54,7 @@ export const GMARKET_SAMPLE_BANNER: Partial<AdBannerSettings> = {
   ctaLabel: '바로 보기',
   href: 'https://www.gmarket.co.kr',
   image: GMARKET_SAMPLE_BANNER_IMAGE,
-  backgroundColor: '#35c5f0',
+  backgroundColor: '#9b72ea',
   placement: 'header',
 }
 
@@ -79,7 +79,7 @@ export const DEFAULT_HERO_VIDEO: HeroVideoSettings = {
   visibilityConfigured: false,
   youtubeUrl: '',
   eyebrow: 'NOW PLAYING',
-  title: 'SSEN VIDEO PICK',
+  title: 'VIOLE VIDEO PICK',
   stickerImage: '',
   stickerHref: '',
 }

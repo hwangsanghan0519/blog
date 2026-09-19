@@ -1,8 +1,8 @@
 .storefront-skeleton {
   min-height: 100vh;
   overflow: hidden;
-  color: #fff;
-  background: #f4efe5;
+  color: #563f68;
+  background: #eadcf4;
 }
 
 .storefront-skeleton-status {
@@ -20,21 +20,21 @@
 .skeleton-shimmer {
   position: relative;
   overflow: hidden;
-  background: #252525;
+  background: #d8c2e9;
 }
 
 .skeleton-shimmer::after {
   position: absolute;
   inset: 0;
   content: '';
-  background: linear-gradient(105deg, transparent 30%, rgb(255 255 255 / 10%) 48%, transparent 66%);
+  background: linear-gradient(105deg, transparent 30%, rgb(255 255 255 / 42%) 48%, transparent 66%);
   transform: translateX(-100%);
   animation: storefront-skeleton-shimmer 1.35s ease-in-out infinite;
 }
 
 .storefront-skeleton-ad {
   height: 64px;
-  background: #e5e0d7;
+  background: #d7c1e8;
 }
 
 .storefront-skeleton-header {
@@ -43,7 +43,9 @@
   min-height: 310px;
   padding: 22px clamp(24px, 4vw, 72px);
   gap: clamp(28px, 5vw, 80px);
-  background: #080808;
+  background:
+    radial-gradient(circle at 12% 12%, rgba(255, 220, 239, 0.25), transparent 34%),
+    linear-gradient(135deg, #a477dc, #7f50bd);
 }
 
 .storefront-skeleton-brand {
@@ -57,7 +59,7 @@
   width: 96px;
   height: 14px;
   border-radius: 999px;
-  background: #e0002b;
+  background: rgba(255, 255, 255, 0.88);
 }
 
 .storefront-skeleton-brand strong {
@@ -82,26 +84,26 @@
 .storefront-skeleton-categories span {
   min-height: 125px;
   border-radius: 2px;
-  background: #1c1c1c;
+  background: #f1e8f8;
 }
 
 .storefront-skeleton-video {
   width: 100%;
   min-height: 280px;
   aspect-ratio: 16 / 7;
-  background: #1b1d20;
+  background: #dfccec;
 }
 
 .storefront-skeleton-content {
   padding: clamp(56px, 7vw, 100px) clamp(24px, 6vw, 96px);
-  color: #111;
+  color: #563f68;
 }
 
 .storefront-skeleton-best {
   display: grid;
   grid-template-columns: 0.8fr 1.2fr;
   min-height: 420px;
-  background: #111;
+  background: #f5edf9;
 }
 
 .storefront-skeleton-best > div:first-child {
@@ -116,7 +118,7 @@
   width: 90px;
   height: 12px;
   border-radius: 999px;
-  background: #e0002b;
+  background: #8e5fce;
 }
 
 .storefront-skeleton-best strong {
@@ -132,7 +134,7 @@
 }
 
 .storefront-skeleton-best > div:last-child {
-  background: #292929;
+  background: #ddc7eb;
 }
 
 .storefront-skeleton-grid {
@@ -145,7 +147,7 @@
 .storefront-skeleton-grid span {
   aspect-ratio: 3 / 4;
   border-radius: 22px;
-  background: #ded8ce;
+  background: #f7f0fb;
 }
 
 @keyframes storefront-skeleton-shimmer {

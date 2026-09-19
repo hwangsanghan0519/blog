@@ -1,0 +1,14 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 620 190" role="img" aria-label="비올레">
+  <defs>
+    <linearGradient id="viole-wordmark" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#ffffff"/>
+      <stop offset="0.55" stop-color="#f8f2ff"/>
+      <stop offset="1" stop-color="#e8d7ff"/>
+    </linearGradient>
+  </defs>
+  <path d="M63 133C168 166 400 164 556 111" fill="none" stroke="#f8f2ff" stroke-width="8" stroke-linecap="round"/>
+  <path d="M454 43C488 22 531 27 548 52C519 66 481 64 454 43Z" fill="#f5eaff"/>
+  <path d="M454 43C483 42 510 47 536 58" fill="none" stroke="#ffffff" stroke-width="3" stroke-linecap="round"/>
+  <text x="54" y="128" fill="url(#viole-wordmark)" font-family="Georgia, Times New Roman, serif" font-size="112" font-style="italic" font-weight="700" letter-spacing="5">VIOLE</text>
+  <text x="344" y="161" fill="#f2e8ff" font-family="Arial, sans-serif" font-size="13" font-weight="700" letter-spacing="5">CURATED PICKS</text>
+</svg>

@@ -1,5 +1,6 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" role="img" aria-label="SSEN">
-  <rect width="64" height="64" rx="14" fill="#070707"/>
-  <path d="M12 18h38L17 32h30L13 47h39" fill="none" stroke="#f0002f" stroke-width="8" stroke-linecap="square" stroke-linejoin="bevel"/>
-  <path d="M13 15h38L18 29h30L14 44h39" fill="none" stroke="#fff" stroke-width="4" stroke-linecap="square" stroke-linejoin="bevel"/>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" role="img" aria-label="비올레">
+  <defs><linearGradient id="viole-icon" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#c4b5fd"/><stop offset="1" stop-color="#9b72ea"/></linearGradient></defs>
+  <rect width="64" height="64" rx="18" fill="#faf7ff"/>
+  <path d="M15 14L28 50H36L51 14H42L32.5 40L23 14Z" fill="url(#viole-icon)"/>
+  <circle cx="49" cy="15" r="5" fill="#f4c6dd"/>
 </svg>

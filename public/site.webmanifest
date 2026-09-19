@@ -1,12 +1,12 @@
 {
-  "name": "SSEN - 연예인·인플루언서 핫템 큐레이션",
-  "short_name": "SSEN",
+  "name": "비올레 - 연예인·인플루언서 핫템 큐레이션",
+  "short_name": "비올레",
   "description": "연예인과 인플루언서가 착용하고 소개한 핫템, 잇템, 광고 상품 최저가 큐레이션",
   "lang": "ko-KR",
   "start_url": "/",
   "display": "standalone",
-  "background_color": "#f4efe5",
-  "theme_color": "#070707",
+  "background_color": "#1b102b",
+  "theme_color": "#9b72ea",
   "icons": [
     {
       "src": "/favicon.svg",

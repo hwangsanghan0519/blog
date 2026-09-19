@@ -13,7 +13,7 @@ export default defineConfig({
   plugins: [
     react(),
     {
-      name: 'ssen-production-site-url',
+      name: 'viole-production-site-url',
       transformIndexHtml(html) {
         return html.replaceAll(fallbackSiteUrl, siteUrl)
       },

@@ -1,0 +1,13 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 630" role="img" aria-label="비올레 연예인 인플루언서 핫템 큐레이션">
+  <defs>
+    <linearGradient id="viole-social-bg" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#fffdfd"/><stop offset=".58" stop-color="#faf7ff"/><stop offset="1" stop-color="#f1eaff"/></linearGradient>
+    <linearGradient id="viole-social-mark" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#c4b5fd"/><stop offset="1" stop-color="#a78bfa"/></linearGradient>
+  </defs>
+  <rect width="1200" height="630" fill="url(#viole-social-bg)"/>
+  <circle cx="1070" cy="45" r="260" fill="#e9ddff" opacity=".62"/>
+  <circle cx="82" cy="592" r="210" fill="#ffedf6" opacity=".72"/>
+  <path d="M78 486C338 565 790 548 1122 389" fill="none" stroke="#e5d7ff" stroke-width="18" stroke-linecap="round"/>
+  <text x="86" y="292" fill="url(#viole-social-mark)" font-family="Georgia, Times New Roman, serif" font-size="220" font-style="italic" font-weight="700" letter-spacing="3">VIOLE</text>
+  <text x="100" y="390" fill="#685376" font-family="Arial, sans-serif" font-size="43" font-weight="700" letter-spacing="8">CELEB · INFLUENCER · HOT ITEMS</text>
+  <text x="102" y="468" fill="#927fa0" font-family="Arial, sans-serif" font-size="34">연예인과 인플루언서가 선택한 상품</text>
+</svg>

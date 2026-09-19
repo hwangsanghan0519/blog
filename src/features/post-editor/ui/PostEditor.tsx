@@ -203,7 +203,7 @@ export function PostEditor({ categories, post, onCoverUpload, onUpdate }: PostEd
 
   const changePostStatus = (status: PostStatus) => {
     if (status === 'published' && !hasCompleteFourCut(post)) {
-      window.alert('상품을 발행하려면 쎈네컷 사진 4장과 각 사진의 설명을 모두 등록해 주세요.')
+      window.alert('상품을 발행하려면 비올레 네컷 사진 4장과 각 사진의 설명을 모두 등록해 주세요.')
       return
     }
 
@@ -236,7 +236,7 @@ export function PostEditor({ categories, post, onCoverUpload, onUpdate }: PostEd
       .insertContent({
         type: 'codeBlock',
         attrs: { language: 'javascript' },
-        content: [{ type: 'text', text: 'const product = "SSEN";\nconsole.log(product);' }],
+        content: [{ type: 'text', text: 'const product = "VIOLE";\nconsole.log(product);' }],
       })
       .run()
   }
@@ -310,28 +310,28 @@ export function PostEditor({ categories, post, onCoverUpload, onUpdate }: PostEd
           />
         </label>
 
-        <section className="ssen-four-cut-admin" aria-label="쎈네컷 상품 상세 등록">
+        <section className="viole-four-cut-admin" aria-label="비올레 네컷 상품 상세 등록">
           <header>
             <div>
               <span>PRODUCT DETAIL TEMPLATE</span>
-              <h2>쎈네컷</h2>
+              <h2>비올레 네컷</h2>
               <p>사진 4장과 각 컷의 상품 설명을 모두 입력해 주세요.</p>
             </div>
             <strong>{post.detailImages.filter(Boolean).length} / 4</strong>
           </header>
 
-          <div className="ssen-four-cut-admin-frames">
+          <div className="viole-four-cut-admin-frames">
             {Array.from({ length: 4 }, (_, index) => {
               const image = post.detailImages[index] ?? ''
               const description = post.detailDescriptions[index] ?? ''
 
               return (
                 <article className={image && description.trim() ? 'is-complete' : ''} key={index}>
-                  <div className="ssen-four-cut-admin-number">
+                  <div className="viole-four-cut-admin-number">
                     <span>CUT</span>
                     <strong>{String(index + 1).padStart(2, '0')}</strong>
                   </div>
-                  <label className="ssen-four-cut-admin-image">
+                  <label className="viole-four-cut-admin-image">
                     <input type="file" accept="image/*" onChange={(event) => uploadDetailFrameImage(index, event)} />
                     {image ? (
                       <img src={image} alt={`${index + 1}번째 상세 이미지 미리보기`} />
@@ -342,7 +342,7 @@ export function PostEditor({ categories, post, onCoverUpload, onUpdate }: PostEd
                       </span>
                     )}
                   </label>
-                  <label className="ssen-four-cut-admin-copy">
+                  <label className="viole-four-cut-admin-copy">
                     <span>이 사진의 상품 설명</span>
                     <textarea
                       value={description}
@@ -364,8 +364,8 @@ export function PostEditor({ categories, post, onCoverUpload, onUpdate }: PostEd
           </div>
 
           <footer>
-            <span>SSEN FOUR CUT</span>
-            <strong>쎈네컷</strong>
+            <span>VIOLE FOUR CUT</span>
+            <strong>비올레 네컷</strong>
           </footer>
         </section>
 
@@ -538,7 +538,7 @@ export function PostEditor({ categories, post, onCoverUpload, onUpdate }: PostEd
             구매바 상단 문구
             <input
               value={post.purchaseTitle}
-              placeholder="지금 제일 쎈 가격으로 이동"
+              placeholder="지금 가장 좋은 가격으로 이동"
               onChange={(event) => onUpdate({ purchaseTitle: event.target.value })}
             />
           </label>

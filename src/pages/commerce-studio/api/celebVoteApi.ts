@@ -1,6 +1,7 @@
 import { PRODUCTION_CLOUD_DATA_ENDPOINT } from '../model/config'
 
-const LOCAL_VOTER_KEY = 'ssen-celeb-voter-id-v1'
+const LOCAL_VOTER_KEY = 'viole-celeb-voter-id-v1'
+const LEGACY_LOCAL_VOTER_KEY = 'ssen-celeb-voter-id-v1'
 const VOTE_ENDPOINT = '/.netlify/functions/celeb-votes'
 
 export type CelebVoteRank = {
@@ -21,6 +22,12 @@ export type CelebVoteResult = CelebVoteSnapshot & {
 export function getOrCreateCelebVoterId() {
   const saved = window.localStorage.getItem(LOCAL_VOTER_KEY)
   if (saved) return saved
+
+  const legacyVoterId = window.localStorage.getItem(LEGACY_LOCAL_VOTER_KEY)
+  if (legacyVoterId) {
+    window.localStorage.setItem(LOCAL_VOTER_KEY, legacyVoterId)
+    return legacyVoterId
+  }
 
   const voterId = typeof crypto.randomUUID === 'function'
     ? crypto.randomUUID()

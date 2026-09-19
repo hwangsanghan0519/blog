@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
-import type { CSSProperties, KeyboardEvent, MouseEvent, PointerEvent, UIEvent } from 'react'
+import type { CSSProperties, KeyboardEvent, MouseEvent, PointerEvent, Ref, UIEvent } from 'react'
 import * as Dialog from '@radix-ui/react-dialog'
 import { ArrowUp, Camera, Check, ChevronLeft, ChevronRight, Crown, ExternalLink, Heart, LoaderCircle, Mail, Share2, ShoppingBag, ShoppingCart, X, Zap } from 'lucide-react'
 import { useKeenSlider } from 'keen-slider/react'
@@ -8,7 +8,7 @@ import { countWords } from '../../../entities/post/lib/formatters'
 import type { Post } from '../../../entities/post/model/types'
 import { applyPublicSeo, getCategoryPath, getProductPath, readSeoRoute } from '../../../shared/lib/seo'
 import { RenderedContent } from '../../../shared/ui/RenderedContent'
-import ssenLogoImage from '../../../assets/ssen-logo.svg'
+import violeLogoImage from '../../../assets/viole-logo.svg'
 import { castCelebVote, fetchCelebVotes, getOrCreateCelebVoterId } from '../api/celebVoteApi'
 import type { CelebVoteRank } from '../api/celebVoteApi'
 import { getInfluenceGauge } from '../lib/influenceGauge'
@@ -28,16 +28,16 @@ type StorefrontHomeProps = {
 
 const CATEGORY_COLUMN_SIZE = 2
 const BEST_RANK_THEMES = [
-  { accent: '#ffd54a', text: '#171717', glow: 'rgba(255, 213, 74, 0.34)', edge: '#f0002f' },
-  { accent: '#dfe4ec', text: '#171717', glow: 'rgba(191, 201, 216, 0.34)', edge: '#f0002f' },
-  { accent: '#d98a55', text: '#171717', glow: 'rgba(217, 138, 85, 0.32)', edge: '#171717' },
-  { accent: '#f0002f', text: '#ffffff', glow: 'rgba(240, 0, 47, 0.3)', edge: '#171717' },
-  { accent: '#df2847', text: '#ffffff', glow: 'rgba(223, 40, 71, 0.28)', edge: '#171717' },
-  { accent: '#c93a53', text: '#ffffff', glow: 'rgba(201, 58, 83, 0.26)', edge: '#171717' },
-  { accent: '#ad4659', text: '#ffffff', glow: 'rgba(173, 70, 89, 0.24)', edge: '#171717' },
-  { accent: '#8f4c5c', text: '#ffffff', glow: 'rgba(143, 76, 92, 0.22)', edge: '#171717' },
-  { accent: '#6f4e59', text: '#ffffff', glow: 'rgba(111, 78, 89, 0.2)', edge: '#171717' },
-  { accent: '#3b3b42', text: '#ffffff', glow: 'rgba(59, 59, 66, 0.22)', edge: '#f0002f' },
+  { accent: '#e9d5ff', text: '#2e1065', glow: 'rgba(196, 181, 253, 0.38)', edge: '#9b72ea' },
+  { accent: '#ddd6fe', text: '#2e1065', glow: 'rgba(167, 139, 250, 0.34)', edge: '#9b72ea' },
+  { accent: '#c4b5fd', text: '#2e1065', glow: 'rgba(167, 139, 250, 0.32)', edge: '#6f4a9d' },
+  { accent: '#9b72ea', text: '#ffffff', glow: 'rgba(155, 114, 234, 0.3)', edge: '#171717' },
+  { accent: '#8056c7', text: '#ffffff', glow: 'rgba(109, 40, 217, 0.28)', edge: '#171717' },
+  { accent: '#5b21b6', text: '#ffffff', glow: 'rgba(91, 33, 182, 0.26)', edge: '#171717' },
+  { accent: '#6f4a9d', text: '#ffffff', glow: 'rgba(76, 29, 149, 0.24)', edge: '#171717' },
+  { accent: '#3b1674', text: '#ffffff', glow: 'rgba(59, 22, 116, 0.22)', edge: '#171717' },
+  { accent: '#32145f', text: '#ffffff', glow: 'rgba(50, 20, 95, 0.2)', edge: '#171717' },
+  { accent: '#3b3b42', text: '#ffffff', glow: 'rgba(59, 59, 66, 0.22)', edge: '#9b72ea' },
 ] as const
 
 function getBestRankStyle(index: number) {
@@ -69,14 +69,17 @@ export function StorefrontHome({
   const [hasPassedVoteSection, setHasPassedVoteSection] = useState(false)
   const [loadingDetailId, setLoadingDetailId] = useState('')
   const [shareFeedback, setShareFeedback] = useState('')
+  const [isMobileBuyDockVisible, setIsMobileBuyDockVisible] = useState(false)
   const [voteRanking, setVoteRanking] = useState<CelebVoteRank[]>([])
   const [votedCategory, setVotedCategory] = useState<string | null>(null)
   const [votePendingCategory, setVotePendingCategory] = useState('')
   const [voteFeedback, setVoteFeedback] = useState('')
+  const [mobileLineupImageIndex, setMobileLineupImageIndex] = useState(0)
   const headerRef = useRef<HTMLElement>(null)
   const headerSlotRef = useRef<HTMLDivElement>(null)
   const voteTriggerRef = useRef<HTMLHeadingElement>(null)
   const latestHeadRef = useRef<HTMLDivElement>(null)
+  const purchaseCtaRef = useRef<HTMLAnchorElement>(null)
   const pendingCategoryScrollRef = useRef<'top' | 'latest' | null>(null)
   const sliderPausedRef = useRef(false)
   const headerCompactRef = useRef(false)
@@ -106,15 +109,28 @@ export function StorefrontHome({
     () => new Map(rankedCelebs.slice(0, 3).map((item, index) => [item.category, index + 1])),
     [rankedCelebs],
   )
+  const rankedCategoryNames = useMemo(
+    () => rankedCelebs.map((item) => item.category),
+    [rankedCelebs],
+  )
+  const mobileLineupVisuals = useMemo(
+    () => rankedCategoryNames.flatMap((category) => {
+      const image = categoryImages[category]
+      return image ? [{ category, image }] : []
+    }),
+    [categoryImages, rankedCategoryNames],
+  )
+  const mobileLineupVisualKey = mobileLineupVisuals.map((item) => `${item.category}:${item.image}`).join('\u0000')
   const categoryColumns = useMemo(() => {
     const columns: string[][] = []
 
-    for (let index = 0; index < publicCategories.length; index += CATEGORY_COLUMN_SIZE) {
-      columns.push(publicCategories.slice(index, index + CATEGORY_COLUMN_SIZE))
+    for (let index = 0; index < rankedCategoryNames.length; index += CATEGORY_COLUMN_SIZE) {
+      columns.push(rankedCategoryNames.slice(index, index + CATEGORY_COLUMN_SIZE))
     }
 
     return columns
-  }, [publicCategories])
+  }, [rankedCategoryNames])
+  const categoryOrderKey = rankedCategoryNames.join('\u0000')
   const categoryCounts = useMemo(() => {
     return publishedPosts.reduce<Record<string, number>>((counts, post) => {
       counts[post.category] = (counts[post.category] ?? 0) + 1
@@ -147,6 +163,43 @@ export function StorefrontHome({
   useEffect(() => {
     applyPublicSeo({ category: categoryFilter, posts: publishedPosts, selectedPost })
   }, [categoryFilter, publishedPosts, selectedPost])
+
+  useEffect(() => {
+    if (!selectedPost) return undefined
+
+    const purchaseCta = purchaseCtaRef.current
+    const scrollRoot = purchaseCta?.closest('.public-reader-scroll')
+    const mobileMedia = window.matchMedia('(max-width: 720px)')
+
+    if (!purchaseCta || !(scrollRoot instanceof HTMLElement)) {
+      return undefined
+    }
+
+    const syncVisibility = () => {
+      if (!mobileMedia.matches) {
+        setIsMobileBuyDockVisible(false)
+        return
+      }
+
+      const ctaRect = purchaseCta.getBoundingClientRect()
+      const rootRect = scrollRoot.getBoundingClientRect()
+      const isVisible = ctaRect.bottom > rootRect.top && ctaRect.top < rootRect.bottom
+      setIsMobileBuyDockVisible(!isVisible)
+    }
+
+    const observer = new IntersectionObserver(syncVisibility, {
+      root: scrollRoot,
+      threshold: 0.18,
+    })
+
+    observer.observe(purchaseCta)
+    mobileMedia.addEventListener('change', syncVisibility)
+
+    return () => {
+      observer.disconnect()
+      mobileMedia.removeEventListener('change', syncVisibility)
+    }
+  }, [selectedPost])
 
   useEffect(() => {
     const controller = new AbortController()
@@ -189,7 +242,30 @@ export function StorefrontHome({
       window.cancelAnimationFrame(frame)
       window.removeEventListener('resize', updateCategorySlider)
     }
-  }, [categoryColumns.length, categorySlider, isHeaderCompact])
+  }, [categoryOrderKey, categorySlider, isHeaderCompact])
+
+  useEffect(() => {
+    const mobileMedia = window.matchMedia('(max-width: 720px)')
+    let timer = 0
+
+    const syncLineupAnimation = () => {
+      window.clearInterval(timer)
+      setMobileLineupImageIndex(0)
+      if (!mobileMedia.matches || mobileLineupVisuals.length < 2) return
+
+      timer = window.setInterval(() => {
+        setMobileLineupImageIndex((current) => (current + 1) % mobileLineupVisuals.length)
+      }, 1200)
+    }
+
+    syncLineupAnimation()
+    mobileMedia.addEventListener('change', syncLineupAnimation)
+
+    return () => {
+      window.clearInterval(timer)
+      mobileMedia.removeEventListener('change', syncLineupAnimation)
+    }
+  }, [mobileLineupVisualKey, mobileLineupVisuals.length])
 
   useEffect(() => {
     let previousScrollY = window.scrollY
@@ -224,8 +300,16 @@ export function StorefrontHome({
       const dockedHeaderBottom = headerRef.current?.getBoundingClientRect().bottom ?? 0
       const pageScrollRange = Math.max(1, document.documentElement.scrollHeight - window.innerHeight)
       const pageScrollProgress = Math.min(1, Math.max(0, currentScrollY / pageScrollRange))
+      const scrollCharm = pageScrollProgress >= 0.9
+        ? 'necklace'
+        : pageScrollProgress >= 0.6
+          ? 'lipstick'
+          : pageScrollProgress >= 0.3
+            ? 'shirt'
+            : 'dot'
 
       headerRef.current?.style.setProperty('--mobile-scroll-progress', String(pageScrollProgress))
+      if (headerRef.current) headerRef.current.dataset.scrollCharm = scrollCharm
 
       setIsHeaderDocked(shouldDockHeader)
       applyVoteSectionPassed(
@@ -269,7 +353,7 @@ export function StorefrontHome({
   useEffect(() => {
     if (categoryFilter === 'all') return undefined
 
-    const categoryIndex = publicCategories.indexOf(categoryFilter)
+    const categoryIndex = rankedCategoryNames.indexOf(categoryFilter)
     if (categoryIndex < 0) return undefined
 
     const timer = window.setTimeout(() => {
@@ -277,7 +361,7 @@ export function StorefrontHome({
     }, 0)
 
     return () => window.clearTimeout(timer)
-  }, [categoryFilter, categorySlider, publicCategories])
+  }, [categoryFilter, categorySlider, rankedCategoryNames])
 
   const requestPostDetail = useCallback((postId: string) => {
     setLoadingDetailId(postId)
@@ -331,6 +415,7 @@ export function StorefrontHome({
     if (!post) return
 
     setSelectedId(post.id)
+    setIsMobileBuyDockVisible(false)
     requestPostDetail(post.id)
     setReadingProgress(0)
     syncPostParam(post.slug || post.id)
@@ -338,6 +423,7 @@ export function StorefrontHome({
 
   const closeReader = () => {
     setSelectedId('')
+    setIsMobileBuyDockVisible(false)
     setReadingProgress(0)
     syncPostParam('', categoryFilter === 'all' ? '' : categoryFilter)
   }
@@ -345,7 +431,7 @@ export function StorefrontHome({
   const sharePost = async (post: Post) => {
     const url = new URL(getProductPath(post.slug || post.id), window.location.origin).href
     const shareData = {
-      title: `${post.title} | ${post.category} 핫템 - SSEN`,
+      title: `${post.title} | ${post.category} 핫템 - 비올레`,
       text: `${post.category}가 소개·착용한 ${post.title}${post.excerpt ? ` — ${post.excerpt}` : ''}`,
       url,
     }
@@ -483,11 +569,38 @@ export function StorefrontHome({
     <div className="public-blog">
       <AdStripBanners banners={adBanners} />
 
-      <section className="public-mobile-brand-strip" aria-label="SSEN 브랜드 메시지">
+      <section className="public-mobile-brand-strip" aria-label="비올레 브랜드 메시지">
+        <span className="public-mobile-banner-aurora" aria-hidden="true">
+          <i />
+          <i />
+        </span>
+        <span className="public-mobile-banner-orbit" aria-hidden="true">
+          <i />
+          <i />
+          <i />
+        </span>
+        {mobileLineupVisuals.length > 0 && (
+          <span className="public-mobile-influencer-fade" aria-hidden="true">
+            {mobileLineupVisuals.map((item, index) => (
+              <img
+                className={index === mobileLineupImageIndex ? 'is-active' : ''}
+                decoding="async"
+                key={item.category}
+                src={item.image}
+                alt=""
+              />
+            ))}
+          </span>
+        )}
+        <span className="public-mobile-viole-logo" aria-hidden="true">
+          <img src={violeLogoImage} alt="" />
+        </span>
         <div>
-          <span>지금 가장 유행하는</span>
-          <strong><em>쎈놈들이</em> 선택한 아이템</strong>
+          <span>VIOLE CURATED</span>
+          <strong><em>나의 최애가</em><b>선택한 아이템</b></strong>
         </div>
+        <small>타게팅 인플루언서 큐레이션</small>
+        <span className="public-mobile-banner-signal" aria-hidden="true"><i /></span>
       </section>
 
       <div
@@ -498,17 +611,21 @@ export function StorefrontHome({
         ref={headerRef}
         className={`public-header ${isHeaderDocked ? 'is-docked' : ''} ${isHeaderCompact ? 'is-scroll-compact' : ''}`}
       >
+        <div className="public-mobile-lineup-label" aria-hidden="true">
+          <span>LINE <em>UP</em></span>
+        </div>
+
         <button className="public-brand" type="button" aria-label="전체 상품 보기" onClick={() => selectCategory('all')}>
-          <span className="public-ssen-logo" aria-hidden="true">
-            <img src={ssenLogoImage} alt="" />
+          <span className="public-viole-logo" aria-hidden="true">
+            <img src={violeLogoImage} alt="" />
           </span>
           <span className="public-brand-message" aria-hidden="true">
-            <span className="public-brand-kicker">  지금 가장 유행하는  </span>
+            <span className="public-brand-kicker">  어느 별에서 왔니?  </span>
             <span className="public-brand-title">
-              <em>쎈놈들이</em>
+              <em>나의 최애가</em>
               <b>선택한 아이템</b>
             </span>
-            <span className="public-brand-caption">SSEN</span>
+            <span className="public-brand-caption">국내 최초 인풀루언서 컨텍팅</span>
           </span>
         </button>
 
@@ -521,14 +638,15 @@ export function StorefrontHome({
                 key={`category-column-${columnIndex}`}
               >
                 {column.map((category) => {
-                  const hotInfluencerRank = hasPassedVoteSection
-                    ? hotInfluencerRanks.get(category)
-                    : undefined
+                  const isActiveCategory = categoryFilter === category
+                  const mobileInfluencerRank = hotInfluencerRanks.get(category)
+                  const hotInfluencerRank = hasPassedVoteSection ? mobileInfluencerRank : undefined
 
                   return (
                     <button
                       aria-label={`${category} 카테고리`}
-                      className={`public-category-slide ${categoryFilter === category ? 'is-active' : ''} ${hotInfluencerRank ? `is-hot-influencer is-hot-${hotInfluencerRank}` : ''}`}
+                      aria-pressed={isActiveCategory}
+                      className={`public-category-slide ${isActiveCategory ? 'is-active' : ''} ${mobileInfluencerRank ? `is-mobile-top is-mobile-top-${mobileInfluencerRank}` : ''} ${hotInfluencerRank ? `is-hot-influencer is-hot-${hotInfluencerRank}` : ''}`}
                       data-category={category}
                       key={category}
                       style={getCategoryStyle(category)}
@@ -536,6 +654,14 @@ export function StorefrontHome({
                       onClick={() => selectCategory(category)}
                     >
                       <CategoryVisual image={categoryImages[category]} label={category} />
+                      {isActiveCategory ? (
+                        <span className="public-category-active-badge" aria-hidden="true">
+                          <Check size={10} strokeWidth={3.5} />
+                        </span>
+                      ) : null}
+                      {mobileInfluencerRank ? (
+                        <i className="public-category-mobile-rank">#{mobileInfluencerRank}</i>
+                      ) : null}
                       {hotInfluencerRank ? (
                         <em className="public-category-hot">HOT INFLUENCER</em>
                       ) : null}
@@ -551,7 +677,21 @@ export function StorefrontHome({
           </div>
         </nav>
 
-        <span className="public-mobile-scroll-progress" aria-hidden="true" />
+        <span className="public-mobile-scroll-progress" aria-hidden="true">
+          <i className="public-scroll-charm is-dot" />
+          <svg className="public-scroll-charm is-shirt" viewBox="0 0 24 24">
+            <path d="M20.38 3.46 16 2a4 4 0 0 1-8 0L3.62 3.46a2 2 0 0 0-1.34 2.23l.58 3.47a1 1 0 0 0 .99.84H6v10c0 1.1.9 2 2 2h8a2 2 0 0 0 2-2V10h2.15a1 1 0 0 0 .99-.84l.58-3.47a2 2 0 0 0-1.34-2.23Z" />
+          </svg>
+          <svg className="public-scroll-charm is-lipstick" viewBox="0 0 24 24">
+            <path d="M9 9.2V5.7c0-.8.4-1.5 1.1-1.9l3.4-1.7c.7-.3 1.5.2 1.5 1v6.1" />
+            <path d="M8 9h8v5H8zM7 14h10v7H7z" />
+            <path d="M10.5 5.2 15 3" />
+          </svg>
+          <svg className="public-scroll-charm is-necklace" viewBox="0 0 24 24">
+            <path d="M4 4c.5 6.1 3.3 9.2 8 9.2S19.5 10.1 20 4" />
+            <path d="m12 12.5-3 3.6 3 4.4 3-4.4-3-3.6Z" />
+          </svg>
+        </span>
 
       </header>
       </div>
@@ -559,20 +699,17 @@ export function StorefrontHome({
       <TrendVideo settings={heroVideo} />
 
       <main className="public-main">
-        <section className="public-hero public-best-v2" aria-label="실시간 상품 TOP 10">
+        <section className="public-hero public-best-v2" aria-label="바이럴 베스트 TOP 10">
           <div className="public-hero-copy">
             <span className="public-kicker">
-              SSEN CURATED / TOP 10
+              인플루언서 랭킹과 구매 포인트를 합산한
+              <br />
+              지금 가장 바이럴한 아이템 TOP 10
             </span>
             <h1>
-              <span>BEST</span>
-              <em>PICKS</em>
+              <span>VIRAL</span>
+              <em>BEST</em>
             </h1>
-            <p>오늘 가장 주목받는 아이템을 가볍게 둘러보세요.</p>
-            <div className="public-best-v2-guide" aria-hidden="true">
-              <strong>01 — {String(topPosts.length).padStart(2, '0')}</strong>
-              <span>DRAG TO EXPLORE</span>
-            </div>
           </div>
 
           {topPosts.length > 0 ? (
@@ -673,8 +810,15 @@ export function StorefrontHome({
                 </h2>
                 <p>인플루언서 게이지가 올라가요</p>
               </div>
-              <div className="celeb-vote-total" aria-label="인플 게이지 실시간 집계 중">
-                <strong>매일매일 한번의 투표 기회</strong>
+              <div className="celeb-vote-total" aria-label="매일 한 번 참여할 수 있는 투표">
+                <span className="celeb-vote-total-icon" aria-hidden="true">
+                  <Heart size={28} strokeWidth={2.4} />
+                  <b>1</b>
+                </span>
+                <span className="celeb-vote-total-copy">
+                  <small>DAILY VOTE</small>
+                  <strong>매일매일 한 번의 투표 기회</strong>
+                </span>
               </div>
             </div>
 
@@ -821,7 +965,7 @@ export function StorefrontHome({
                         <Dialog.Description id="reader-description" className="public-reader-description">
                           {selectedPost.excerpt}
                         </Dialog.Description>
-                        <ProductLinkPanel post={selectedPost} />
+                        <ProductLinkPanel ctaRef={purchaseCtaRef} post={selectedPost} />
                         <div className="product-detail-assurance" aria-label="구매 안내">
                           <span>실시간 가격 비교</span>
                           <span>등록된 제휴몰로 바로 이동</span>
@@ -850,6 +994,7 @@ export function StorefrontHome({
                   </div>
                 </div>
               </div>
+              {isMobileBuyDockVisible && <MobileProductBuyDock post={selectedPost} />}
             </Dialog.Content>
           )}
           {selectedPost && (
@@ -891,12 +1036,12 @@ export function StorefrontHome({
             aria-label="페이지 맨 위로 이동"
             onClick={() => window.scrollTo({ left: 0, top: 0, behavior: 'smooth' })}
           >
-            <img src={ssenLogoImage} alt="SSEN" />
+            <img src={violeLogoImage} alt="비올레" />
           </button>
 
           <div className="public-footer-v3-message">
             <span>CURATED / SEOUL</span>
-            <strong>PICKED BY SSEN.</strong>
+            <strong>PICKED BY VIOLE.</strong>
           </div>
 
           <div className="public-footer-v3-actions">
@@ -907,7 +1052,7 @@ export function StorefrontHome({
         </div>
 
         <div className="public-footer-v3-bottom">
-          <small>© {new Date().getFullYear()} SSEN</small>
+          <small>© {new Date().getFullYear()} VIOLE</small>
           <span>SEOUL · KR</span>
         </div>
       </footer>
@@ -1023,7 +1168,7 @@ function ProductImageGallery({ post }: { post: Post }) {
     return (
       <>
         <PostImage post={post} />
-        <span className="product-gallery-pick">SSEN PICK</span>
+        <span className="product-gallery-pick">VIOLE PICK</span>
       </>
     )
   }
@@ -1046,7 +1191,7 @@ function ProductImageGallery({ post }: { post: Post }) {
       </div>
 
       <div className="product-gallery-topline" aria-hidden="true">
-        <span>SSEN PICK</span>
+        <span>VIOLE PICK</span>
         <em>{images[activeIndex]?.label}</em>
       </div>
 
@@ -1117,7 +1262,7 @@ function ProductDetailContent({ post }: { post: Post }) {
   if (!hasCompleteFourCut) return <RenderedContent content={post.content} />
 
   return (
-    <section className="ssen-four-cut" aria-label="쎈네컷 상품 상세">
+    <section className="viole-four-cut" aria-label="비올레 네컷 상품 상세">
       <header>
         <strong><Camera aria-hidden="true" />최저가로 구매하는데 4컷이면 충분</strong>
       </header>
@@ -1136,8 +1281,8 @@ function ProductDetailContent({ post }: { post: Post }) {
         ))}
       </ol>
       <footer>
-        <span>SSEN FOUR CUT</span>
-        <strong>쎈네컷</strong>
+        <span>VIOLE FOUR CUT</span>
+        <strong>비올레 네컷</strong>
       </footer>
     </section>
   )
@@ -1207,7 +1352,7 @@ function BestSliderLowestLink({ post }: { post: Post }) {
   )
 }
 
-function ProductLinkPanel({ post }: { post: Post }) {
+function ProductLinkPanel({ post, ctaRef }: { post: Post; ctaRef?: Ref<HTMLAnchorElement> }) {
   const links = post.productLinks.filter((link) => link.href.trim())
 
   if (!links.length) {
@@ -1236,7 +1381,7 @@ function ProductLinkPanel({ post }: { post: Post }) {
           {primaryLink.mall.trim() && <small>{primaryLink.mall}</small>}
           <strong>{primaryLink.price || '가격 확인'}</strong>
         </div>
-        <a href={primaryLink.href} target="_blank" rel="noreferrer sponsored">
+        <a ref={ctaRef} href={primaryLink.href} target="_blank" rel="noreferrer sponsored">
           <ShoppingBag size={18} /> {primaryLink.label || '최저가 바로가기'} <ExternalLink size={16} />
         </a>
       </div>
@@ -1266,17 +1411,37 @@ function ProductLinkPanel({ post }: { post: Post }) {
   )
 }
 
+function MobileProductBuyDock({ post }: { post: Post }) {
+  const primaryLink = getBestProductLink(post)
+
+  if (!primaryLink?.href.trim()) return null
+
+  return (
+    <aside className="mobile-product-buy-dock" aria-label="빠른 구매">
+      <div>
+        <small>지금 최저가</small>
+        <strong>{primaryLink.price || '가격 확인'}</strong>
+      </div>
+      <a href={primaryLink.href} target="_blank" rel="noreferrer sponsored">
+        <ShoppingBag aria-hidden="true" />
+        <span>구매하기</span>
+        <ChevronRight aria-hidden="true" />
+      </a>
+    </aside>
+  )
+}
+
 function ProductDetailSideFooter({ post, onCategorySelect }: { post: Post; onCategorySelect: () => void }) {
   const primaryLink = getBestProductLink(post)
 
   return (
     <aside className="product-detail-side-footer" aria-label="상품 상세 푸터">
       <button className="product-detail-side-footer-category" type="button" onClick={onCategorySelect}>
-        <span>{post.category || 'SSEN PICK'}</span>
+        <span>{post.category || 'VIOLE PICK'}</span>
       </button>
       <div className="product-detail-side-footer-copy">
         <strong>{post.title}</strong>
-        <p>{post.excerpt || '쎈이 고른 상품의 핵심 정보를 네 컷으로 확인하세요.'}</p>
+        <p>{post.excerpt || '비올레가 고른 상품의 핵심 정보를 네 컷으로 확인하세요.'}</p>
       </div>
       <div className="product-detail-side-footer-price">
         <strong>{primaryLink?.price || '가격 확인'}</strong>
@@ -1371,7 +1536,7 @@ function syncCategoryParam(category: string) {
 }
 
 const CATEGORY_PALETTE = [
-  ['#e21b2d', '#fff1f2'],
+  ['#9b72ea', '#fff1f2'],
   ['#111827', '#f3f4f6'],
   ['#ffb800', '#fff7d6'],
   ['#f97316', '#fff0df'],

@@ -44,7 +44,8 @@ export function TrendVideo({ settings }: { settings: HeroVideoSettings }) {
         allowFullScreen={false}
         loading="lazy"
         src={playerUrl.toString()}
-        title={settings.title || 'SSEN 추천 영상'}
+        tabIndex={-1}
+        title={settings.title || '비올레 추천 영상'}
       />
       <div className="public-trend-video-shade" aria-hidden="true" />
       {hasSticker && (
@@ -61,7 +62,7 @@ export function TrendVideo({ settings }: { settings: HeroVideoSettings }) {
       )}
       <div className="public-trend-video-copy">
         <span>{settings.eyebrow || 'NOW PLAYING'}</span>
-        <strong>{settings.title || 'SSEN VIDEO PICK'}</strong>
+        <strong>{settings.title || 'VIOLE VIDEO PICK'}</strong>
       </div>
       <div className="public-trend-video-status" aria-hidden="true">
         <i /> MUTED · AUTO PLAY

@@ -39,8 +39,8 @@
   width: 7px;
   height: 7px;
   border-radius: 50%;
-  background: #f0002f;
-  box-shadow: 0 0 0 3px rgba(240, 0, 47, 0.14);
+  background: #9b72ea;
+  box-shadow: 0 0 0 3px rgba(155, 114, 234, 0.14);
   animation: public-best-live-dot 1.7s ease-in-out infinite;
 }
 
@@ -109,7 +109,7 @@
   background:
     radial-gradient(
       circle at 100% 0,
-      color-mix(in srgb, var(--best-rank-accent, #f0002f) 18%, transparent),
+      color-mix(in srgb, var(--best-rank-accent, #9b72ea) 18%, transparent),
       transparent 36%
     ),
     linear-gradient(145deg, #1b1819 0%, #101011 58%, #171214 100%) !important;
@@ -121,8 +121,8 @@
   height: 4px;
   margin-bottom: 19px;
   border-radius: 999px;
-  background: var(--best-rank-accent, #f0002f) !important;
-  box-shadow: 0 0 22px var(--best-rank-glow, rgba(240, 0, 47, 0.28));
+  background: var(--best-rank-accent, #9b72ea) !important;
+  box-shadow: 0 0 22px var(--best-rank-glow, rgba(155, 114, 234, 0.28));
   opacity: 1;
   transform: none;
 }
@@ -151,8 +151,8 @@
   height: 6px;
   margin-right: 7px;
   border-radius: 50%;
-  background: var(--best-rank-accent, #f0002f);
-  box-shadow: 0 0 12px var(--best-rank-glow, rgba(240, 0, 47, 0.28));
+  background: var(--best-rank-accent, #9b72ea);
+  box-shadow: 0 0 12px var(--best-rank-glow, rgba(155, 114, 234, 0.28));
 }
 
 .public-best-v2 .public-slide .public-best-v2-meta .public-best-v2-eyebrow {
@@ -229,10 +229,10 @@
 }
 
 .public-best-v2 .public-slide .public-best-v2-buy .public-best-v2-lowest-cta {
-  border-color: #f0002f !important;
+  border-color: #9b72ea !important;
   color: #ffffff !important;
-  background: #f0002f !important;
-  box-shadow: 0 12px 28px rgba(240, 0, 47, 0.24);
+  background: #9b72ea !important;
+  box-shadow: 0 12px 28px rgba(155, 114, 234, 0.24);
 }
 
 .public-best-v2 .public-slide .public-best-v2-lowest-cta[role='link'] {
@@ -260,7 +260,7 @@
 
 .public-best-v2 .public-slide button:hover .public-best-v2-lowest-cta,
 .public-best-v2 .public-slide button:focus-visible .public-best-v2-lowest-cta {
-  box-shadow: 0 15px 34px rgba(240, 0, 47, 0.36);
+  box-shadow: 0 15px 34px rgba(155, 114, 234, 0.36);
   transform: translateY(-2px);
 }
 
@@ -368,6 +368,83 @@
   }
 }
 
+/* VIOLE light information panel. */
+.public-best-v2 .public-slide button {
+  background: #fffefd !important;
+}
+
+.public-best-v2 .public-slide .public-best-v2-category-live {
+  color: #654f75 !important;
+  background: rgba(247, 241, 255, 0.94) !important;
+  box-shadow: 0 8px 24px rgba(105, 78, 130, 0.1) !important;
+}
+
+.public-best-v2 .public-slide .public-best-v2-category-live > strong {
+  color: #654f75 !important;
+}
+
+.public-best-v2 .public-slide .public-best-v2-content {
+  color: #563f68 !important;
+  background:
+    radial-gradient(circle at 100% 0, color-mix(in srgb, var(--best-rank-accent, #9b72ea) 13%, transparent), transparent 38%),
+    linear-gradient(145deg, #fffefd 0%, #faf6ff 56%, #f4edff 100%) !important;
+  border-left-color: rgba(155, 114, 234, 0.13) !important;
+}
+
+.public-best-v2 .public-slide .public-best-v2-meta {
+  border-color: rgba(155, 114, 234, 0.15) !important;
+  background: rgba(255, 255, 255, 0.76) !important;
+}
+
+.public-best-v2 .public-slide .public-best-v2-meta .public-best-v2-eyebrow {
+  color: #7c6190 !important;
+}
+
+.public-best-v2 .public-slide .public-best-v2-content h2,
+.public-best-v2 .public-slide .public-best-v2-price strong {
+  color: #563f68 !important;
+  text-shadow: none !important;
+}
+
+.public-best-v2 .public-slide .public-best-v2-content p {
+  color: #8c789c !important;
+}
+
+.public-best-v2 .public-slide .public-best-v2-buy {
+  border-top-color: rgba(155, 114, 234, 0.14) !important;
+}
+
+.public-best-v2 .public-slide .public-best-v2-buy em {
+  border-color: rgba(155, 114, 234, 0.2) !important;
+  color: #654f75 !important;
+  background: #f6f0ff !important;
+}
+
+.public-best-v2 .public-slide button:hover .public-best-v2-buy em,
+.public-best-v2 .public-slide button:focus-visible .public-best-v2-buy em {
+  border-color: rgba(155, 114, 234, 0.36) !important;
+  color: #563f68 !important;
+  background: #ffffff !important;
+}
+
+.public-best-v2 .public-slider-controls {
+  border-color: rgba(155, 114, 234, 0.13) !important;
+  background: rgba(255, 252, 255, 0.92) !important;
+  box-shadow: 0 10px 28px rgba(105, 78, 130, 0.1) !important;
+}
+
+.public-best-v2 .public-slider-controls > button,
+.public-best-v2 .public-slider-count {
+  border-color: rgba(155, 114, 234, 0.13) !important;
+  color: #72548a !important;
+  background: #f5efff !important;
+}
+
+.public-best-v2 .public-slider-count strong,
+.public-best-v2 .public-slider-count small {
+  color: #72548a !important;
+}
+
 /* Keep the live marker fully rounded and inside the artwork at every width. */
 .public-best-v2 .public-slide .public-best-v2-category-live {
   --best-live-size: clamp(36px, 3vw, 40px);
@@ -396,7 +473,7 @@
   flex: 0 0 var(--best-live-size);
   overflow: visible;
   border-radius: 50% !important;
-  background: rgba(240, 0, 47, 0.12) !important;
+  background: rgba(155, 114, 234, 0.12) !important;
 }
 
 .public-best-v2 .public-slide .public-best-v2-category-live > span i {
@@ -424,4 +501,30 @@
     padding-right: 10px;
     font-size: 13px;
   }
+}
+
+/* Slightly deeper lavender pass for clearer hierarchy. */
+.public-best-v2 .public-slide button {
+  background: #faf5fd !important;
+}
+
+.public-best-v2 .public-slide .public-best-v2-category-live {
+  color: #5e426f !important;
+  background: rgba(238, 225, 248, 0.96) !important;
+}
+
+.public-best-v2 .public-slide .public-best-v2-content {
+  background:
+    radial-gradient(circle at 100% 0, color-mix(in srgb, var(--best-rank-accent, #8c5dca) 16%, transparent), transparent 38%),
+    linear-gradient(145deg, #fcf8fe 0%, #f3e9fa 56%, #e9d8f5 100%) !important;
+}
+
+.public-best-v2 .public-slide .public-best-v2-content p {
+  color: #80698f !important;
+}
+
+.public-best-v2 .public-slide .public-best-v2-buy em,
+.public-best-v2 .public-slider-controls > button,
+.public-best-v2 .public-slider-count {
+  background: #eee2f7 !important;
 }
