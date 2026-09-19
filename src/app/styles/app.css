@@ -3681,6 +3681,7 @@ button.category-row.is-selected {
   display: inline-flex;
   align-items: center;
   justify-content: center;
+  gap: 5px;
   padding: 8px 13px 7px;
   border: 1px solid rgba(255, 255, 255, 0.82);
   border-radius: 999px;
@@ -3693,7 +3694,12 @@ button.category-row.is-selected {
   line-height: 1;
   white-space: nowrap;
   transform: translateX(-50%);
-  animation: trendVideoStickerCta 1.65s ease-in-out infinite;
+}
+
+.public-trend-video-sticker > span svg {
+  width: 12px;
+  height: 12px;
+  flex: 0 0 auto;
 }
 
 .public-trend-video-sticker:hover,
@@ -3724,17 +3730,6 @@ button.category-row.is-selected {
   80%, 100% {
     opacity: 0;
     transform: scale(1.24);
-  }
-}
-
-@keyframes trendVideoStickerCta {
-  0%, 100% {
-    transform: translateX(-50%);
-  }
-
-  50% {
-    box-shadow: 0 11px 28px rgba(231, 47, 120, 0.58);
-    transform: translateX(-50%) translateY(3px) scale(1.06);
   }
 }
 
@@ -13006,14 +13001,14 @@ button.category-row.is-selected,
 
 .public-best-v2 .public-hero-slider {
   min-height: 548px;
-  grid-template-rows: 486px 48px;
-  gap: 14px;
+  grid-template-rows: 548px;
+  gap: 0;
 }
 
 .public-best-v2 .public-slider-track,
 .public-best-v2 .public-slide button {
-  min-height: 486px !important;
-  height: 486px !important;
+  min-height: 548px !important;
+  height: 548px !important;
   border: 0 !important;
   border-radius: 0 !important;
   box-shadow: none !important;
@@ -13480,13 +13475,14 @@ button.category-row.is-selected,
 
   .public-best-v2 .public-hero-slider {
     min-height: 620px;
-    grid-template-rows: 562px 48px;
+    grid-template-rows: 620px;
+    gap: 0;
   }
 
   .public-best-v2 .public-slider-track,
   .public-best-v2 .public-slide button {
-    min-height: 562px !important;
-    height: 562px !important;
+    min-height: 620px !important;
+    height: 620px !important;
   }
 
   .public-best-v2 .public-slide button {

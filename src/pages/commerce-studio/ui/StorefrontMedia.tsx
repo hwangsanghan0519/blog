@@ -1,4 +1,5 @@
 import type { CSSProperties, PointerEvent } from 'react'
+import { ExternalLink } from 'lucide-react'
 import type { AdBannerSettings, HeroVideoSettings } from '../model/types'
 
 export function CategoryVisual({ image, label }: { image?: string; label: string }) {
@@ -55,7 +56,7 @@ export function TrendVideo({ settings }: { settings: HeroVideoSettings }) {
           aria-label="추천 상품 링크 새 창에서 열기"
         >
           <img src={settings.stickerImage} alt="" decoding="async" loading="lazy" />
-          <span>구매하기 →</span>
+          <span>구매하기 <ExternalLink size={12} aria-hidden="true" /></span>
         </a>
       )}
       <div className="public-trend-video-copy">

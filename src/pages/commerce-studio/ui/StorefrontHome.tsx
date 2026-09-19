@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import type { CSSProperties, KeyboardEvent, MouseEvent, PointerEvent, UIEvent } from 'react'
 import * as Dialog from '@radix-ui/react-dialog'
-import { ArrowUp, Camera, ChevronLeft, ChevronRight, ExternalLink, Mail, Share2, ShoppingBag, ShoppingCart, X, Zap } from 'lucide-react'
+import { ArrowUp, Camera, Check, ChevronLeft, ChevronRight, Crown, ExternalLink, Heart, LoaderCircle, Mail, Share2, ShoppingBag, ShoppingCart, X, Zap } from 'lucide-react'
 import { useKeenSlider } from 'keen-slider/react'
 import 'keen-slider/keen-slider.min.css'
 import { countWords } from '../../../entities/post/lib/formatters'
@@ -9,6 +9,9 @@ import type { Post } from '../../../entities/post/model/types'
 import { applyPublicSeo, getCategoryPath, getProductPath, readSeoRoute } from '../../../shared/lib/seo'
 import { RenderedContent } from '../../../shared/ui/RenderedContent'
 import ssenLogoImage from '../../../assets/ssen-logo.svg'
+import { castCelebVote, fetchCelebVotes, getOrCreateCelebVoterId } from '../api/celebVoteApi'
+import type { CelebVoteRank } from '../api/celebVoteApi'
+import { getInfluenceGauge } from '../lib/influenceGauge'
 import type { AdBannerSettings, HeroVideoSettings } from '../model/types'
 import { AdStripBanners, CategoryVisual, TrendVideo } from './StorefrontMedia'
 
@@ -63,14 +66,21 @@ export function StorefrontHome({
   const [readingProgress, setReadingProgress] = useState(0)
   const [isHeaderCompact, setIsHeaderCompact] = useState(false)
   const [isHeaderDocked, setIsHeaderDocked] = useState(false)
+  const [hasPassedVoteSection, setHasPassedVoteSection] = useState(false)
   const [loadingDetailId, setLoadingDetailId] = useState('')
   const [shareFeedback, setShareFeedback] = useState('')
+  const [voteRanking, setVoteRanking] = useState<CelebVoteRank[]>([])
+  const [votedCategory, setVotedCategory] = useState<string | null>(null)
+  const [votePendingCategory, setVotePendingCategory] = useState('')
+  const [voteFeedback, setVoteFeedback] = useState('')
   const headerRef = useRef<HTMLElement>(null)
   const headerSlotRef = useRef<HTMLDivElement>(null)
+  const voteTriggerRef = useRef<HTMLHeadingElement>(null)
   const latestHeadRef = useRef<HTMLDivElement>(null)
   const pendingCategoryScrollRef = useRef<'top' | 'latest' | null>(null)
   const sliderPausedRef = useRef(false)
   const headerCompactRef = useRef(false)
+  const hasPassedVoteSectionRef = useRef(false)
   const headerDirectionLockRef = useRef(0)
 
   const publishedPosts = useMemo(
@@ -85,6 +95,16 @@ export function StorefrontHome({
   const publicCategories = useMemo(
     () => categories.filter((category) => category.trim()),
     [categories],
+  )
+  const rankedCelebs = useMemo(() => {
+    const votesByCategory = new Map(voteRanking.map((item) => [item.category, item.votes]))
+    return publicCategories
+      .map((category, originalIndex) => ({ category, originalIndex, votes: votesByCategory.get(category) ?? 0 }))
+      .sort((a, b) => b.votes - a.votes || a.originalIndex - b.originalIndex)
+  }, [publicCategories, voteRanking])
+  const hotInfluencerRanks = useMemo(
+    () => new Map(rankedCelebs.slice(0, 3).map((item, index) => [item.category, index + 1])),
+    [rankedCelebs],
   )
   const categoryColumns = useMemo(() => {
     const columns: string[][] = []
@@ -129,6 +149,23 @@ export function StorefrontHome({
   }, [categoryFilter, publishedPosts, selectedPost])
 
   useEffect(() => {
+    const controller = new AbortController()
+    const voterId = getOrCreateCelebVoterId()
+
+    void fetchCelebVotes(voterId, controller.signal)
+      .then((snapshot) => {
+        setVoteRanking(snapshot.ranking)
+        setVotedCategory(snapshot.votedCategory)
+      })
+      .catch((error) => {
+        if (error instanceof DOMException && error.name === 'AbortError') return
+        setVoteFeedback('현재 순위를 불러오지 못했어요. 잠시 후 다시 시도해 주세요.')
+      })
+
+    return () => controller.abort()
+  }, [])
+
+  useEffect(() => {
     if (topPosts.length < 2) return undefined
 
     const timer = window.setInterval(() => {
@@ -165,14 +202,28 @@ export function StorefrontHome({
       setIsHeaderCompact(compact)
     }
 
+    const applyVoteSectionPassed = (passed: boolean) => {
+      if (hasPassedVoteSectionRef.current === passed) return
+
+      hasPassedVoteSectionRef.current = passed
+      setHasPassedVoteSection(passed)
+    }
+
     const handleScroll = () => {
       const currentScrollY = window.scrollY
       const delta = currentScrollY - previousScrollY
       const headerStart = headerSlotRef.current?.offsetTop ?? 0
       const shouldDockHeader = currentScrollY >= headerStart
       const isAtTop = currentScrollY <= 12
+      const voteTriggerTop = voteTriggerRef.current?.getBoundingClientRect().top
+      const dockedHeaderBottom = headerRef.current?.getBoundingClientRect().bottom ?? 0
 
       setIsHeaderDocked(shouldDockHeader)
+      applyVoteSectionPassed(
+        shouldDockHeader
+        && voteTriggerTop !== undefined
+        && voteTriggerTop <= dockedHeaderBottom + 1,
+      )
 
       if (!shouldDockHeader || isAtTop) {
         downwardDistance = 0
@@ -385,6 +436,25 @@ export function StorefrontHome({
     }, 40)
   }
 
+  const voteForCeleb = async (category: string) => {
+    if (votedCategory || votePendingCategory) return
+
+    setVotePendingCategory(category)
+    setVoteFeedback('')
+    try {
+      const result = await castCelebVote(category, getOrCreateCelebVoterId())
+      setVoteRanking(result.ranking)
+      setVotedCategory(result.votedCategory)
+      setVoteFeedback(result.accepted
+        ? `${category}에게 오늘의 한 표를 보냈어요!`
+        : `오늘은 이미 ${result.votedCategory ?? '한 셀럽'}에게 투표했어요.`)
+    } catch (error) {
+      setVoteFeedback(error instanceof Error ? error.message : '투표를 저장하지 못했습니다.')
+    } finally {
+      setVotePendingCategory('')
+    }
+  }
+
   const browseReaderCategory = (category: string) => {
     setSelectedId('')
     setReadingProgress(0)
@@ -425,21 +495,30 @@ export function StorefrontHome({
                 className={`keen-slider__slide public-category-column ${column.length === 1 ? 'is-single' : ''}`}
                 key={`category-column-${columnIndex}`}
               >
-                {column.map((category) => (
-                  <button
-                    className={`public-category-slide ${categoryFilter === category ? 'is-active' : ''}`}
-                    data-category={category}
-                    key={category}
-                    style={getCategoryStyle(category)}
-                    type="button"
-                    onClick={() => selectCategory(category)}
-                  >
-                    <CategoryVisual image={categoryImages[category]} label={category} />
-                    <span>CELEB</span>
-                    <strong>{category}</strong>
-                    <small>{categoryCounts[category] ?? 0}</small>
-                  </button>
-                ))}
+                {column.map((category) => {
+                  const hotInfluencerRank = hasPassedVoteSection
+                    ? hotInfluencerRanks.get(category)
+                    : undefined
+
+                  return (
+                    <button
+                      className={`public-category-slide ${categoryFilter === category ? 'is-active' : ''} ${hotInfluencerRank ? `is-hot-influencer is-hot-${hotInfluencerRank}` : ''}`}
+                      data-category={category}
+                      key={category}
+                      style={getCategoryStyle(category)}
+                      type="button"
+                      onClick={() => selectCategory(category)}
+                    >
+                      <CategoryVisual image={categoryImages[category]} label={category} />
+                      {hotInfluencerRank ? (
+                        <em className="public-category-hot">HOT INFLUENCER</em>
+                      ) : null}
+                      <span>CELEB</span>
+                      <strong>{category}</strong>
+                      <small>{categoryCounts[category] ?? 0}</small>
+                    </button>
+                  )
+                })}
               </div>
             ))}
             </div>
@@ -543,20 +622,6 @@ export function StorefrontHome({
                   ))}
                 </div>
               </div>
-              <div className="public-top-strip" aria-label="TOP 10 상품 빠른 선택">
-                {topPosts.map((post, index) => (
-                  <button
-                    className={`public-best-v2-rank-tab ${currentSlide === index ? 'is-active' : ''}`}
-                    key={post.id}
-                    type="button"
-                    style={getBestRankStyle(index)}
-                    onClick={(event) => moveSliderTo(event, index)}
-                  >
-                    <strong>{index + 1}</strong>
-                    <span>{post.category || '분류 없음'}</span>
-                  </button>
-                ))}
-              </div>
             </div>
           ) : (
             <div className="public-empty public-hero-empty">
@@ -565,6 +630,71 @@ export function StorefrontHome({
             </div>
           )}
         </section>
+
+        {rankedCelebs.length > 0 && (
+          <div className="celeb-vote-stage">
+          <section className="celeb-vote" aria-labelledby="celeb-vote-title">
+            <div className="celeb-vote-heading">
+              <div>
+                <span className="celeb-vote-kicker"><i /> LIVE</span>
+                <h2 ref={voteTriggerRef} id="celeb-vote-title">
+                  <span>여러분의</span>
+                  <span>최애에게</span>
+                  <em>투표하세요</em>
+                </h2>
+                <p>인플루언서 게이지가 올라가요</p>
+              </div>
+              <div className="celeb-vote-total" aria-label="인플 게이지 실시간 집계 중">
+                <strong>매일매일 한번의 투표 기회</strong>
+              </div>
+            </div>
+
+            <ol className="celeb-vote-ranking">
+              {rankedCelebs.map((item, index) => {
+                const isVoted = votedCategory === item.category
+                const isPending = votePendingCategory === item.category
+                const influenceGauge = getInfluenceGauge(item.votes)
+
+                return (
+                  <li className={`${index < 3 ? `is-top is-top-${index + 1} is-debut-zone` : ''} ${isVoted ? 'is-voted' : ''}`} key={item.category}>
+                    <span className="celeb-vote-rank">{String(index + 1).padStart(2, '0')}</span>
+                    <div className="celeb-vote-avatar">
+                      <CategoryVisual image={categoryImages[item.category]} label={item.category} />
+                      {index === 0 && <Crown size={16} aria-hidden="true" />}
+                    </div>
+                    <div className="celeb-vote-info">
+                      <div>
+                        <strong><span>{item.category}</span></strong>
+                        <span className="celeb-vote-infl" aria-label={`인플 게이지 ${influenceGauge}%`}>
+                          <b>INFL</b>
+                          <em>{influenceGauge}%</em>
+                        </span>
+                      </div>
+                      <span className="celeb-vote-meter" aria-label={`인플 게이지 ${influenceGauge}%`} role="meter" aria-valuemin={0} aria-valuemax={99} aria-valuenow={influenceGauge}>
+                        <i style={{ width: `${Math.max(1, influenceGauge)}%` }} />
+                      </span>
+                    </div>
+                    <button
+                      type="button"
+                      disabled={Boolean(votedCategory) || Boolean(votePendingCategory)}
+                      aria-label={`${item.category}에게 투표`}
+                      onClick={() => void voteForCeleb(item.category)}
+                    >
+                      {isPending ? <LoaderCircle className="is-spinning" size={17} /> : isVoted ? <Check size={17} /> : <Heart size={17} />}
+                      <span>{isVoted ? 'MY PICK' : votedCategory ? 'CLOSED' : 'PICK'}</span>
+                    </button>
+                  </li>
+                )
+              })}
+            </ol>
+
+            <div className={`celeb-vote-notice ${votedCategory ? 'is-complete' : ''}`} aria-live="polite">
+              <span><i /> {votedCategory ? `오늘의 원픽 · ${votedCategory}` : '인플루언서 게이지는 응원이 쌓일수록 상승합니다 · RESET 00:00'}</span>
+              {voteFeedback && <strong>{voteFeedback}</strong>}
+            </div>
+          </section>
+          </div>
+        )}
 
         <section
           className="public-browser"
