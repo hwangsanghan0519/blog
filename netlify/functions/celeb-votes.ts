@@ -79,7 +79,13 @@ export async function handler(event: NetlifyEvent) {
       voteDay,
     })
   } catch (error) {
-    return json(500, { message: error instanceof Error ? error.message : '투표 저장소 오류가 발생했습니다.' })
+    const message = error instanceof Error ? error.message : ''
+    const isMissingVoteSchema = message.includes('PGRST205') && message.includes('celeb_votes')
+    return json(isMissingVoteSchema ? 503 : 500, {
+      message: isMissingVoteSchema
+        ? '투표 저장소를 준비하고 있어요. 잠시 후 다시 시도해 주세요.'
+        : '투표를 처리하지 못했어요. 잠시 후 다시 시도해 주세요.',
+    })
   }
 }
 

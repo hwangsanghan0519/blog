@@ -737,3 +737,156 @@
   .celeb-vote-avatar > .public-category-visual img,
   .celeb-vote-meter i { transition: none; }
 }
+
+/* Mobile podium language: round profile halos in the header and equal cards in voting. */
+@media (max-width: 720px) {
+  .public-header .public-category-slide.is-hot-influencer {
+    overflow: visible !important;
+    border: 0 !important;
+    background: transparent !important;
+    box-shadow: none !important;
+  }
+
+  .public-header .public-category-slide.is-hot-1 { --header-hot-color: #ff3b8d; }
+  .public-header .public-category-slide.is-hot-2 { --header-hot-color: #ffd84d; }
+  .public-header .public-category-slide.is-hot-3 { --header-hot-color: #b9d9f4; }
+
+  .public-header .public-category-slide.is-hot-influencer > .public-category-visual {
+    overflow: visible !important;
+    border: 2px solid var(--header-hot-color) !important;
+    border-radius: 50% !important;
+    box-shadow:
+      0 0 0 3px color-mix(in srgb, var(--header-hot-color) 24%, transparent),
+      0 7px 18px color-mix(in srgb, var(--header-hot-color) 34%, transparent) !important;
+  }
+
+  .public-header .public-category-slide.is-hot-influencer > .public-category-visual img {
+    overflow: hidden;
+    border-radius: inherit;
+  }
+
+  .public-header .public-category-slide.is-hot-influencer > .public-category-visual::after {
+    content: none !important;
+    display: none !important;
+  }
+
+  .public-header .public-category-hot,
+  .public-header.is-scroll-compact .public-category-hot {
+    width: 22px;
+    height: 22px;
+    top: 8px;
+    right: auto;
+    left: 39px;
+    z-index: 10;
+    display: grid;
+    place-items: center;
+    overflow: visible;
+    padding: 0;
+    border: 2px solid #0c0c0c;
+    border-radius: 50%;
+    color: transparent;
+    background: var(--header-hot-color);
+    box-shadow: 0 3px 10px rgba(0, 0, 0, 0.34);
+    font-size: 0;
+    animation: public-header-hot-label-in 420ms cubic-bezier(0.2, 0.85, 0.3, 1) both;
+  }
+
+  .public-header .public-category-hot::after {
+    color: #111111;
+    font-family: var(--mono);
+    font-size: 8px;
+    font-style: normal;
+    font-weight: 950;
+    line-height: 1;
+  }
+
+  .public-header .public-category-slide.is-hot-1 .public-category-hot::after {
+    content: '01';
+    color: #ffffff;
+  }
+
+  .public-header .public-category-slide.is-hot-2 .public-category-hot::after { content: '02'; }
+  .public-header .public-category-slide.is-hot-3 .public-category-hot::after { content: '03'; }
+
+  .public-header.is-scroll-compact .public-category-hot {
+    width: 19px;
+    height: 19px;
+    top: -2px;
+    left: 41px;
+  }
+
+  .public-header.is-scroll-compact .public-category-hot::after {
+    font-size: 7px;
+  }
+
+  .celeb-vote-ranking > li.is-top-1,
+  .celeb-vote-ranking > li.is-top-2,
+  .celeb-vote-ranking > li.is-top-3 {
+    min-width: 148px;
+    min-height: 212px;
+    grid-template-rows: 111px minmax(0, 1fr);
+    border-color: transparent;
+    border-radius: 18px;
+  }
+
+  .celeb-vote-ranking > li.is-top-1 {
+    background: linear-gradient(180deg, rgba(255, 59, 141, 0.19), rgba(255, 255, 255, 0.06));
+    box-shadow:
+      inset 0 0 0 2px #ff3b8d,
+      0 10px 24px rgba(255, 59, 141, 0.18);
+  }
+
+  .celeb-vote-ranking > li.is-top-2 {
+    background: linear-gradient(180deg, rgba(255, 216, 77, 0.16), rgba(255, 255, 255, 0.055));
+    box-shadow:
+      inset 0 0 0 2px #ffd84d,
+      0 10px 24px rgba(255, 216, 77, 0.13);
+  }
+
+  .celeb-vote-ranking > li.is-top-3 {
+    background: linear-gradient(180deg, rgba(185, 217, 244, 0.16), rgba(255, 255, 255, 0.055));
+    box-shadow:
+      inset 0 0 0 2px #b9d9f4,
+      0 10px 24px rgba(185, 217, 244, 0.13);
+  }
+
+  .celeb-vote-ranking > li.is-top-1::before,
+  .celeb-vote-ranking > li.is-top-2::before,
+  .celeb-vote-ranking > li.is-top-3::before {
+    top: 7px;
+    right: 7px;
+    padding: 5px 7px 4px;
+    border: 2px solid #10132d;
+    border-radius: 999px;
+    font-size: 7px;
+    letter-spacing: 0.04em;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.26);
+  }
+
+  .celeb-vote-ranking > li.is-top-1::before { content: 'TOP 01'; }
+  .celeb-vote-ranking > li.is-top-2::before { content: 'TOP 02'; }
+  .celeb-vote-ranking > li.is-top-3::before { content: 'TOP 03'; }
+
+  .celeb-vote-ranking > li.is-top-2 .celeb-vote-rank {
+    border-color: #fff1a5;
+    color: #11142f;
+    background: #ffd84d;
+  }
+
+  .celeb-vote-ranking > li.is-top-3 .celeb-vote-rank {
+    border-color: #edf7ff;
+    color: #11142f;
+    background: #b9d9f4;
+  }
+
+  .public-header .public-category-slide.is-hot-influencer .public-category-hot,
+  .public-header.is-scroll-compact .public-category-slide.is-hot-influencer .public-category-hot {
+    display: none !important;
+  }
+
+  .celeb-vote-ranking > li.is-top-1::before,
+  .celeb-vote-ranking > li.is-top-2::before,
+  .celeb-vote-ranking > li.is-top-3::before {
+    display: none;
+  }
+}

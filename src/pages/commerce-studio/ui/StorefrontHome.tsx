@@ -212,11 +212,20 @@ export function StorefrontHome({
     const handleScroll = () => {
       const currentScrollY = window.scrollY
       const delta = currentScrollY - previousScrollY
+      const isMobileViewport = window.matchMedia('(max-width: 720px)').matches
+      const visualViewportOffset = Math.max(0, window.visualViewport?.offsetTop ?? 0)
       const headerStart = headerSlotRef.current?.offsetTop ?? 0
       const shouldDockHeader = currentScrollY >= headerStart
       const isAtTop = currentScrollY <= 12
+
+      headerRef.current?.style.setProperty('--mobile-viewport-offset', `${visualViewportOffset}px`)
+
       const voteTriggerTop = voteTriggerRef.current?.getBoundingClientRect().top
       const dockedHeaderBottom = headerRef.current?.getBoundingClientRect().bottom ?? 0
+      const pageScrollRange = Math.max(1, document.documentElement.scrollHeight - window.innerHeight)
+      const pageScrollProgress = Math.min(1, Math.max(0, currentScrollY / pageScrollRange))
+
+      headerRef.current?.style.setProperty('--mobile-scroll-progress', String(pageScrollProgress))
 
       setIsHeaderDocked(shouldDockHeader)
       applyVoteSectionPassed(
@@ -225,7 +234,10 @@ export function StorefrontHome({
         && voteTriggerTop <= dockedHeaderBottom + 1,
       )
 
-      if (!shouldDockHeader || isAtTop) {
+      if (isMobileViewport) {
+        downwardDistance = 0
+        applyHeaderMode(false)
+      } else if (!shouldDockHeader || isAtTop) {
         downwardDistance = 0
         applyHeaderMode(false)
       } else if (performance.now() >= headerDirectionLockRef.current) {
@@ -241,10 +253,16 @@ export function StorefrontHome({
     }
 
     window.addEventListener('scroll', handleScroll, { passive: true })
+    window.addEventListener('resize', handleScroll, { passive: true })
+    window.visualViewport?.addEventListener('scroll', handleScroll, { passive: true })
+    window.visualViewport?.addEventListener('resize', handleScroll, { passive: true })
     handleScroll()
 
     return () => {
       window.removeEventListener('scroll', handleScroll)
+      window.removeEventListener('resize', handleScroll)
+      window.visualViewport?.removeEventListener('scroll', handleScroll)
+      window.visualViewport?.removeEventListener('resize', handleScroll)
     }
   }, [])
 
@@ -465,6 +483,13 @@ export function StorefrontHome({
     <div className="public-blog">
       <AdStripBanners banners={adBanners} />
 
+      <section className="public-mobile-brand-strip" aria-label="SSEN 브랜드 메시지">
+        <div>
+          <span>지금 가장 유행하는</span>
+          <strong><em>쎈놈들이</em> 선택한 아이템</strong>
+        </div>
+      </section>
+
       <div
         ref={headerSlotRef}
         className={`public-header-slot ${isHeaderDocked && isHeaderCompact ? 'is-scroll-compact' : ''}`}
@@ -502,6 +527,7 @@ export function StorefrontHome({
 
                   return (
                     <button
+                      aria-label={`${category} 카테고리`}
                       className={`public-category-slide ${categoryFilter === category ? 'is-active' : ''} ${hotInfluencerRank ? `is-hot-influencer is-hot-${hotInfluencerRank}` : ''}`}
                       data-category={category}
                       key={category}
@@ -524,6 +550,8 @@ export function StorefrontHome({
             </div>
           </div>
         </nav>
+
+        <span className="public-mobile-scroll-progress" aria-hidden="true" />
 
       </header>
       </div>
@@ -585,6 +613,7 @@ export function StorefrontHome({
                         </div>
                       </div>
                       <div className="public-best-v2-content">
+                        <span className="public-best-v2-mobile-category">{post.category}</span>
                         <h2>{post.title}</h2>
                         <p>{post.excerpt || '지금 비교하기 좋은 상품입니다.'}</p>
                         <BestSliderPrice post={post} />
@@ -725,7 +754,9 @@ export function StorefrontHome({
                     selectPost(post.id)
                   }}
                 >
-                  <PostImage post={post} />
+                  <div className="public-post-media">
+                    <PostImage post={post} />
+                  </div>
                   <PouchCardOverlay post={post} showCategory={categoryFilter === 'all'} />
                 </a>
               ))}
@@ -1120,6 +1151,7 @@ function PouchCardOverlay({ post, showCategory }: { post: Post; showCategory: bo
     <div className={`public-pouch-overlay ${showCategory ? 'is-all' : 'is-category'}`}>
       {showCategory && <span>{post.category}</span>}
       <strong>
+        {showCategory && <em className="public-pouch-mobile-title" aria-hidden="true">{post.title}</em>}
         {!showCategory && <em>{post.title}</em>}
         {showCategory && <small>최저가</small>}
         <b>{price}</b>

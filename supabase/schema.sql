@@ -17,6 +17,8 @@ create table if not exists public.celeb_votes (
   unique (voter_hash, vote_day)
 );
 
+alter table public.celeb_votes enable row level security;
+
 create index if not exists celeb_votes_category_idx on public.celeb_votes (category);
 
 create or replace function public.get_celeb_vote_ranking()
