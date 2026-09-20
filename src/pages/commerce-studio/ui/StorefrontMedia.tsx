@@ -21,10 +21,15 @@ export function CategoryVisual({ image, label }: { image?: string; label: string
 
 export function TrendVideo({ settings }: { settings: HeroVideoSettings }) {
   const playerRef = useRef<HTMLIFrameElement>(null)
+  const loadedVideoRef = useRef('')
+  const playbackRetryFrameRef = useRef(0)
+  const playbackRetryTimersRef = useRef<number[]>([])
   const videoId = getYoutubeVideoId(settings.youtubeUrl)
   const isEnabled = settings.visibilityConfigured ? settings.enabled : Boolean(settings.youtubeUrl.trim())
 
   const requestPlayback = useCallback(() => {
+    if (loadedVideoRef.current !== videoId) return
+
     const player = playerRef.current?.contentWindow
     if (!player) return
 
@@ -34,29 +39,56 @@ export function TrendVideo({ settings }: { settings: HeroVideoSettings }) {
 
     sendCommand('mute')
     sendCommand('playVideo')
-  }, [])
+  }, [videoId])
+
+  const resumePlayback = useCallback(() => {
+    window.cancelAnimationFrame(playbackRetryFrameRef.current)
+    playbackRetryTimersRef.current.forEach((timer) => window.clearTimeout(timer))
+    playbackRetryTimersRef.current = []
+
+    requestPlayback()
+    playbackRetryFrameRef.current = window.requestAnimationFrame(requestPlayback)
+    playbackRetryTimersRef.current = [180, 700, 1600].map((delay) => (
+      window.setTimeout(requestPlayback, delay)
+    ))
+  }, [requestPlayback])
+
+  const handlePlayerLoad = useCallback(() => {
+    loadedVideoRef.current = videoId
+    resumePlayback()
+  }, [resumePlayback, videoId])
 
   useEffect(() => {
     if (!isEnabled || !videoId) return undefined
 
     const resumeWhenVisible = () => {
-      if (!document.hidden) requestPlayback()
+      if (!document.hidden) resumePlayback()
     }
 
     // Mobile WebViews frequently block the first autoplay request. Retrying
     // during a real touch gesture is allowed by their media policies.
-    document.addEventListener('pointerdown', requestPlayback, { capture: true, passive: true })
-    document.addEventListener('touchstart', requestPlayback, { capture: true, passive: true })
+    document.addEventListener('pointerdown', resumePlayback, { capture: true, passive: true })
+    document.addEventListener('touchstart', resumePlayback, { capture: true, passive: true })
     document.addEventListener('visibilitychange', resumeWhenVisible)
-    window.addEventListener('pageshow', requestPlayback)
+    window.addEventListener('pageshow', resumePlayback)
+    window.addEventListener('focus', resumePlayback)
+    window.addEventListener('popstate', resumePlayback)
+    window.addEventListener('online', resumePlayback)
+    resumePlayback()
 
     return () => {
-      document.removeEventListener('pointerdown', requestPlayback, true)
-      document.removeEventListener('touchstart', requestPlayback, true)
+      window.cancelAnimationFrame(playbackRetryFrameRef.current)
+      playbackRetryTimersRef.current.forEach((timer) => window.clearTimeout(timer))
+      playbackRetryTimersRef.current = []
+      document.removeEventListener('pointerdown', resumePlayback, true)
+      document.removeEventListener('touchstart', resumePlayback, true)
       document.removeEventListener('visibilitychange', resumeWhenVisible)
-      window.removeEventListener('pageshow', requestPlayback)
+      window.removeEventListener('pageshow', resumePlayback)
+      window.removeEventListener('focus', resumePlayback)
+      window.removeEventListener('popstate', resumePlayback)
+      window.removeEventListener('online', resumePlayback)
     }
-  }, [isEnabled, requestPlayback, videoId])
+  }, [isEnabled, resumePlayback, videoId])
 
   if (!isEnabled || !videoId) return null
 
@@ -84,7 +116,7 @@ export function TrendVideo({ settings }: { settings: HeroVideoSettings }) {
         allow="autoplay; encrypted-media; picture-in-picture"
         allowFullScreen={false}
         loading="eager"
-        onLoad={requestPlayback}
+        onLoad={handlePlayerLoad}
         src={playerUrl.toString()}
         tabIndex={-1}
         title={settings.title || '비올레 추천 영상'}

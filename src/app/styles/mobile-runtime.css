@@ -20,6 +20,33 @@
   to { clip-path: inset(0 0 0 0 round 14px); filter: saturate(1); }
 }
 
+/* Preserve the full source frame in every product gallery. Portrait uploads
+   can retain an intrinsic auto height taller than the slide, and the former
+   active-slide zoom then clipped their top and bottom despite object-fit. */
+.public-reader .product-gallery-track,
+.public-reader .product-gallery-slide {
+  height: 100% !important;
+  min-height: 0 !important;
+}
+
+.public-reader .product-gallery-slide > img {
+  display: block;
+  width: 100% !important;
+  height: 100% !important;
+  min-width: 0 !important;
+  min-height: 0 !important;
+  max-width: 100% !important;
+  max-height: 100% !important;
+  box-sizing: border-box;
+  object-fit: contain !important;
+  object-position: center !important;
+  transform: none !important;
+}
+
+.public-reader .product-gallery-slide.is-active > img {
+  transform: none !important;
+}
+
 @media (max-width: 720px) {
   .public-blog {
     width: 100%;
@@ -154,6 +181,23 @@
   .public-blog .public-post-card:active,
   .public-blog .public-slide button:active {
     transition: transform 120ms ease !important;
+  }
+
+  /* Prevent stale compositing tiles after mobile BFCache/tab restoration. */
+  .public-best-v2 .public-slider-track {
+    contain: layout paint;
+    backface-visibility: hidden;
+    -webkit-backface-visibility: hidden;
+    transform: none !important;
+    will-change: auto;
+  }
+
+  .public-best-v2 .public-slide,
+  .public-best-v2 .public-slide button,
+  .public-best-v2 .public-best-v2-media,
+  .public-best-v2 .public-best-v2-content {
+    backface-visibility: hidden;
+    -webkit-backface-visibility: hidden;
   }
 }
 

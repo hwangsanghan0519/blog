@@ -82,6 +82,7 @@ export function StorefrontHome({
   const purchaseCtaRef = useRef<HTMLAnchorElement>(null)
   const pendingCategoryScrollRef = useRef<'top' | 'latest' | null>(null)
   const sliderPausedRef = useRef(false)
+  const currentSlideRef = useRef(0)
   const headerCompactRef = useRef(false)
   const hasPassedVoteSectionRef = useRef(false)
   const headerDirectionLockRef = useRef(0)
@@ -149,7 +150,9 @@ export function StorefrontHome({
     loop: topPosts.length > 1,
     slides: { perView: 1, spacing: 18 },
     slideChanged(instance) {
-      setCurrentSlide(instance.track.details.rel)
+      const nextSlide = instance.track.details.rel
+      currentSlideRef.current = nextSlide
+      setCurrentSlide(nextSlide)
     },
   })
   const [categorySliderRef, categorySlider] = useKeenSlider<HTMLDivElement>({
@@ -222,13 +225,70 @@ export function StorefrontHome({
     if (topPosts.length < 2) return undefined
 
     const timer = window.setInterval(() => {
-      if (!sliderPausedRef.current) {
+      if (!sliderPausedRef.current && !document.hidden) {
         slider.current?.next()
       }
     }, 4500)
 
     return () => window.clearInterval(timer)
   }, [slider, topPosts.length])
+
+  useEffect(() => {
+    let layoutFrame = 0
+    let settleFrame = 0
+
+    sliderPausedRef.current = Boolean(selectedId)
+    if (selectedId) slider.current?.animator.stop()
+
+    const refreshSlider = () => {
+      if (document.hidden || selectedId) return
+
+      const instance = slider.current
+      if (!instance) return
+
+      const targetSlide = Math.min(currentSlideRef.current, Math.max(0, topPosts.length - 1))
+      instance.animator.stop()
+      instance.update()
+      instance.moveToIdx(targetSlide, true, { duration: 0 })
+      currentSlideRef.current = targetSlide
+      setCurrentSlide(targetSlide)
+      sliderPausedRef.current = false
+    }
+
+    const scheduleSliderRefresh = () => {
+      window.cancelAnimationFrame(layoutFrame)
+      window.cancelAnimationFrame(settleFrame)
+      layoutFrame = window.requestAnimationFrame(() => {
+        // Safari and Android WebViews restore BFCache before final viewport
+        // measurements settle, so refresh once more on the following frame.
+        settleFrame = window.requestAnimationFrame(refreshSlider)
+      })
+    }
+
+    const refreshWhenVisible = () => {
+      if (!document.hidden) scheduleSliderRefresh()
+    }
+
+    window.addEventListener('pageshow', scheduleSliderRefresh)
+    window.addEventListener('focus', scheduleSliderRefresh)
+    window.addEventListener('resize', scheduleSliderRefresh, { passive: true })
+    window.addEventListener('orientationchange', scheduleSliderRefresh)
+    window.visualViewport?.addEventListener('resize', scheduleSliderRefresh, { passive: true })
+    document.addEventListener('visibilitychange', refreshWhenVisible)
+
+    scheduleSliderRefresh()
+
+    return () => {
+      window.cancelAnimationFrame(layoutFrame)
+      window.cancelAnimationFrame(settleFrame)
+      window.removeEventListener('pageshow', scheduleSliderRefresh)
+      window.removeEventListener('focus', scheduleSliderRefresh)
+      window.removeEventListener('resize', scheduleSliderRefresh)
+      window.removeEventListener('orientationchange', scheduleSliderRefresh)
+      window.visualViewport?.removeEventListener('resize', scheduleSliderRefresh)
+      document.removeEventListener('visibilitychange', refreshWhenVisible)
+    }
+  }, [selectedId, slider, topPosts.length])
 
   useEffect(() => {
     const updateCategorySlider = () => categorySlider.current?.update()
@@ -831,22 +891,32 @@ export function StorefrontHome({
                 return (
                   <li className={`${index < 3 ? `is-top is-top-${index + 1} is-debut-zone` : ''} ${isVoted ? 'is-voted' : ''}`} key={item.category}>
                     <span className="celeb-vote-rank">{String(index + 1).padStart(2, '0')}</span>
-                    <div className="celeb-vote-avatar">
-                      <CategoryVisual image={categoryImages[item.category]} label={item.category} />
-                      {index === 0 && <Crown size={16} aria-hidden="true" />}
-                    </div>
-                    <div className="celeb-vote-info">
-                      <div>
-                        <strong><span>{item.category}</span></strong>
-                        <span className="celeb-vote-infl" aria-label={`인플 게이지 ${influenceGauge}%`}>
-                          <b>INFL</b>
-                          <em>{influenceGauge}%</em>
+                    <a
+                      className="celeb-vote-pick-link"
+                      href={getCategoryPath(item.category)}
+                      aria-label={`${item.category} PICK 상품 보기`}
+                      onClick={(event) => {
+                        event.preventDefault()
+                        selectCategory(item.category)
+                      }}
+                    >
+                      <div className="celeb-vote-avatar">
+                        <CategoryVisual image={categoryImages[item.category]} label={item.category} />
+                        {index === 0 && <Crown size={16} aria-hidden="true" />}
+                      </div>
+                      <div className="celeb-vote-info">
+                        <div>
+                          <strong><span>{item.category}</span></strong>
+                          <span className="celeb-vote-infl" aria-label={`인플 게이지 ${influenceGauge}%`}>
+                            <b>INFL</b>
+                            <em>{influenceGauge}%</em>
+                          </span>
+                        </div>
+                        <span className="celeb-vote-meter" aria-label={`인플 게이지 ${influenceGauge}%`} role="meter" aria-valuemin={0} aria-valuemax={99} aria-valuenow={influenceGauge}>
+                          <i style={{ width: `${Math.max(1, influenceGauge)}%` }} />
                         </span>
                       </div>
-                      <span className="celeb-vote-meter" aria-label={`인플 게이지 ${influenceGauge}%`} role="meter" aria-valuemin={0} aria-valuemax={99} aria-valuenow={influenceGauge}>
-                        <i style={{ width: `${Math.max(1, influenceGauge)}%` }} />
-                      </span>
-                    </div>
+                    </a>
                     <button
                       type="button"
                       disabled={Boolean(votedCategory) || Boolean(votePendingCategory)}
