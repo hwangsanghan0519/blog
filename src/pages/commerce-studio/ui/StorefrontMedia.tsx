@@ -1,3 +1,4 @@
+import { useCallback, useEffect, useRef } from 'react'
 import type { CSSProperties, PointerEvent } from 'react'
 import { ExternalLink } from 'lucide-react'
 import type { AdBannerSettings, HeroVideoSettings } from '../model/types'
@@ -19,8 +20,44 @@ export function CategoryVisual({ image, label }: { image?: string; label: string
 }
 
 export function TrendVideo({ settings }: { settings: HeroVideoSettings }) {
+  const playerRef = useRef<HTMLIFrameElement>(null)
   const videoId = getYoutubeVideoId(settings.youtubeUrl)
   const isEnabled = settings.visibilityConfigured ? settings.enabled : Boolean(settings.youtubeUrl.trim())
+
+  const requestPlayback = useCallback(() => {
+    const player = playerRef.current?.contentWindow
+    if (!player) return
+
+    const sendCommand = (func: 'mute' | 'playVideo') => {
+      player.postMessage(JSON.stringify({ event: 'command', func, args: [] }), 'https://www.youtube.com')
+    }
+
+    sendCommand('mute')
+    sendCommand('playVideo')
+  }, [])
+
+  useEffect(() => {
+    if (!isEnabled || !videoId) return undefined
+
+    const resumeWhenVisible = () => {
+      if (!document.hidden) requestPlayback()
+    }
+
+    // Mobile WebViews frequently block the first autoplay request. Retrying
+    // during a real touch gesture is allowed by their media policies.
+    document.addEventListener('pointerdown', requestPlayback, { capture: true, passive: true })
+    document.addEventListener('touchstart', requestPlayback, { capture: true, passive: true })
+    document.addEventListener('visibilitychange', resumeWhenVisible)
+    window.addEventListener('pageshow', requestPlayback)
+
+    return () => {
+      document.removeEventListener('pointerdown', requestPlayback, true)
+      document.removeEventListener('touchstart', requestPlayback, true)
+      document.removeEventListener('visibilitychange', resumeWhenVisible)
+      window.removeEventListener('pageshow', requestPlayback)
+    }
+  }, [isEnabled, requestPlayback, videoId])
+
   if (!isEnabled || !videoId) return null
 
   const stickerHref = getSafeExternalHref(settings.stickerHref)
@@ -36,13 +73,18 @@ export function TrendVideo({ settings }: { settings: HeroVideoSettings }) {
   playerUrl.searchParams.set('rel', '0')
   playerUrl.searchParams.set('modestbranding', '1')
   playerUrl.searchParams.set('disablekb', '1')
+  playerUrl.searchParams.set('enablejsapi', '1')
+  playerUrl.searchParams.set('iv_load_policy', '3')
+  playerUrl.searchParams.set('origin', window.location.origin)
 
   return (
     <section className={`public-trend-video ${hasSticker ? 'has-sticker' : ''}`} aria-label={settings.title || '자동재생 추천 영상'}>
       <iframe
+        ref={playerRef}
         allow="autoplay; encrypted-media; picture-in-picture"
         allowFullScreen={false}
-        loading="lazy"
+        loading="eager"
+        onLoad={requestPlayback}
         src={playerUrl.toString()}
         tabIndex={-1}
         title={settings.title || '비올레 추천 영상'}

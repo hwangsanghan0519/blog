@@ -193,11 +193,11 @@ export function StorefrontHome({
     })
 
     observer.observe(purchaseCta)
-    mobileMedia.addEventListener('change', syncVisibility)
+    const removeMobileMediaListener = listenForMediaQueryChange(mobileMedia, syncVisibility)
 
     return () => {
       observer.disconnect()
-      mobileMedia.removeEventListener('change', syncVisibility)
+      removeMobileMediaListener()
     }
   }, [selectedPost])
 
@@ -259,11 +259,11 @@ export function StorefrontHome({
     }
 
     syncLineupAnimation()
-    mobileMedia.addEventListener('change', syncLineupAnimation)
+    const removeMobileMediaListener = listenForMediaQueryChange(mobileMedia, syncLineupAnimation)
 
     return () => {
       window.clearInterval(timer)
-      mobileMedia.removeEventListener('change', syncLineupAnimation)
+      removeMobileMediaListener()
     }
   }, [mobileLineupVisualKey, mobileLineupVisuals.length])
 
@@ -1501,6 +1501,19 @@ function scrollToHeaderEdge(target: HTMLElement | null, header: HTMLElement | nu
     top: Math.max(0, targetTop - headerHeight),
     behavior: 'smooth',
   })
+}
+
+function listenForMediaQueryChange(query: MediaQueryList, listener: () => void) {
+  // Older iOS Safari and embedded Android webviews only expose the legacy API.
+  // Throwing inside an effect here prevents the rest of the mobile setup from
+  // completing, including the lineup timer.
+  if (typeof query.addEventListener === 'function') {
+    query.addEventListener('change', listener)
+    return () => query.removeEventListener('change', listener)
+  }
+
+  query.addListener(listener)
+  return () => query.removeListener(listener)
 }
 
 function syncPostParam(slug: string, fallbackCategory = '') {

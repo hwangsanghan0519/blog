@@ -22300,7 +22300,6 @@ button.category-row.is-selected,
   .public-blog .public-mobile-brand-strip strong em::after,
   .public-blog .public-mobile-banner-signal i {
     animation: none !important;
-    transform: none !important;
   }
 }
 
