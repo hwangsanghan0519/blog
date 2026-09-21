@@ -179,7 +179,7 @@
 
   .public-header .public-category-slide:active,
   .public-blog .public-post-card:active,
-  .public-blog .public-slide button:active {
+  .public-blog .public-slide .public-best-v2-card:active {
     transition: transform 120ms ease !important;
   }
 
@@ -193,7 +193,7 @@
   }
 
   .public-best-v2 .public-slide,
-  .public-best-v2 .public-slide button,
+  .public-best-v2 .public-slide .public-best-v2-card,
   .public-best-v2 .public-best-v2-media,
   .public-best-v2 .public-best-v2-content {
     backface-visibility: hidden;

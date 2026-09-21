@@ -1,5 +1,5 @@
 /* Final BEST information panel — kept separate so this pass remains predictable. */
-.public-best-v2 .public-slide button {
+.public-best-v2 .public-slide .public-best-v2-card {
   background: #101011 !important;
 }
 
@@ -127,8 +127,8 @@
   transform: none;
 }
 
-.public-best-v2 .public-slide button:hover .public-best-v2-content::before,
-.public-best-v2 .public-slide button:focus-visible .public-best-v2-content::before {
+.public-best-v2 .public-slide .public-best-v2-card:hover .public-best-v2-content::before,
+.public-best-v2 .public-slide .public-best-v2-card:focus-within .public-best-v2-content::before {
   width: 72px;
 }
 
@@ -250,16 +250,16 @@
   background: rgba(255, 255, 255, 0.08) !important;
 }
 
-.public-best-v2 .public-slide button:hover .public-best-v2-buy em,
-.public-best-v2 .public-slide button:focus-visible .public-best-v2-buy em {
+.public-best-v2 .public-slide .public-best-v2-card:hover .public-best-v2-buy em,
+.public-best-v2 .public-slide .public-best-v2-card:focus-within .public-best-v2-buy em {
   border-color: rgba(255, 255, 255, 0.4) !important;
   color: #111111 !important;
   background: #ffffff !important;
   transform: translateY(-2px);
 }
 
-.public-best-v2 .public-slide button:hover .public-best-v2-lowest-cta,
-.public-best-v2 .public-slide button:focus-visible .public-best-v2-lowest-cta {
+.public-best-v2 .public-slide .public-best-v2-card:hover .public-best-v2-lowest-cta,
+.public-best-v2 .public-slide .public-best-v2-card:focus-within .public-best-v2-lowest-cta {
   box-shadow: 0 15px 34px rgba(155, 114, 234, 0.36);
   transform: translateY(-2px);
 }
@@ -369,7 +369,7 @@
 }
 
 /* CELEB HOUSE light information panel. */
-.public-best-v2 .public-slide button {
+.public-best-v2 .public-slide .public-best-v2-card {
   background: #fffefd !important;
 }
 
@@ -420,8 +420,8 @@
   background: #f6f0ff !important;
 }
 
-.public-best-v2 .public-slide button:hover .public-best-v2-buy em,
-.public-best-v2 .public-slide button:focus-visible .public-best-v2-buy em {
+.public-best-v2 .public-slide .public-best-v2-card:hover .public-best-v2-buy em,
+.public-best-v2 .public-slide .public-best-v2-card:focus-within .public-best-v2-buy em {
   border-color: rgba(155, 114, 234, 0.36) !important;
   color: #563f68 !important;
   background: #ffffff !important;
@@ -504,7 +504,7 @@
 }
 
 /* Slightly deeper lavender pass for clearer hierarchy. */
-.public-best-v2 .public-slide button {
+.public-best-v2 .public-slide .public-best-v2-card {
   background: #faf5fd !important;
 }
 

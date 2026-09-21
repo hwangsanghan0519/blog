@@ -1,8 +1,9 @@
-import { Camera, Clapperboard, ExternalLink, Sparkles, Tag, Tv, Video } from 'lucide-react'
+import { Camera, Clapperboard, Sparkles, Tag, Tv } from 'lucide-react'
 import type { Post } from '../model/types'
 import { productSourceLink } from '../lib/source'
+import { InstagramSourceIcon, YoutubeSourceIcon } from './ProductSourceIcons'
 
-const SOURCE_ICONS = { youtube: Video, instagram: Camera, daily: Camera, brand: Tag, broadcast: Tv, drama: Clapperboard, variety: Sparkles }
+const SOURCE_ICONS = { youtube: YoutubeSourceIcon, instagram: InstagramSourceIcon, daily: Camera, brand: Tag, broadcast: Tv, drama: Clapperboard, variety: Sparkles }
 
 export function ProductSourceBadge({ post }: { post: Post }) {
   const source = productSourceLink(post.source)
@@ -15,12 +16,11 @@ export function ProductSourceBadge({ post }: { post: Post }) {
       target="_blank"
       rel="noopener noreferrer"
       aria-label={`${post.title} ${source.label} 출처 보기 (새 창)`}
+      title={`${source.label} 출처 보기`}
       data-keen-slider-clickable="true"
       onClick={(event) => event.stopPropagation()}
     >
-      <Icon size={15} aria-hidden="true" />
-      {source.label}
-      <ExternalLink size={12} aria-hidden="true" />
+      <Icon size={18} aria-hidden="true" />
     </a>
   )
 }

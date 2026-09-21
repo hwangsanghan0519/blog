@@ -763,7 +763,7 @@ export function StorefrontHome({
                     key={post.id}
                     style={getBestRankStyle(index)}
                   >
-                    <button type="button" onClick={() => selectPost(post.id)}>
+                    <div className="public-best-v2-card" onClick={() => selectPost(post.id)}>
                       <div className="public-best-v2-media" data-rank={String(index + 1).padStart(2, '0')}>
                         <PostImage post={post} priority={index === 0} />
                         <strong className="public-rank">
@@ -771,24 +771,29 @@ export function StorefrontHome({
                           <b>{String(index + 1).padStart(2, '0')}</b>
                         </strong>
                         <div className="public-best-v2-category-live">
+                          <ProductSourceBadge post={post} />
                           <span aria-hidden="true"><i /></span>
                           <strong>{post.category}</strong>
                         </div>
                       </div>
                       <div className="public-best-v2-content">
-                        <span className="public-best-v2-mobile-category">{post.category}</span>
+                        <div className="public-best-v2-mobile-meta">
+                          <ProductSourceBadge post={post} />
+                          <span className="public-best-v2-mobile-category">{post.category}</span>
+                        </div>
                         <h2>{post.title}</h2>
                         <p>{post.excerpt || '지금 비교하기 좋은 상품입니다.'}</p>
                         <BestSliderPrice post={post} />
                         <div className="public-best-v2-buy">
                           <BestSliderLowestLink post={post} />
                           <em>
-                            상품 상세보기 <ExternalLink size={17} />
+                            <button className="public-best-v2-detail-button" type="button" aria-label={`${post.title} 상품 상세보기`}>
+                              상품 상세보기 <ExternalLink size={17} />
+                            </button>
                           </em>
                         </div>
                       </div>
-                    </button>
-                    <ProductSourceBadge post={post} />
+                    </div>
                   </article>
                 ))}
               </div>
@@ -998,6 +1003,7 @@ export function StorefrontHome({
                       </div>
                       <div className="product-detail-summary">
                         <div className="public-reader-meta">
+                          <ProductSourceBadge post={selectedPost} />
                           <button type="button" onClick={() => browseReaderCategory(selectedPost.category)}>
                             {selectedPost.category}
                           </button>
@@ -1211,14 +1217,12 @@ function ProductImageGallery({ post }: { post: Post }) {
       <>
         <PostImage post={post} />
         <span className="product-gallery-pick">CELEB HOUSE PICK</span>
-        <ProductSourceBadge post={post} />
       </>
     )
   }
 
   return (
     <div className="product-gallery">
-      <ProductSourceBadge post={post} />
       <div ref={galleryRef} className="keen-slider product-gallery-track">
         {images.map((image, index) => (
           <figure
