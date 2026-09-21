@@ -203,7 +203,7 @@ export function PostEditor({ categories, post, onCoverUpload, onUpdate }: PostEd
 
   const changePostStatus = (status: PostStatus) => {
     if (status === 'published' && !hasCompleteFourCut(post)) {
-      window.alert('상품을 발행하려면 비올레 네컷 사진 4장과 각 사진의 설명을 모두 등록해 주세요.')
+      window.alert('상품을 발행하려면 셀럽하우스 네컷 사진 4장과 각 사진의 설명을 모두 등록해 주세요.')
       return
     }
 
@@ -236,7 +236,7 @@ export function PostEditor({ categories, post, onCoverUpload, onUpdate }: PostEd
       .insertContent({
         type: 'codeBlock',
         attrs: { language: 'javascript' },
-        content: [{ type: 'text', text: 'const product = "VIOLE";\nconsole.log(product);' }],
+        content: [{ type: 'text', text: 'const product = "CELEB HOUSE";\nconsole.log(product);' }],
       })
       .run()
   }
@@ -310,11 +310,11 @@ export function PostEditor({ categories, post, onCoverUpload, onUpdate }: PostEd
           />
         </label>
 
-        <section className="viole-four-cut-admin" aria-label="비올레 네컷 상품 상세 등록">
+        <section className="viole-four-cut-admin" aria-label="셀럽하우스 네컷 상품 상세 등록">
           <header>
             <div>
               <span>PRODUCT DETAIL TEMPLATE</span>
-              <h2>비올레 네컷</h2>
+              <h2>셀럽하우스 네컷</h2>
               <p>사진 4장과 각 컷의 상품 설명을 모두 입력해 주세요.</p>
             </div>
             <strong>{post.detailImages.filter(Boolean).length} / 4</strong>
@@ -364,8 +364,8 @@ export function PostEditor({ categories, post, onCoverUpload, onUpdate }: PostEd
           </div>
 
           <footer>
-            <span>VIOLE FOUR CUT</span>
-            <strong>비올레 네컷</strong>
+            <span>CELEB HOUSE FOUR CUT</span>
+            <strong>셀럽하우스 네컷</strong>
           </footer>
         </section>
 

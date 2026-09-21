@@ -5474,7 +5474,7 @@ button.category-row.is-selected {
     linear-gradient(135deg, #111111 0 74%, #a78bfa 74% 100%);
 }
 
-/* Final VIOLE handstyle streetwear storefront. Inspired by surf/skate streetwear energy, not a copy of any brand mark. */
+/* Final CELEB HOUSE handstyle streetwear storefront. Inspired by surf/skate streetwear energy, not a copy of any brand mark. */
 .public-blog {
   color: #111111;
   background:
@@ -5620,7 +5620,7 @@ button.category-row.is-selected {
 }
 
 .public-hero-copy::before {
-  content: 'VIOLE STREET SELECT';
+  content: 'CELEB HOUSE STREET SELECT';
   color: #111111;
   background: #ffffff;
   transform: rotate(3deg);
@@ -5702,7 +5702,7 @@ button.category-row.is-selected {
 }
 
 .public-footer::before {
-  content: 'VIOLE VIOLE VIOLE VIOLE';
+  content: 'CELEB HOUSE CELEB HOUSE CELEB HOUSE CELEB HOUSE';
   font-family: Impact, Haettenschweiler, 'Arial Black', var(--sans);
   font-style: italic;
   color: rgba(255, 255, 255, 0.07);
@@ -7647,7 +7647,7 @@ button.category-row.is-selected,
   }
 }
 
-/* VIOLE V2 lock: keep this layer last. It turns the public site into a focused price-drop storefront. */
+/* CELEB HOUSE V2 lock: keep this layer last. It turns the public site into a focused price-drop storefront. */
 .public-blog {
   --viole-black: #070707;
   --viole-ink: #141414;
@@ -7906,7 +7906,7 @@ button.category-row.is-selected,
 }
 
 .public-slide button::after {
-  content: 'VIOLE DROP' !important;
+  content: 'CELEB HOUSE DROP' !important;
   color: #ffffff !important;
   background: var(--viole-accent) !important;
 }
@@ -8067,7 +8067,7 @@ button.category-row.is-selected,
 }
 
 .public-footer::before {
-  content: 'VIOLE DROP MARKET VIOLE DROP MARKET' !important;
+  content: 'CELEB HOUSE DROP MARKET CELEB HOUSE DROP MARKET' !important;
 }
 
 .public-footer-copy strong {
@@ -8165,7 +8165,7 @@ button.category-row.is-selected,
   }
 }
 
-/* VIOLE V3: harder street-commerce header, category drop board, poster footer. */
+/* CELEB HOUSE V3: harder street-commerce header, category drop board, poster footer. */
 .public-header {
   grid-template-columns: auto minmax(140px, 0.42fr) minmax(320px, 1.35fr) minmax(180px, 0.56fr) !important;
   gap: 18px !important;
@@ -8177,7 +8177,7 @@ button.category-row.is-selected,
 }
 
 .public-header::before {
-  content: 'VIOLE / CELEB AD PICKS / SELLER LINK / AFFILIATE MARKET / ';
+  content: 'CELEB HOUSE / CELEB AD PICKS / SELLER LINK / AFFILIATE MARKET / ';
   position: absolute;
   right: 0;
   bottom: -1px;
@@ -8468,7 +8468,7 @@ button.category-row.is-selected,
   top: 18px;
   right: -7vw;
   bottom: auto;
-  content: 'VIOLE VIOLE VIOLE' !important;
+  content: 'CELEB HOUSE CELEB HOUSE CELEB HOUSE' !important;
   color: rgba(255, 255, 255, 0.07);
   font-size: clamp(72px, 14vw, 180px);
   transform: rotate(-4deg);
@@ -8827,7 +8827,7 @@ button.category-row.is-selected,
   }
 }
 
-/* VIOLE image masthead: use one oversized logo asset instead of assembled badges. */
+/* CELEB HOUSE image masthead: use one oversized logo asset instead of assembled badges. */
 .public-header {
   grid-template-columns: minmax(420px, 0.68fr) minmax(430px, 1fr) !important;
 }
@@ -10988,7 +10988,7 @@ button.category-row.is-selected,
   }
 }
 
-/* Commerce-first product detail: VIOLE black/red editorial storefront. */
+/* Commerce-first product detail: CELEB HOUSE black/red editorial storefront. */
 .public-reader-backdrop {
   background:
     radial-gradient(circle at 78% 12%, rgba(155, 114, 234, 0.26), transparent 28%),
@@ -12457,7 +12457,7 @@ button.category-row.is-selected,
 }
 
 .public-footer-v2-main::after {
-  content: 'VIOLE';
+  content: 'CELEB HOUSE';
   position: absolute;
   right: -0.06em;
   bottom: -0.19em;
@@ -13056,7 +13056,7 @@ button.category-row.is-selected,
   }
 }
 
-/* Best Slider V2: split editorial product card aligned with the VIOLE masthead. */
+/* Best Slider V2: split editorial product card aligned with the CELEB HOUSE masthead. */
 .public-hero.public-best-v2 {
   min-height: 548px;
   display: grid !important;
@@ -13083,7 +13083,7 @@ button.category-row.is-selected,
 }
 
 .public-best-v2 .public-hero-copy::before {
-  content: 'VIOLE / RANKING' !important;
+  content: 'CELEB HOUSE / RANKING' !important;
   position: absolute !important;
   top: 22px !important;
   right: 22px !important;
@@ -14144,7 +14144,7 @@ button.category-row.is-selected,
   }
 }
 
-/* Keep the VIOLE contrast, but soften the geometry and interaction surfaces. */
+/* Keep the CELEB HOUSE contrast, but soften the geometry and interaction surfaces. */
 .public-best-v2 .public-hero-copy {
   border: 1px solid rgba(255, 255, 255, 0.1) !important;
   border-radius: 18px !important;
@@ -14283,7 +14283,7 @@ button.category-row.is-selected,
   font-style: normal;
 }
 
-/* Swiper mood balance: warm content canvas with VIOLE black/red interaction points. */
+/* Swiper mood balance: warm content canvas with CELEB HOUSE black/red interaction points. */
 .public-best-v2 .public-slider-track {
   border: 1px solid rgba(17, 17, 17, 0.13) !important;
   background: #111111 !important;
@@ -18116,7 +18116,7 @@ button.category-row.is-selected,
   }
 }
 
-/* VIOLE four-cut product-detail template. */
+/* CELEB HOUSE four-cut product-detail template. */
 .viole-four-cut-admin {
   display: grid;
   gap: 14px;
@@ -19310,7 +19310,7 @@ button.category-row.is-selected,
     right: 42px;
     bottom: -17px;
     z-index: -1;
-    content: 'VIOLE';
+    content: 'CELEB HOUSE';
     color: rgba(155, 114, 234, 0.12);
     font-family: var(--sans);
     font-size: 62px;
@@ -20557,7 +20557,7 @@ button.category-row.is-selected,
   }
 }
 
-/* VIOLE feminine light theme: pale lavender editorial surfaces. */
+/* CELEB HOUSE feminine light theme: pale lavender editorial surfaces. */
 .public-blog {
   --viole-theme-start: #a477dc;
   --viole-theme-end: #7f50bd;
@@ -20884,7 +20884,7 @@ button.category-row.is-selected,
   }
 }
 
-/* VIOLE cohesive polish: one hierarchy for surfaces, copy and overlays. */
+/* CELEB HOUSE cohesive polish: one hierarchy for surfaces, copy and overlays. */
 .public-blog {
   --viole-surface: #fffdfd;
   --viole-surface-soft: #ecdef6;
@@ -21162,7 +21162,7 @@ button.category-row.is-selected,
   box-shadow: 0 14px 30px rgba(55, 28, 82, 0.24) !important;
 }
 
-/* Product reader is rendered in a portal, so it needs the VIOLE palette directly. */
+/* Product reader is rendered in a portal, so it needs the CELEB HOUSE palette directly. */
 .public-reader-backdrop {
   background: rgba(54, 32, 67, 0.62) !important;
   backdrop-filter: blur(10px) saturate(0.9) !important;
@@ -22032,7 +22032,7 @@ button.category-row.is-selected,
   }
 }
 
-/* Mobile VIOLE kinetic masthead: a calm lockup over a continuously moving
+/* Mobile CELEB HOUSE kinetic masthead: a calm lockup over a continuously moving
    spotlight that visually hands off to the influencer swipe rail below. */
 @keyframes viole-mobile-aurora {
   0%, 100% { transform: translate3d(-9%, -8%, 0) rotate(-8deg) scale(0.92); }
@@ -22304,7 +22304,7 @@ button.category-row.is-selected,
 }
 
 /* VIRAL BEST uses a feminine editorial accent so the feature is unmistakable
-   against VIOLE's surrounding violet surfaces. */
+   against CELEB HOUSE's surrounding violet surfaces. */
 .public-blog .public-hero.public-best-v2 .public-hero-copy {
   justify-content: center;
   gap: 26px;
@@ -22324,7 +22324,7 @@ button.category-row.is-selected,
 }
 
 .public-blog .public-hero.public-best-v2 .public-hero-copy::before {
-  content: 'VIOLE · VIRAL EDIT' !important;
+  content: 'CELEB HOUSE · VIRAL EDIT' !important;
   padding: 0 !important;
   border: 0;
   color: rgba(94, 57, 116, 0.6) !important;
@@ -22795,7 +22795,7 @@ button.category-row.is-selected,
   position: absolute;
   top: 50%;
   right: clamp(20px, 4vw, 54px);
-  content: 'VIOLE CURATION';
+  content: 'CELEB HOUSE CURATION';
   color: rgba(102, 62, 134, 0.22);
   font-family: var(--mono);
   font-size: clamp(11px, 1vw, 14px);
@@ -23159,7 +23159,7 @@ button.category-row.is-selected,
   background: transparent !important;
 }
 
-/* Product gallery lockup follows the VIOLE palette instead of the old black label. */
+/* Product gallery lockup follows the CELEB HOUSE palette instead of the old black label. */
 .public-reader .product-gallery-topline span,
 .public-reader .product-gallery-pick {
   border-color: #8056c7 !important;
@@ -23177,7 +23177,7 @@ button.category-row.is-selected,
   box-shadow: 3px 3px 0 rgba(205, 181, 226, 0.72) !important;
 }
 
-/* Final product-gallery retouch: larger imagery and one coherent VIOLE control dock. */
+/* Final product-gallery retouch: larger imagery and one coherent CELEB HOUSE control dock. */
 .public-reader .product-detail-hero {
   grid-template-columns: minmax(0, 1.12fr) minmax(400px, 0.88fr) !important;
 }

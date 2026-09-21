@@ -1,3 +1,5 @@
+import { siteOrigin } from './lib/site-origin.ts'
+import { publicHttpUrl } from '../../src/shared/lib/seo-config.ts'
 import { createHash } from 'node:crypto'
 
 const ROW_ID = 'main'
@@ -222,16 +224,10 @@ const text = (statusCode: number, body: string, contentType: string, cacheContro
 })
 
 function readRequestOrigin(event: NetlifyEvent) {
-  const host = event.headers['x-forwarded-host'] ?? event.headers.host
-  if (host) {
-    const protocol = event.headers['x-forwarded-proto'] ?? (host.includes('localhost') ? 'http' : 'https')
-    return `${protocol}://${host}`.replace(/\/$/, '')
-  }
-
-  return process.env.URL?.trim().replace(/\/$/, '') || 'http://localhost:8888'
+  return siteOrigin(event.headers)
 }
 
-function createSitemapXml(data: CommerceData, origin: string) {
+export function createSitemapXml(data: CommerceData, origin: string) {
   const publishedPosts = data.posts.filter((post): post is Record<string, unknown> => (
     isRecord(post) && post.status === 'published'
   ))
@@ -259,7 +255,8 @@ function createSitemapXml(data: CommerceData, origin: string) {
     }),
   ]
 
-  const nodes = entries.map(({ image, lastmod, loc }) => [
+  const uniqueEntries = Array.from(new Map(entries.map((entry) => [entry.loc, entry])).values())
+  const nodes = uniqueEntries.map(({ image, lastmod, loc }) => [
     '  <url>',
     `    <loc>${escapeXml(loc)}</loc>`,
     lastmod ? `    <lastmod>${escapeXml(lastmod)}</lastmod>` : '',
@@ -279,15 +276,11 @@ function createSitemapXml(data: CommerceData, origin: string) {
 function normalizeLastModified(value: unknown) {
   if (typeof value !== 'string' || !value.trim()) return undefined
   const timestamp = Date.parse(value)
-  return Number.isNaN(timestamp) ? undefined : new Date(timestamp).toISOString()
+  return Number.isNaN(timestamp) || timestamp > Date.now() ? undefined : new Date(timestamp).toISOString()
 }
 
 function toAbsoluteUrl(value: string, origin: string) {
-  try {
-    return new URL(value, origin).href
-  } catch {
-    return undefined
-  }
+  return publicHttpUrl(value, origin) || undefined
 }
 
 function escapeXml(value: string) {

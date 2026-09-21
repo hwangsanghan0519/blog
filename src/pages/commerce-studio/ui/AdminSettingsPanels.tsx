@@ -34,7 +34,7 @@ export function HeroVideoAdminPanel({ settings, onStickerImageUpload, onUpdate }
 
       <label>
         영상 제목
-        <input value={settings.title} placeholder="VIOLE VIDEO PICK" onChange={(event) => onUpdate({ title: event.target.value })} />
+        <input value={settings.title} placeholder="CELEB HOUSE VIDEO PICK" onChange={(event) => onUpdate({ title: event.target.value })} />
       </label>
 
       <label className="ad-admin-wide hero-video-url-field">

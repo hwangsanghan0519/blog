@@ -1,8 +1,7 @@
 import type { Post, ProductLink } from '../../entities/post/model/types'
 
-export const SEO_SITE_NAME = '비올레'
-export const SEO_HOME_TITLE = '비올레 | 연예인·인플루언서 핫템, 잇템, 광고 상품 최저가'
-export const SEO_HOME_DESCRIPTION = '유튜브와 인스타그램에서 연예인·인플루언서가 착용하고 소개한 핫템, 잇템, 광고 상품을 모아 제휴몰 최저가 링크로 연결하는 비올레 큐레이션입니다.'
+import { SEO_SITE_NAME, SEO_HOME_TITLE, SEO_HOME_DESCRIPTION, seoTitle, publicHttpUrl, readKrwPrice } from './seo-config'
+export { SEO_SITE_NAME, SEO_HOME_TITLE, SEO_HOME_DESCRIPTION } from './seo-config'
 
 type SeoState = {
   category: string
@@ -11,7 +10,14 @@ type SeoState = {
 }
 
 export function applyPublicSeo({ category, posts, selectedPost }: SeoState) {
-  const origin = window.location.origin
+  // The public storefront can also render behind the admin sign-in flow.
+  if (/^\/(?:blog\/)?secret(?:\/|$)/.test(window.location.pathname)) return
+  const route = readSeoRoute(window.location.pathname)
+  // Preserve the server's detail metadata until URL-driven React state has caught up.
+  if (route.product && route.product !== selectedPost?.slug && route.product !== selectedPost?.id) return
+  if (route.category && route.category !== category) return
+  const configuredOrigin = publicHttpUrl(document.head.querySelector<HTMLMetaElement>('meta[name="site-origin"]')?.content)
+  const origin = configuredOrigin ? new URL(configuredOrigin).origin : window.location.origin
   const isCategory = !selectedPost && category !== 'all'
   const canonicalPath = selectedPost
     ? getProductPath(selectedPost.slug || selectedPost.id)
@@ -20,9 +26,9 @@ export function applyPublicSeo({ category, posts, selectedPost }: SeoState) {
       : '/'
   const canonicalUrl = new URL(canonicalPath, origin).href
   const title = selectedPost
-    ? truncate(`${selectedPost.title} | ${selectedPost.category} 착용·광고 핫템 - 비올레`, 68)
+    ? seoTitle(`${selectedPost.title} | ${selectedPost.category} 착용·광고 핫템`)
     : isCategory
-      ? `${category} 착용·광고 상품, 인스타·유튜브 핫템 | 비올레`
+      ? seoTitle(`${category} 착용·광고 상품, 인스타·유튜브 핫템`)
       : SEO_HOME_TITLE
   const description = selectedPost
     ? truncate(
@@ -30,9 +36,10 @@ export function applyPublicSeo({ category, posts, selectedPost }: SeoState) {
         160,
       )
     : isCategory
-      ? `${category}가 유튜브와 인스타그램에서 착용·소개·광고한 상품을 모았습니다. 화제의 핫템과 잇템, 등록된 제휴몰 최저가를 비올레에서 확인하세요.`
+      ? `${category}가 유튜브와 인스타그램에서 착용·소개·광고한 상품을 모았습니다. 화제의 핫템과 잇템, 등록된 제휴몰 최저가를 셀럽하우스에서 확인하세요.`
       : SEO_HOME_DESCRIPTION
-  const image = selectedPost?.coverImage ? absoluteUrl(selectedPost.coverImage, origin) : `${origin}/viole-logo.svg`
+  const categoryImage = isCategory ? posts.find((post) => post.status === 'published' && post.category === category && publicHttpUrl(post.coverImage, origin))?.coverImage : ''
+  const image = publicHttpUrl(selectedPost?.coverImage || categoryImage, origin) || `${origin}/celeb-house-logo.svg`
   const keywords = Array.from(new Set([
     ...(selectedPost ? [selectedPost.title, selectedPost.category, ...selectedPost.tags] : []),
     ...(isCategory ? [category] : posts.slice(0, 12).map((post) => post.category)),
@@ -58,11 +65,16 @@ export function applyPublicSeo({ category, posts, selectedPost }: SeoState) {
   setMeta('property', 'og:url', canonicalUrl)
   setMeta('property', 'og:image', image)
   setMeta('property', 'og:image:secure_url', image)
-  setMeta('property', 'og:image:alt', selectedPost ? `${selectedPost.title} 상품 이미지` : '비올레 연예인 인플루언서 핫템 큐레이션')
+  setMeta('property', 'og:image:alt', selectedPost ? `${selectedPost.title} 상품 이미지` : '셀럽하우스 연예인 인플루언서 핫템 큐레이션')
   setMeta('name', 'twitter:card', 'summary_large_image')
   setMeta('name', 'twitter:title', title)
   setMeta('name', 'twitter:description', description)
   setMeta('name', 'twitter:image', image)
+  for (const key of ['og:image:width', 'og:image:height']) removeMeta('property', key)
+  if (image === `${origin}/celeb-house-logo.svg`) {
+    setMeta('property', 'og:image:width', '1200')
+    setMeta('property', 'og:image:height', '630')
+  }
   const lowestPrice = selectedPost ? readLowestPrice(selectedPost.productLinks) : null
   if (lowestPrice) {
     setMeta('property', 'product:price:amount', String(lowestPrice))
@@ -108,8 +120,20 @@ function createStructuredData({
     '@type': 'Organization',
     '@id': `${origin}/#organization`,
     name: SEO_SITE_NAME,
+    alternateName: 'CELEB HOUSE',
     url: `${origin}/`,
-    logo: `${origin}/viole-logo.svg`,
+    logo: `${origin}/celeb-house-logo.svg`,
+  }
+
+  const website = {
+    '@type': 'WebSite',
+    '@id': `${origin}/#website`,
+    url: `${origin}/`,
+    name: SEO_SITE_NAME,
+    alternateName: 'CELEB HOUSE',
+    description: SEO_HOME_DESCRIPTION,
+    inLanguage: 'ko-KR',
+    publisher: { '@id': `${origin}/#organization` },
   }
 
   if (selectedPost) {
@@ -130,6 +154,7 @@ function createStructuredData({
       '@context': 'https://schema.org',
       '@graph': [
         organization,
+        website,
         {
           '@type': 'WebPage',
           '@id': `${canonicalUrl}#webpage`,
@@ -150,21 +175,13 @@ function createStructuredData({
     }
   }
 
-  const filteredPosts = posts.filter((post) => category === 'all' || post.category === category)
+  const filteredPosts = posts.filter((post) => post.status === 'published' && (category === 'all' || post.category === category))
   const collectionName = category === 'all' ? SEO_HOME_TITLE : `${category} 착용·광고 상품 핫템`
   return {
     '@context': 'https://schema.org',
     '@graph': [
       organization,
-      {
-        '@type': 'WebSite',
-        '@id': `${origin}/#website`,
-        url: `${origin}/`,
-        name: SEO_SITE_NAME,
-        description: SEO_HOME_DESCRIPTION,
-        inLanguage: 'ko-KR',
-        publisher: { '@id': `${origin}/#organization` },
-      },
+      website,
       {
         '@type': 'CollectionPage',
         '@id': `${canonicalUrl}#collection`,
@@ -172,6 +189,7 @@ function createStructuredData({
         name: collectionName,
         description,
         inLanguage: 'ko-KR',
+        isPartOf: { '@id': `${origin}/#website` },
         about: category === 'all' ? undefined : { '@type': 'Person', name: category },
         mainEntity: {
           '@type': 'ItemList',
@@ -190,11 +208,12 @@ function createStructuredData({
 }
 
 function createOffer(link: ProductLink) {
-  const price = Number(link.price.replace(/[^\d]/g, ''))
-  if (!link.href.trim() || !Number.isFinite(price) || price <= 0) return null
+  const price = readKrwPrice(link.price)
+  const href = publicHttpUrl(link.href)
+  if (!href || price === null) return null
   return {
     '@type': 'Offer',
-    url: link.href,
+    url: href,
     price,
     priceCurrency: 'KRW',
     seller: link.mall.trim() ? { '@type': 'Organization', name: link.mall.trim() } : undefined,
@@ -229,8 +248,9 @@ function removeMeta(attribute: 'name' | 'property', key: string) {
 
 function readLowestPrice(links: ProductLink[]) {
   const prices = links
-    .map((link) => Number(link.price.replace(/[^\d]/g, '')))
-    .filter((price) => Number.isFinite(price) && price > 0)
+    .map(createOffer)
+    .filter((offer) => offer !== null)
+    .map((offer) => offer.price)
   return prices.length ? Math.min(...prices) : null
 }
 
@@ -247,22 +267,14 @@ function setLink(rel: string, href: string, hreflang?: string) {
 }
 
 function setJsonLd(value: unknown) {
-  let element = document.head.querySelector<HTMLScriptElement>('script[data-viole-seo]')
+  let element = document.head.querySelector<HTMLScriptElement>('script[data-celeb-house-seo]')
   if (!element) {
     element = document.createElement('script')
     element.type = 'application/ld+json'
-    element.dataset.violeSeo = 'true'
+    element.dataset.celebHouseSeo = 'true'
     document.head.append(element)
   }
   element.textContent = JSON.stringify(value).replace(/</g, '\\u003c')
-}
-
-function absoluteUrl(value: string, origin: string) {
-  try {
-    return new URL(value, origin).href
-  } catch {
-    return `${origin}/viole-logo.svg`
-  }
 }
 
 function safelyDecode(value: string) {

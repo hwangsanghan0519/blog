@@ -8,7 +8,7 @@ import { countWords } from '../../../entities/post/lib/formatters'
 import type { Post } from '../../../entities/post/model/types'
 import { applyPublicSeo, getCategoryPath, getProductPath, readSeoRoute } from '../../../shared/lib/seo'
 import { RenderedContent } from '../../../shared/ui/RenderedContent'
-import violeLogoImage from '../../../assets/viole-logo.svg'
+import celebHouseLogoImage from '../../../assets/celeb-house-logo.svg'
 import { castCelebVote, fetchCelebVotes, getOrCreateCelebVoterId } from '../api/celebVoteApi'
 import type { CelebVoteRank } from '../api/celebVoteApi'
 import { getInfluenceGauge } from '../lib/influenceGauge'
@@ -491,7 +491,7 @@ export function StorefrontHome({
   const sharePost = async (post: Post) => {
     const url = new URL(getProductPath(post.slug || post.id), window.location.origin).href
     const shareData = {
-      title: `${post.title} | ${post.category} 핫템 - 비올레`,
+      title: `${post.title} | ${post.category} 핫템 - 셀럽하우스`,
       text: `${post.category}가 소개·착용한 ${post.title}${post.excerpt ? ` — ${post.excerpt}` : ''}`,
       url,
     }
@@ -629,7 +629,7 @@ export function StorefrontHome({
     <div className="public-blog">
       <AdStripBanners banners={adBanners} />
 
-      <section className="public-mobile-brand-strip" aria-label="비올레 브랜드 메시지">
+      <section className="public-mobile-brand-strip" aria-label="셀럽하우스 브랜드 메시지">
         <span className="public-mobile-banner-aurora" aria-hidden="true">
           <i />
           <i />
@@ -653,10 +653,10 @@ export function StorefrontHome({
           </span>
         )}
         <span className="public-mobile-viole-logo" aria-hidden="true">
-          <img src={violeLogoImage} alt="" />
+          <img src={celebHouseLogoImage} alt="" />
         </span>
         <div>
-          <span>VIOLE CURATED</span>
+          <span>CELEB HOUSE CURATED</span>
           <strong><em>나의 최애가</em><b>선택한 아이템</b></strong>
         </div>
         <small>타게팅 인플루언서 큐레이션</small>
@@ -677,7 +677,7 @@ export function StorefrontHome({
 
         <button className="public-brand" type="button" aria-label="전체 상품 보기" onClick={() => selectCategory('all')}>
           <span className="public-viole-logo" aria-hidden="true">
-            <img src={violeLogoImage} alt="" />
+            <img src={celebHouseLogoImage} alt="" />
           </span>
           <span className="public-brand-message" aria-hidden="true">
             <span className="public-brand-kicker">  어느 별에서 왔니?  </span>
@@ -1106,12 +1106,12 @@ export function StorefrontHome({
             aria-label="페이지 맨 위로 이동"
             onClick={() => window.scrollTo({ left: 0, top: 0, behavior: 'smooth' })}
           >
-            <img src={violeLogoImage} alt="비올레" />
+            <img src={celebHouseLogoImage} alt="셀럽하우스" />
           </button>
 
           <div className="public-footer-v3-message">
             <span>CURATED / SEOUL</span>
-            <strong>PICKED BY VIOLE.</strong>
+            <strong>PICKED BY CELEB HOUSE.</strong>
           </div>
 
           <div className="public-footer-v3-actions">
@@ -1122,7 +1122,7 @@ export function StorefrontHome({
         </div>
 
         <div className="public-footer-v3-bottom">
-          <small>© {new Date().getFullYear()} VIOLE</small>
+          <small>© {new Date().getFullYear()} CELEB HOUSE</small>
           <span>SEOUL · KR</span>
         </div>
       </footer>
@@ -1238,7 +1238,7 @@ function ProductImageGallery({ post }: { post: Post }) {
     return (
       <>
         <PostImage post={post} />
-        <span className="product-gallery-pick">VIOLE PICK</span>
+        <span className="product-gallery-pick">CELEB HOUSE PICK</span>
       </>
     )
   }
@@ -1261,7 +1261,7 @@ function ProductImageGallery({ post }: { post: Post }) {
       </div>
 
       <div className="product-gallery-topline" aria-hidden="true">
-        <span>VIOLE PICK</span>
+        <span>CELEB HOUSE PICK</span>
         <em>{images[activeIndex]?.label}</em>
       </div>
 
@@ -1332,7 +1332,7 @@ function ProductDetailContent({ post }: { post: Post }) {
   if (!hasCompleteFourCut) return <RenderedContent content={post.content} />
 
   return (
-    <section className="viole-four-cut" aria-label="비올레 네컷 상품 상세">
+    <section className="viole-four-cut" aria-label="셀럽하우스 네컷 상품 상세">
       <header>
         <strong><Camera aria-hidden="true" />최저가로 구매하는데 4컷이면 충분</strong>
       </header>
@@ -1351,8 +1351,8 @@ function ProductDetailContent({ post }: { post: Post }) {
         ))}
       </ol>
       <footer>
-        <span>VIOLE FOUR CUT</span>
-        <strong>비올레 네컷</strong>
+        <span>CELEB HOUSE FOUR CUT</span>
+        <strong>셀럽하우스 네컷</strong>
       </footer>
     </section>
   )
@@ -1507,11 +1507,11 @@ function ProductDetailSideFooter({ post, onCategorySelect }: { post: Post; onCat
   return (
     <aside className="product-detail-side-footer" aria-label="상품 상세 푸터">
       <button className="product-detail-side-footer-category" type="button" onClick={onCategorySelect}>
-        <span>{post.category || 'VIOLE PICK'}</span>
+        <span>{post.category || 'CELEB HOUSE PICK'}</span>
       </button>
       <div className="product-detail-side-footer-copy">
         <strong>{post.title}</strong>
-        <p>{post.excerpt || '비올레가 고른 상품의 핵심 정보를 네 컷으로 확인하세요.'}</p>
+        <p>{post.excerpt || '셀럽하우스가 고른 상품의 핵심 정보를 네 컷으로 확인하세요.'}</p>
       </div>
       <div className="product-detail-side-footer-price">
         <strong>{primaryLink?.price || '가격 확인'}</strong>

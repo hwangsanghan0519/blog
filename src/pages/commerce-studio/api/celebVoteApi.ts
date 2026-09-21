@@ -1,5 +1,6 @@
 import { PRODUCTION_CLOUD_DATA_ENDPOINT } from '../model/config'
 
+// Keep the existing storage key so rebranding preserves voter identity.
 const LOCAL_VOTER_KEY = 'viole-celeb-voter-id-v1'
 const LEGACY_LOCAL_VOTER_KEY = 'ssen-celeb-voter-id-v1'
 const VOTE_ENDPOINT = '/.netlify/functions/celeb-votes'

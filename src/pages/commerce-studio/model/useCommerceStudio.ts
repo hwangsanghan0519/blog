@@ -536,7 +536,7 @@ export function useCommerceStudio() {
   }
 
   const exportBackup = () => {
-    downloadJson(`viole-shopping-backup-${new Date().toISOString().slice(0, 10)}.json`, {
+    downloadJson(`celeb-house-shopping-backup-${new Date().toISOString().slice(0, 10)}.json`, {
       adBanners,
       categoryImages,
       exportedAt: new Date().toISOString(),
