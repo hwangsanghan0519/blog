@@ -293,3 +293,24 @@
     margin-top: 8px !important;
   }
 }
+
+@media (max-width: 720px) {
+  .public-reader .viole-four-cut > footer {
+    display: flex;
+    flex-wrap: nowrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
+    min-width: 0;
+  }
+  .public-reader .viole-four-cut > footer span {
+    white-space: nowrap;
+    font-size: clamp(8px, 2.4vw, 11px) !important;
+    letter-spacing: 0.02em;
+  }
+  .public-reader .viole-four-cut > footer strong {
+    flex-shrink: 0;
+    white-space: nowrap;
+    font-size: clamp(12px, 3.4vw, 15px) !important;
+  }
+}

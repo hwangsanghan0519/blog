@@ -9,6 +9,7 @@ export const createEmptyPost = (): Post => ({
   category: '디지털',
   tags: [],
   content: '<h1>상품 상세</h1><p>가격, 장점, 구매 전 체크할 점을 정리하세요.</p>',
+  source: null,
   coverImage: '',
   detailImages: ['', '', '', ''],
   detailDescriptions: ['', '', '', ''],

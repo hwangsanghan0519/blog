@@ -1,3 +1,4 @@
+import { ProductSourceBadge } from '../../../entities/post/ui/ProductSourceBadge'
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import type { CSSProperties, KeyboardEvent, MouseEvent, PointerEvent, Ref, UIEvent } from 'react'
 import * as Dialog from '@radix-ui/react-dialog'
@@ -12,6 +13,7 @@ import celebHouseLogoImage from '../../../assets/celeb-house-logo.svg'
 import { castCelebVote, fetchCelebVotes, getOrCreateCelebVoterId } from '../api/celebVoteApi'
 import type { CelebVoteRank } from '../api/celebVoteApi'
 import { getInfluenceGauge } from '../lib/influenceGauge'
+import { keenSliderRecovery, refreshKeenSlider } from '../lib/keenSliderRecovery'
 import type { AdBannerSettings, HeroVideoSettings } from '../model/types'
 import { AdStripBanners, CategoryVisual, TrendVideo } from './StorefrontMedia'
 
@@ -79,7 +81,7 @@ export function StorefrontHome({
   const headerSlotRef = useRef<HTMLDivElement>(null)
   const voteTriggerRef = useRef<HTMLHeadingElement>(null)
   const latestHeadRef = useRef<HTMLDivElement>(null)
-  const purchaseCtaRef = useRef<HTMLAnchorElement>(null)
+  const [priceElement, setPriceElement] = useState<HTMLElement | null>(null)
   const pendingCategoryScrollRef = useRef<'top' | 'latest' | null>(null)
   const sliderPausedRef = useRef(false)
   const currentSlideRef = useRef(0)
@@ -154,55 +156,62 @@ export function StorefrontHome({
       currentSlideRef.current = nextSlide
       setCurrentSlide(nextSlide)
     },
-  })
+  }, [keenSliderRecovery])
   const [categorySliderRef, categorySlider] = useKeenSlider<HTMLDivElement>({
     dragSpeed: 0.5,
     mode: 'free',
     range: { align: true },
     rubberband: false,
     slides: { perView: 'auto', spacing: 3 },
-  })
+  }, [keenSliderRecovery])
 
   useEffect(() => {
     applyPublicSeo({ category: categoryFilter, posts: publishedPosts, selectedPost })
   }, [categoryFilter, publishedPosts, selectedPost])
 
   useEffect(() => {
-    if (!selectedPost) return undefined
-
-    const purchaseCta = purchaseCtaRef.current
-    const scrollRoot = purchaseCta?.closest('.public-reader-scroll')
+    if (!priceElement || !selectedId) return undefined
+    const scrollRoot = priceElement.closest('.public-reader-scroll')
+    if (!(scrollRoot instanceof HTMLElement)) return undefined
     const mobileMedia = window.matchMedia('(max-width: 720px)')
-
-    if (!purchaseCta || !(scrollRoot instanceof HTMLElement)) {
-      return undefined
-    }
-
+    let frame = 0
     const syncVisibility = () => {
-      if (!mobileMedia.matches) {
-        setIsMobileBuyDockVisible(false)
-        return
-      }
-
-      const ctaRect = purchaseCta.getBoundingClientRect()
+      frame = 0
+      const priceRect = priceElement.getBoundingClientRect()
       const rootRect = scrollRoot.getBoundingClientRect()
-      const isVisible = ctaRect.bottom > rootRect.top && ctaRect.top < rootRect.bottom
-      setIsMobileBuyDockVisible(!isVisible)
+      const viewportTop = window.visualViewport?.offsetTop ?? 0
+      const viewportBottom = viewportTop + (window.visualViewport?.height ?? window.innerHeight)
+      const visibleTop = Math.max(rootRect.top, viewportTop)
+      const visibleBottom = Math.min(rootRect.bottom, viewportBottom)
+      const priceVisible = priceRect.bottom > visibleTop && priceRect.top < visibleBottom
+      setIsMobileBuyDockVisible(mobileMedia.matches && priceRect.height > 0 && !priceVisible)
     }
-
-    const observer = new IntersectionObserver(syncVisibility, {
-      root: scrollRoot,
-      threshold: 0.18,
-    })
-
-    observer.observe(purchaseCta)
-    const removeMobileMediaListener = listenForMediaQueryChange(mobileMedia, syncVisibility)
-
+    const schedule = () => {
+      if (!frame) frame = window.requestAnimationFrame(syncVisibility)
+    }
+    // The callback ref runs when Radix's portal actually mounts, not before it exists.
+    const observer = typeof IntersectionObserver === 'undefined' ? null : new IntersectionObserver(schedule, { root: scrollRoot, threshold: [0, 1] })
+    observer?.observe(priceElement)
+    const resizeObserver = typeof ResizeObserver === 'undefined' ? null : new ResizeObserver(schedule)
+    resizeObserver?.observe(scrollRoot)
+    resizeObserver?.observe(priceElement)
+    scrollRoot.addEventListener('scroll', schedule, { passive: true })
+    window.addEventListener('resize', schedule, { passive: true })
+    window.visualViewport?.addEventListener('resize', schedule, { passive: true })
+    window.visualViewport?.addEventListener('scroll', schedule, { passive: true })
+    const removeMobileMediaListener = listenForMediaQueryChange(mobileMedia, schedule)
+    schedule()
     return () => {
-      observer.disconnect()
+      window.cancelAnimationFrame(frame)
+      observer?.disconnect()
+      resizeObserver?.disconnect()
+      scrollRoot.removeEventListener('scroll', schedule)
+      window.removeEventListener('resize', schedule)
+      window.visualViewport?.removeEventListener('resize', schedule)
+      window.visualViewport?.removeEventListener('scroll', schedule)
       removeMobileMediaListener()
     }
-  }, [selectedPost])
+  }, [priceElement, selectedId])
 
   useEffect(() => {
     const controller = new AbortController()
@@ -225,73 +234,30 @@ export function StorefrontHome({
     if (topPosts.length < 2) return undefined
 
     const timer = window.setInterval(() => {
-      if (!sliderPausedRef.current && !document.hidden) {
+      if (!selectedId && !sliderPausedRef.current && !document.hidden && slider.current?.container.dataset.sliderReady === 'true' && !slider.current.animator.active) {
         slider.current?.next()
       }
     }, 4500)
 
     return () => window.clearInterval(timer)
-  }, [slider, topPosts.length])
-
-  useEffect(() => {
-    let layoutFrame = 0
-    let settleFrame = 0
-
-    sliderPausedRef.current = Boolean(selectedId)
-    if (selectedId) slider.current?.animator.stop()
-
-    const refreshSlider = () => {
-      if (document.hidden || selectedId) return
-
-      const instance = slider.current
-      if (!instance) return
-
-      const targetSlide = Math.min(currentSlideRef.current, Math.max(0, topPosts.length - 1))
-      instance.animator.stop()
-      instance.update()
-      instance.moveToIdx(targetSlide, true, { duration: 0 })
-      currentSlideRef.current = targetSlide
-      setCurrentSlide(targetSlide)
-      sliderPausedRef.current = false
-    }
-
-    const scheduleSliderRefresh = () => {
-      window.cancelAnimationFrame(layoutFrame)
-      window.cancelAnimationFrame(settleFrame)
-      layoutFrame = window.requestAnimationFrame(() => {
-        // Safari and Android WebViews restore BFCache before final viewport
-        // measurements settle, so refresh once more on the following frame.
-        settleFrame = window.requestAnimationFrame(refreshSlider)
-      })
-    }
-
-    const refreshWhenVisible = () => {
-      if (!document.hidden) scheduleSliderRefresh()
-    }
-
-    window.addEventListener('pageshow', scheduleSliderRefresh)
-    window.addEventListener('focus', scheduleSliderRefresh)
-    window.addEventListener('resize', scheduleSliderRefresh, { passive: true })
-    window.addEventListener('orientationchange', scheduleSliderRefresh)
-    window.visualViewport?.addEventListener('resize', scheduleSliderRefresh, { passive: true })
-    document.addEventListener('visibilitychange', refreshWhenVisible)
-
-    scheduleSliderRefresh()
-
-    return () => {
-      window.cancelAnimationFrame(layoutFrame)
-      window.cancelAnimationFrame(settleFrame)
-      window.removeEventListener('pageshow', scheduleSliderRefresh)
-      window.removeEventListener('focus', scheduleSliderRefresh)
-      window.removeEventListener('resize', scheduleSliderRefresh)
-      window.removeEventListener('orientationchange', scheduleSliderRefresh)
-      window.visualViewport?.removeEventListener('resize', scheduleSliderRefresh)
-      document.removeEventListener('visibilitychange', refreshWhenVisible)
-    }
   }, [selectedId, slider, topPosts.length])
 
   useEffect(() => {
-    const updateCategorySlider = () => categorySlider.current?.update()
+    sliderPausedRef.current = Boolean(selectedId)
+    if (selectedId) {
+      slider.current?.animator.stop()
+      return undefined
+    }
+    const frame = window.requestAnimationFrame(() => {
+      if (slider.current) refreshKeenSlider(slider.current, currentSlideRef.current)
+    })
+    return () => window.cancelAnimationFrame(frame)
+  }, [selectedId, slider])
+
+  useEffect(() => {
+    const updateCategorySlider = () => {
+      if (categorySlider.current) refreshKeenSlider(categorySlider.current)
+    }
     const frame = window.requestAnimationFrame(() => {
       updateCategorySlider()
       categorySlider.current?.moveToIdx(0, true, { duration: 0 })
@@ -822,6 +788,7 @@ export function StorefrontHome({
                         </div>
                       </div>
                     </button>
+                    <ProductSourceBadge post={post} />
                   </article>
                 ))}
               </div>
@@ -957,22 +924,28 @@ export function StorefrontHome({
           {filteredPosts.length > 0 ? (
             <div className="public-post-grid">
               {filteredPosts.map((post) => (
-                <a
-                  aria-label={`${post.title} 상품 상세 보기`}
+                <article
                   className={`public-post-card ${categoryFilter === 'all' ? 'is-all-pouch' : 'is-category-pouch'} ${selectedId === post.id ? 'is-active' : ''}`}
-                  href={getProductPath(post.slug || post.id)}
                   key={post.id}
                   style={getCategoryStyle(post.category)}
-                  onClick={(event) => {
-                    event.preventDefault()
-                    selectPost(post.id)
-                  }}
                 >
-                  <div className="public-post-media">
-                    <PostImage post={post} />
-                  </div>
-                  <PouchCardOverlay post={post} showCategory={categoryFilter === 'all'} />
-                </a>
+                  <a
+                    className="public-post-card-link"
+                    aria-label={`${post.title} 상품 상세 보기`}
+                    href={getProductPath(post.slug || post.id)}
+                    onClick={(event) => {
+                      if (event.metaKey || event.ctrlKey || event.shiftKey || event.altKey) return
+                      event.preventDefault()
+                      selectPost(post.id)
+                    }}
+                  >
+                    <div className="public-post-media">
+                      <PostImage post={post} />
+                    </div>
+                    <PouchCardOverlay post={post} showCategory={categoryFilter === 'all'} />
+                  </a>
+                  <ProductSourceBadge post={post} />
+                </article>
               ))}
             </div>
           ) : (
@@ -1035,7 +1008,7 @@ export function StorefrontHome({
                         <Dialog.Description id="reader-description" className="public-reader-description">
                           {selectedPost.excerpt}
                         </Dialog.Description>
-                        <ProductLinkPanel ctaRef={purchaseCtaRef} post={selectedPost} />
+                        <ProductLinkPanel priceRef={setPriceElement} post={selectedPost} />
                         <div className="product-detail-assurance" aria-label="구매 안내">
                           <span>실시간 가격 비교</span>
                           <span>등록된 제휴몰로 바로 이동</span>
@@ -1048,7 +1021,7 @@ export function StorefrontHome({
                         <header>
                           <span>PRODUCT STORY</span>
                           <h2>상품 상세</h2>
-                          <p>구매 전에 알아두면 좋은 핵심 정보</p>
+                          <p>고민하는 셀하들을 위해 핵심만 뽑뽑</p>
                         </header>
                         <ProductDetailSideFooter
                           post={selectedPost}
@@ -1058,7 +1031,7 @@ export function StorefrontHome({
                       {loadingDetailId === selectedPost.id ? (
                         <div className="product-detail-loading" aria-live="polite">상품 상세를 준비하고 있습니다.</div>
                       ) : (
-                        <ProductDetailContent post={selectedPost} />
+                        <ProductDetailContent key={selectedPost.id} post={selectedPost} />
                       )}
                     </section>
                   </div>
@@ -1176,13 +1149,12 @@ function ProductImageGallery({ post }: { post: Post }) {
     slideChanged(instance) {
       setActiveIndex(instance.track.details.rel)
     },
-  })
+  }, [keenSliderRecovery])
 
   useEffect(() => {
     const frame = window.requestAnimationFrame(() => {
       setActiveIndex(0)
-      gallery.current?.update()
-      gallery.current?.moveToIdx(0, true, { duration: 0 })
+      if (gallery.current) refreshKeenSlider(gallery.current, 0)
     })
     return () => window.cancelAnimationFrame(frame)
   }, [gallery, images.length, post.id])
@@ -1239,12 +1211,14 @@ function ProductImageGallery({ post }: { post: Post }) {
       <>
         <PostImage post={post} />
         <span className="product-gallery-pick">CELEB HOUSE PICK</span>
+        <ProductSourceBadge post={post} />
       </>
     )
   }
 
   return (
     <div className="product-gallery">
+      <ProductSourceBadge post={post} />
       <div ref={galleryRef} className="keen-slider product-gallery-track">
         {images.map((image, index) => (
           <figure
@@ -1323,6 +1297,8 @@ function ProductImageGallery({ post }: { post: Post }) {
 }
 
 function ProductDetailContent({ post }: { post: Post }) {
+  const [activeImage, setActiveImage] = useState<number | null>(null)
+  const imageTriggerRef = useRef<HTMLButtonElement | null>(null)
   const frames = Array.from({ length: 4 }, (_, index) => ({
     description: post.detailDescriptions[index]?.trim() ?? '',
     image: post.detailImages[index] ?? '',
@@ -1332,16 +1308,21 @@ function ProductDetailContent({ post }: { post: Post }) {
   if (!hasCompleteFourCut) return <RenderedContent content={post.content} />
 
   return (
+    <Dialog.Root open={activeImage !== null} onOpenChange={(open) => { if (!open) setActiveImage(null) }}>
     <section className="viole-four-cut" aria-label="셀럽하우스 네컷 상품 상세">
       <header>
-        <strong><Camera aria-hidden="true" />최저가로 구매하는데 4컷이면 충분</strong>
+        <strong><Camera aria-hidden="true" />셀럽네컷</strong>
       </header>
       <ol>
         {frames.map((frame, index) => (
           <li data-four-cut-index={index} key={`${frame.image.slice(0, 48)}-${index}`}>
             <figure>
-              <img src={frame.image} alt={`${post.title} 상세 ${index + 1}`} decoding="async" loading="lazy" />
-              <span>{String(index + 1).padStart(2, '0')}</span>
+              <Dialog.Trigger asChild>
+                <button className="four-cut-image-trigger" type="button" aria-label={`${index + 1}번 셀럽네컷 원본 이미지 보기`} onClick={(event) => { imageTriggerRef.current = event.currentTarget; setActiveImage(index) }}>
+                  <img src={frame.image} alt={`${post.title} 상세 ${index + 1}`} decoding="async" loading="lazy" />
+                  <span>{String(index + 1).padStart(2, '0')}</span>
+                </button>
+              </Dialog.Trigger>
             </figure>
             <div>
               <small>CUT {String(index + 1).padStart(2, '0')}</small>
@@ -1352,9 +1333,29 @@ function ProductDetailContent({ post }: { post: Post }) {
       </ol>
       <footer>
         <span>CELEB HOUSE FOUR CUT</span>
-        <strong>셀럽하우스 네컷</strong>
+        <strong>셀럽네컷</strong>
       </footer>
     </section>
+    <Dialog.Portal>
+      <Dialog.Overlay className="four-cut-lightbox-dim" />
+      <Dialog.Content
+        className="four-cut-lightbox"
+        onCloseAutoFocus={(event) => { event.preventDefault(); imageTriggerRef.current?.focus({ preventScroll: true }) }}
+        onClick={(event) => { if (event.target === event.currentTarget) setActiveImage(null) }}
+        onKeyDown={(event) => {
+          if (event.key === 'ArrowLeft') { event.preventDefault(); setActiveImage((index) => Math.max(0, (index ?? 0) - 1)) }
+          if (event.key === 'ArrowRight') { event.preventDefault(); setActiveImage((index) => Math.min(3, (index ?? 0) + 1)) }
+        }}
+      >
+        <Dialog.Title className="four-cut-lightbox-title">셀럽네컷 · {(activeImage ?? 0) + 1} / 4</Dialog.Title>
+        <Dialog.Close className="four-cut-lightbox-close" aria-label="원본 이미지 닫기"><X size={24} /></Dialog.Close>
+        {activeImage !== null && <img className="four-cut-lightbox-image" src={frames[activeImage].image} alt={`${post.title} 상세 ${activeImage + 1} 원본`} />}
+        <Dialog.Description className="four-cut-lightbox-description">{activeImage !== null ? frames[activeImage].description : ''}</Dialog.Description>
+        <button className="four-cut-lightbox-prev" type="button" aria-label="이전 원본 이미지" disabled={activeImage === 0} onClick={() => setActiveImage((index) => Math.max(0, (index ?? 0) - 1))}><ChevronLeft /></button>
+        <button className="four-cut-lightbox-next" type="button" aria-label="다음 원본 이미지" disabled={activeImage === 3} onClick={() => setActiveImage((index) => Math.min(3, (index ?? 0) + 1))}><ChevronRight /></button>
+      </Dialog.Content>
+    </Dialog.Portal>
+    </Dialog.Root>
   )
 }
 
@@ -1422,7 +1423,7 @@ function BestSliderLowestLink({ post }: { post: Post }) {
   )
 }
 
-function ProductLinkPanel({ post, ctaRef }: { post: Post; ctaRef?: Ref<HTMLAnchorElement> }) {
+function ProductLinkPanel({ post, priceRef }: { post: Post; priceRef?: Ref<HTMLElement> }) {
   const links = post.productLinks.filter((link) => link.href.trim())
 
   if (!links.length) {
@@ -1449,9 +1450,9 @@ function ProductLinkPanel({ post, ctaRef }: { post: Post; ctaRef?: Ref<HTMLAncho
             <Zap size={16} /> 지금 최저가
           </span>
           {primaryLink.mall.trim() && <small>{primaryLink.mall}</small>}
-          <strong>{primaryLink.price || '가격 확인'}</strong>
+          <strong ref={priceRef}>{primaryLink.price || '가격 확인'}</strong>
         </div>
-        <a ref={ctaRef} href={primaryLink.href} target="_blank" rel="noreferrer sponsored">
+        <a href={primaryLink.href} target="_blank" rel="noreferrer sponsored">
           <ShoppingBag size={18} /> {primaryLink.label || '최저가 바로가기'} <ExternalLink size={16} />
         </a>
       </div>

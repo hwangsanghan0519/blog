@@ -3,6 +3,7 @@ import './styles/app.css'
 import './styles/best-slider-info.css'
 import './styles/celeb-vote.css'
 import './styles/mobile-runtime.css'
+import './styles/product-source.css'
 
 export default function App() {
   return <CommerceStudioPage />

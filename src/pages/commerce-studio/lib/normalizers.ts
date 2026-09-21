@@ -1,3 +1,4 @@
+import { normalizeProductSource } from '../../../entities/post/lib/source'
 import type { Post, PostStatus, ProductLink } from '../../../entities/post/model/types'
 import { loadJson } from '../../../shared/lib/storage'
 import {
@@ -63,6 +64,7 @@ export function normalizePosts(values: unknown, categoryHints: unknown = []): Po
           ? value.tags.filter((tag): tag is string => typeof tag === 'string').map((tag) => tag.trim()).filter(Boolean)
           : [],
         content: readString(value.content, '<h1>새 글</h1><p></p>'),
+        source: normalizeProductSource(value.source),
         coverImage: readString(value.coverImage, ''),
         detailImages: normalizeFixedStringSlots(value.detailImages, 4),
         detailDescriptions: normalizeFixedStringSlots(value.detailDescriptions, 4),

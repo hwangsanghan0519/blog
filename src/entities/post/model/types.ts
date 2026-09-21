@@ -1,3 +1,10 @@
+export type ProductSourceType = 'youtube' | 'instagram' | 'daily' | 'brand' | 'broadcast' | 'drama' | 'variety'
+
+export type ProductSource = {
+  type: ProductSourceType
+  url: string
+}
+
 export type PostStatus = 'draft' | 'published' | 'archived'
 
 export type ProductLink = {
@@ -17,6 +24,7 @@ export type Post = {
   category: string
   tags: string[]
   content: string
+  source?: ProductSource | null
   coverImage: string
   detailImages: string[]
   detailDescriptions: string[]

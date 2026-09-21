@@ -1,3 +1,4 @@
+import { ProductSourceBadge } from '../../../entities/post/ui/ProductSourceBadge'
 import { formatDate, statusLabel } from '../../../entities/post/lib/formatters'
 import type { Post } from '../../../entities/post/model/types'
 import { RenderedContent } from '../../../shared/ui/RenderedContent'
@@ -13,6 +14,7 @@ export function PostPreview({ post }: PostPreviewProps) {
     <article className="preview">
       {previewImages.length > 0 && (
         <div className="preview-image-strip" aria-label="상품 이미지 미리보기">
+          <ProductSourceBadge post={post} />
           {previewImages.map((image, index) => (
             <img className="preview-cover" src={image} alt={`${post.title} ${index === 0 ? '대표' : `상세 ${index}`} 이미지`} key={`${image.slice(0, 48)}-${index}`} />
           ))}

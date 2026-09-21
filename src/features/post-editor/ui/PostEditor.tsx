@@ -46,6 +46,8 @@ import type { CSSProperties, ReactNode } from 'react'
 import { useEffect, useMemo, useRef } from 'react'
 import { normalizeEditorContent } from '../../../entities/post/lib/content'
 import { slugify } from '../../../entities/post/lib/formatters'
+import { PRODUCT_SOURCE_LABELS, productSourceLink } from '../../../entities/post/lib/source'
+import type { ProductSourceType } from '../../../entities/post/model/types'
 import type { Post, PostStatus, ProductLink } from '../../../entities/post/model/types'
 import { imageFileToOptimizedDataUrl } from '../../../shared/lib/file'
 import { createId } from '../../../shared/lib/id'
@@ -202,6 +204,10 @@ export function PostEditor({ categories, post, onCoverUpload, onUpdate }: PostEd
   }
 
   const changePostStatus = (status: PostStatus) => {
+    if (status === 'published' && post.source && !productSourceLink(post.source)) {
+      window.alert('출처 뱃지에 연결할 올바른 http 또는 https 링크를 입력해 주세요.')
+      return
+    }
     if (status === 'published' && !hasCompleteFourCut(post)) {
       window.alert('상품을 발행하려면 셀럽하우스 네컷 사진 4장과 각 사진의 설명을 모두 등록해 주세요.')
       return
@@ -310,6 +316,37 @@ export function PostEditor({ categories, post, onCoverUpload, onUpdate }: PostEd
           />
         </label>
 
+        <fieldset className="product-source-editor">
+          <legend>상품 출처 뱃지</legend>
+          <p>상품 사진에 표시할 출처와 링크를 하나만 등록할 수 있습니다.</p>
+          <label>
+            출처 유형
+            <select
+              value={post.source?.type ?? ''}
+              onChange={(event) => onUpdate({ source: event.target.value ? { type: event.target.value as ProductSourceType, url: post.source?.url ?? '' } : null })}
+            >
+              <option value="">사용 안 함</option>
+              {Object.entries(PRODUCT_SOURCE_LABELS).map(([value, label]) => <option value={value} key={value}>{label}</option>)}
+            </select>
+          </label>
+          {post.source && (
+            <label>
+              출처 링크
+              <input
+                type="url"
+                value={post.source.url}
+                placeholder="https://"
+                aria-invalid={Boolean(post.source.url) && !productSourceLink(post.source)}
+                aria-describedby="product-source-help"
+                onChange={(event) => onUpdate({ source: { type: post.source!.type, url: event.target.value } })}
+              />
+              <small id="product-source-help">
+                {productSourceLink(post.source) ? '사진 위 뱃지를 누르면 이 링크가 새 창으로 열립니다.' : 'http:// 또는 https://로 시작하는 링크를 입력하면 뱃지가 표시됩니다.'}
+              </small>
+            </label>
+          )}
+        </fieldset>
+
         <section className="viole-four-cut-admin" aria-label="셀럽하우스 네컷 상품 상세 등록">
           <header>
             <div>
@@ -365,7 +402,7 @@ export function PostEditor({ categories, post, onCoverUpload, onUpdate }: PostEd
 
           <footer>
             <span>CELEB HOUSE FOUR CUT</span>
-            <strong>셀럽하우스 네컷</strong>
+            <strong>셀럽네컷</strong>
           </footer>
         </section>
 
