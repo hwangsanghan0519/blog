@@ -5,6 +5,8 @@ import { createSitemapXml } from '../netlify/functions/blog-data'
 import { handler as robotsHandler } from '../netlify/functions/robots'
 import { canonicalSiteOrigin, publicHttpUrl, readKrwPrice, seoTitle } from '../src/shared/lib/seo-config'
 import { siteOrigin } from '../netlify/functions/lib/site-origin'
+import { getProductShareUrl } from '../src/shared/lib/seo'
+import { PRODUCTION_CLOUD_DATA_ENDPOINT } from '../src/pages/commerce-studio/model/config'
 
 const shell = readFileSync(new URL('../index.html', import.meta.url), 'utf8')
 const product = {
@@ -119,14 +121,55 @@ describe('SEO data correctness', () => {
   it('uses the custom primary domain even with an old Netlify URL or a preview host', async () => {
     vi.stubEnv('VITE_SITE_URL', '')
     vi.stubEnv('URL', 'https://ssenshop.netlify.app')
-    expect(siteOrigin({ host: 'preview.netlify.app' })).toBe('https://ssenshop.co.kr')
-    expect(canonicalSiteOrigin('https://www.ssenshop.co.kr')).toBe('https://ssenshop.co.kr')
-    expect(canonicalSiteOrigin('https://ssenshop.netlify.app')).toBe('https://ssenshop.co.kr')
+    expect(siteOrigin({ host: 'preview.netlify.app' })).toBe('https://powerpuffceleb.co.kr')
+    expect(canonicalSiteOrigin('https://www.ssenshop.co.kr')).toBe('https://powerpuffceleb.co.kr')
+    expect(canonicalSiteOrigin('https://ssenshop.netlify.app')).toBe('https://powerpuffceleb.co.kr')
     const robots = await robotsHandler({ httpMethod: 'GET', headers: { host: 'preview.netlify.app' } })
     expect(robots.statusCode).toBe(200)
-    expect(robots.body).toContain('Sitemap: https://ssenshop.co.kr/sitemap.xml')
+    expect(robots.body).toContain('Sitemap: https://powerpuffceleb.co.kr/sitemap.xml')
     expect(robots.body).toContain('User-agent: *\nAllow: /')
     expect((await robotsHandler({ httpMethod: 'HEAD', headers: {} })).body).toBe('')
+  })
+  it.each([
+    'http://powerpuffceleb.co.kr', 'http://www.powerpuffceleb.co.kr', 'https://www.powerpuffceleb.co.kr',
+    'http://ssenshop.co.kr', 'https://ssenshop.co.kr', 'http://www.ssenshop.co.kr', 'https://www.ssenshop.co.kr',
+    'http://ssenshop.netlify.app', 'https://ssenshop.netlify.app',
+  ])('migrates configured origins, metadata, shares and redirects from %s', async (oldOrigin) => {
+    mockResponses()
+    vi.stubEnv('VITE_SITE_URL', oldOrigin)
+    vi.stubGlobal('document', { head: { querySelector: () => ({ content: oldOrigin }) } })
+    expect(canonicalSiteOrigin(oldOrigin)).toBe('https://powerpuffceleb.co.kr')
+    expect(getProductShareUrl('sw4xb354-03')).toBe('https://powerpuffceleb.co.kr/product/sw4xb354-03')
+    expect(PRODUCTION_CLOUD_DATA_ENDPOINT).toBe('https://powerpuffceleb.co.kr/.netlify/functions/blog-data')
+    const page = await handler(event)
+    expect(page.body).toContain('href="https://powerpuffceleb.co.kr/product/test-product"')
+    expect(graph(page.body).find((node) => node['@type'] === 'Product')?.url).toBe('https://powerpuffceleb.co.kr/product/test-product')
+    expect(page.body).not.toMatch(/ssenshop\.(?:co\.kr|netlify\.app)|www\.powerpuffceleb\.co\.kr/)
+    const robots = await robotsHandler({ httpMethod: 'GET', headers: {} })
+    expect(robots.body).toContain('Sitemap: https://powerpuffceleb.co.kr/sitemap.xml')
+    const config = readFileSync(new URL('../netlify.toml', import.meta.url), 'utf8')
+    const rule = config.split('[[redirects]]').find((block) => block.includes(`from = "${oldOrigin}/*"`))
+    expect(rule).toContain('to = "https://powerpuffceleb.co.kr/:splat"')
+    expect(rule).toContain('status = 301')
+    expect(rule).toContain('force = true')
+    expect(config.indexOf(`from = "${oldOrigin}/*"`)).toBeLessThan(config.indexOf('from = "/product/:slug"'))
+  })
+
+  it('publishes the new domain throughout the default HTML, home, category and sitemap', async () => {
+    mockResponses({ posts: [product], categories: [product.category] })
+    vi.stubEnv('VITE_SITE_URL', 'https://ssenshop.co.kr')
+    expect(shell).not.toContain('ssenshop.')
+    expect(shell).toContain('rel="canonical" href="https://powerpuffceleb.co.kr/"')
+    for (const path of ['/', `/celeb/${encodeURIComponent(product.category)}`]) {
+      const page = await handler({ ...event, path, queryStringParameters: null })
+      expect(page.statusCode).toBe(200)
+      expect(page.body).toContain(`href="https://powerpuffceleb.co.kr${path}"`)
+      expect(page.body).not.toContain('ssenshop.')
+    }
+    const sitemap = createSitemapXml({ posts: [product], savedAt: '', categories: [product.category], adBanners: [], categoryImages: {}, heroVideo: null }, siteOrigin({}))
+    expect(sitemap).toContain('<loc>https://powerpuffceleb.co.kr/product/test-product</loc>')
+    expect(sitemap).toContain('<image:loc>https://powerpuffceleb.co.kr/product.jpg</image:loc>')
+    expect(sitemap).not.toContain('ssenshop.')
   })
   it('keeps brand names on long titles and rejects ambiguous prices or non-public URLs', () => {
     expect(seoTitle('긴 상품 '.repeat(100))).toMatch(/… \| 파워퍼프셀럽$/)

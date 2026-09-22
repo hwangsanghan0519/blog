@@ -472,7 +472,7 @@ npm run preview
 | `BLOG_ADMIN_TOKEN` | 운영 저장 시 | 데이터 API 쓰기 인증 |
 | `SUPABASE_URL` | 운영 저장 시 | Supabase 프로젝트 URL |
 | `SUPABASE_SERVICE_ROLE_KEY` | 운영 저장 시 | 서버 전용 DB/Storage 권한 |
-| `VITE_SITE_URL` | 선택 | 대표 주소 대체. 기본 `https://ssenshop.co.kr`; 빌드와 함수에 동일하게 설정 |
+| `VITE_SITE_URL` | 선택 | 대표 주소 대체. 기본 `https://powerpuffceleb.co.kr`; 빌드와 함수에 동일하게 설정 |
 | `GOOGLE_SITE_VERIFICATION` | 선택 | Google Search Console에서 발급한 HTML 태그 인증값, 빌드 시 반영 |
 | `NAVER_SITE_VERIFICATION` | 선택 | 네이버 서치어드바이저 HTML 태그 인증값, 빌드 시 반영 |
 | `BING_SITE_VERIFICATION` | 선택 | Bing Webmaster Tools HTML 태그 인증값, 빌드 시 반영 |
@@ -563,8 +563,8 @@ timeline
 
 - 브랜드 표기는 `파워퍼프셀럽 / POWER PUFF CELEB`입니다. 페이지·관리자·공유 메타·구조화 데이터·앱 이름에 동일하게 사용합니다. 색상·레이아웃을 유지하며 로고, 소녀 캐릭터 파비콘, PNG 공유 이미지를 새 브랜드 파일명으로 제공합니다. 이전 공개 이미지 주소는 새 파일로 301 이동합니다.
 
-- 대표 주소는 Netlify에서 실제 연결된 `https://ssenshop.co.kr`입니다. `www.ssenshop.co.kr`은 Netlify의 primary domain 설정으로 이동하고 기존 Netlify 주소는 301 이동합니다. `ssensshop.co.kr`은 다른 도메인이므로 구매·DNS 연결을 확인하기 전에는 사용하지 않습니다.
-- 기본 HTML, 공유 링크, 브라우저 canonical, 서버 SEO, robots.txt와 사이트맵은 같은 대표 주소를 사용합니다. Netlify `URL` 또는 미리보기 도메인이 검색 주소를 덮어쓰지 않습니다. 별도 운영 주소는 빌드와 함수의 `VITE_SITE_URL`을 함께 설정합니다.
+- 대표 주소는 `https://powerpuffceleb.co.kr`입니다. `www.powerpuffceleb.co.kr`, 기존 `ssenshop.co.kr`·`www.ssenshop.co.kr`, `ssenshop.netlify.app`의 HTTP/HTTPS 요청은 상품·셀럽 경로와 쿼리를 유지해 대표 HTTPS 주소로 301 이동합니다. 도메인 이동 규칙은 SPA/SEO rewrite보다 먼저 적용합니다.
+- 기본 HTML, 공유 링크, 브라우저 canonical, 서버 SEO, robots.txt와 사이트맵은 같은 대표 주소를 사용합니다. Netlify `URL` 또는 미리보기 도메인이 검색 주소를 덮어쓰지 않습니다. 별도 운영 주소는 빌드와 함수의 `VITE_SITE_URL`을 함께 설정합니다. 이전 도메인이 환경변수에 남아 있어도 새 대표 주소로 정규화하며, 로컬 개발의 상품·투표 API도 새 운영 주소를 사용합니다.
 - 홈/상품/셀럽 페이지는 초기 HTML에 제목, 설명, canonical, 구조화 데이터와 공개 상품 링크를 제공합니다. 상품의 완성된 네컷 설명도 포함합니다. 봇과 일반 방문자에게 같은 HTML을 제공합니다.
 - 상품 경로는 rewrite query 전달에 의존하지 않고 원래 요청 경로와 함수 하위 경로에서 읽습니다. `/robots.txt`, `/sitemap.xml`은 전용 함수로 연결되어 query 누락이나 공유용 추적 파라미터에 영향을 받지 않습니다.
 - Open Graph 기본 이미지는 1200×630 PNG입니다. 벡터 로고는 `scripts/build-brand-assets.mjs`의 전용 글자 윤곽과 큰 눈·라벤더 단발·핑크 리본의 소녀 캐릭터로 생성합니다. 로고 수정 후 `npm run build:brand`로 SVG와 공유 PNG를 함께 갱신하고 `public/powerpuffceleb-og.png`를 함께 배포합니다.
@@ -573,5 +573,16 @@ timeline
 - 긴 상품 제목에서도 브랜드 이름을 유지하고, 가격 범위·할부·할인 문구는 구조화 데이터의 숫자 가격으로 오인하지 않습니다.
 - 실제 없는 상품은 404, 일시적인 원본 서버 장애는 503과 Retry-After로 구분합니다. 사이트맵은 공개 상품만 포함하고 중복 URL·잘못된 수정일을 제거합니다.
 - 배포 후 Google Search Console 및 네이버 서치어드바이저에서 사이트 소유권을 확인하고 `/sitemap.xml`을 제출해야 합니다. 계정 등록과 검색엔진 색인 요청은 코드 변경에 포함되지 않습니다.
-- 제출 주소: `https://ssenshop.co.kr/sitemap.xml`. HTML 인증을 사용할 때는 해당 서비스에서 발급받은 인증값을 위 환경변수로 등록하고 재배포합니다. 검색 수집 여부·노출 순위는 검색엔진이 결정합니다.
+- 제출 주소: `https://powerpuffceleb.co.kr/sitemap.xml`. HTML 인증을 사용할 때는 해당 서비스에서 발급받은 인증값을 위 환경변수로 등록하고 재배포합니다. 검색 수집 여부·노출 순위는 검색엔진이 결정합니다.
 - 검증: `npm run check`. `tests/seo.test.ts`에서 서버 응답, 공개 상품 필터, 메타데이터 중복, 가격, 사이트맵을 확인합니다.
+
+### powerpuffceleb.co.kr 도메인 이전
+
+1. Netlify의 primary domain을 `powerpuffceleb.co.kr`로 지정하고 `www.powerpuffceleb.co.kr` 자동 이동을 유지합니다. `ssenshop.co.kr`와 `www.ssenshop.co.kr`도 동일 프로젝트의 domain alias로 유지해야 이전 링크의 301 이동이 동작합니다.
+2. 가비아의 네임서버가 Netlify DNS 화면에 표시된 서버와 일치하는지 확인합니다. DNS 전파 후 Netlify HTTPS 인증서에 새 대표/www 주소와 기존 별칭이 포함되어야 합니다. 인증서가 이전 도메인만 포함하면 새 도메인의 HTTPS 수집과 접속이 실패합니다.
+3. Netlify에 `VITE_SITE_URL`을 지정했다면 빌드·함수 범위 모두 `https://powerpuffceleb.co.kr`로 변경합니다. 생략해도 코드 기본값은 새 도메인입니다. Google/Naver/Bing 소유확인 값은 새 속성에서 발급한 값으로 등록합니다.
+4. 사용자가 커밋을 푸시해 배포한 후 새 도메인의 홈·상품·셀럽 페이지, `/robots.txt`, `/sitemap.xml`이 200인지 확인합니다. canonical·Open Graph·JSON-LD·사이트맵에는 새 HTTPS 주소가 나와야 합니다. 기존 상품 링크와 www 주소는 같은 상품 경로로 301 이동해야 합니다.
+5. Google Search Console에서 새 도메인 소유권 확인·사이트맵 제출을 완료하고 기존 속성의 주소 변경 도구를 사용합니다. 네이버 서치어드바이저도 새 사이트를 등록·소유확인하고 새 사이트맵을 제출합니다. 기존 도메인과 리디렉션은 Google 권장 기준 최소 1년 유지합니다.
+6. 카카오톡에서 기존 공유 카드가 남으면 카카오 URL 스크랩 캐시 초기화 도구로 해당 URL을 갱신합니다. 공유 버튼은 새 도메인의 상품 URL을 생성합니다. 도메인 간 브라우저 저장소는 공유되지 않으므로 관리자 로그인은 새 도메인에서 다시 진행합니다.
+
+공식 안내: [Google 사이트 이전](https://developers.google.com/search/docs/crawling-indexing/site-move-with-url-changes), [Netlify 도메인 리디렉션](https://docs.netlify.com/manage/routing/redirects/redirect-options/), [네이버 사이트 등록](https://searchadvisor.naver.com/guide/faq-start-register).

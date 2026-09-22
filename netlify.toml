@@ -39,15 +39,59 @@
   [headers.values]
     X-Robots-Tag = "noindex, nofollow, noarchive"
 
+# Domain migration: keep these before every rewrite and preserve the full path/query.
+# Netlify primary domain: powerpuffceleb.co.kr; retain old domains as aliases with TLS.
 [[redirects]]
-  from = "https://ssenshop.netlify.app/*"
-  to = "https://ssenshop.co.kr/:splat"
+  from = "http://powerpuffceleb.co.kr/*"
+  to = "https://powerpuffceleb.co.kr/:splat"
+  status = 301
+  force = true
+
+[[redirects]]
+  from = "http://www.powerpuffceleb.co.kr/*"
+  to = "https://powerpuffceleb.co.kr/:splat"
+  status = 301
+  force = true
+
+[[redirects]]
+  from = "https://www.powerpuffceleb.co.kr/*"
+  to = "https://powerpuffceleb.co.kr/:splat"
+  status = 301
+  force = true
+
+[[redirects]]
+  from = "http://ssenshop.co.kr/*"
+  to = "https://powerpuffceleb.co.kr/:splat"
+  status = 301
+  force = true
+
+[[redirects]]
+  from = "https://ssenshop.co.kr/*"
+  to = "https://powerpuffceleb.co.kr/:splat"
+  status = 301
+  force = true
+
+[[redirects]]
+  from = "http://www.ssenshop.co.kr/*"
+  to = "https://powerpuffceleb.co.kr/:splat"
+  status = 301
+  force = true
+
+[[redirects]]
+  from = "https://www.ssenshop.co.kr/*"
+  to = "https://powerpuffceleb.co.kr/:splat"
   status = 301
   force = true
 
 [[redirects]]
   from = "http://ssenshop.netlify.app/*"
-  to = "https://ssenshop.co.kr/:splat"
+  to = "https://powerpuffceleb.co.kr/:splat"
+  status = 301
+  force = true
+
+[[redirects]]
+  from = "https://ssenshop.netlify.app/*"
+  to = "https://powerpuffceleb.co.kr/:splat"
   status = 301
   force = true
 
