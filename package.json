@@ -6,6 +6,7 @@
   "scripts": {
     "dev": "vite",
     "build:social-image": "node scripts/build-social-image.mjs",
+    "build:brand": "node scripts/build-brand-assets.mjs && npm run build:social-image",
     "build": "tsc -b && vite build",
     "lint": "oxlint",
     "test": "vitest run",

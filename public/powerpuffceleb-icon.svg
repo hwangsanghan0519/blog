@@ -1,6 +1,12 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" role="img" aria-label="파워퍼프셀럽">
-  <defs><linearGradient id="powerpuffceleb-icon" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#c4b5fd"/><stop offset="1" stop-color="#9b72ea"/></linearGradient></defs>
-  <rect width="64" height="64" rx="18" fill="#faf7ff"/>
-  <path d="M17 14H34C44 14 49 19 49 28C49 37 43 42 34 42H27V52H17ZM27 23V33H33C37 33 39 31 39 28C39 25 37 23 33 23Z" fill="url(#powerpuffceleb-icon)"/>
-  <circle cx="49" cy="15" r="5" fill="#f4c6dd"/>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" role="img" aria-label="파워퍼프셀럽 POWER PUFF CELEB">
+<rect width="64" height="64" rx="18" fill="#f8f0ff"/><g transform="translate(7 6) scale(0.5)">
+    <defs><linearGradient id="icon-heart" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#ffc5e1"/><stop offset="1" stop-color="#ee97ca"/></linearGradient></defs>
+    <g transform="rotate(-9 50 50)">
+      <path d="M50 91C38 80 10 61 5 39C0 18 13 6 29 7C40 7 46 14 50 22C56 10 64 6 75 7C93 8 101 25 94 43C85 64 63 81 50 91Z" transform="translate(1 4)" fill="#9868b2" opacity=".35"/>
+      <path d="M50 91C38 80 10 61 5 39C0 18 13 6 29 7C40 7 46 14 50 22C56 10 64 6 75 7C93 8 101 25 94 43C85 64 63 81 50 91Z" fill="url(#icon-heart)" stroke="#684381" stroke-width="3" stroke-linejoin="round"/>
+      <path d="M50 91C38 80 10 61 5 39C0 18 13 6 29 7C40 7 46 14 50 22C56 10 64 6 75 7C93 8 101 25 94 43C85 64 63 81 50 91Z" transform="translate(50 47) scale(.71) translate(-50 -47)" fill="#d5c1ff" stroke="#85609f" stroke-width="2.8"/>
+      <path d="M50 91C38 80 10 61 5 39C0 18 13 6 29 7C40 7 46 14 50 22C56 10 64 6 75 7C93 8 101 25 94 43C85 64 63 81 50 91Z" transform="translate(50 46) scale(.43) translate(-50 -47)" fill="#c2eee4" stroke="#85609f" stroke-width="3"/>
+      <path d="M18 26Q21 18 28 19" fill="none" stroke="#fff8ff" stroke-width="4" stroke-linecap="round"/>
+    </g>
+  </g>
 </svg>
