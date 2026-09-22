@@ -2,7 +2,9 @@ import { readFileSync } from 'node:fs'
 import { afterEach, describe, expect, it, vi } from 'vitest'
 import { handler } from '../netlify/functions/seo-page'
 import { createSitemapXml } from '../netlify/functions/blog-data'
-import { publicHttpUrl, readKrwPrice, seoTitle } from '../src/shared/lib/seo-config'
+import { handler as robotsHandler } from '../netlify/functions/robots'
+import { canonicalSiteOrigin, publicHttpUrl, readKrwPrice, seoTitle } from '../src/shared/lib/seo-config'
+import { siteOrigin } from '../netlify/functions/lib/site-origin'
 
 const shell = readFileSync(new URL('../index.html', import.meta.url), 'utf8')
 const product = {
@@ -25,6 +27,33 @@ function graph(html: string) {
 afterEach(() => { vi.unstubAllGlobals(); vi.unstubAllEnvs() })
 
 describe('SEO page responses', () => {
+  it.each([
+    { path: '/product/test-product', queryStringParameters: null },
+    { path: '/.netlify/functions/seo-page/product/test-product', queryStringParameters: { utm_source: 'kakaotalk' } },
+    { path: '/.netlify/functions/seo-page', rawUrl: 'https://ssenshop.co.kr/product/test-product', queryStringParameters: {} },
+    { path: '/product/test-product/', queryStringParameters: { kind: 'category', value: 'wrong' } },
+  ])('renders shared product paths without injected query parameters: %j', async (route) => {
+    mockResponses()
+    const result = await handler({ ...event, ...route })
+    expect(result.statusCode).toBe(200)
+    expect(result.body).toContain('https://canonical.example/product/test-product')
+    expect(fetch).toHaveBeenCalledWith('https://preview.example/.netlify/functions/blog-data?post=test-product', expect.any(Object))
+  })
+
+  it('serves crawlable home links and decodes Korean celebrity paths once', async () => {
+    mockResponses({ posts: [product, { ...product, slug: 'draft-secret', status: 'draft' }] })
+    const home = await handler({ ...event, path: '/', queryStringParameters: null })
+    expect(home.statusCode).toBe(200)
+    expect(home.body).toContain('/product/test-product')
+    expect(home.body).toContain(`/celeb/${encodeURIComponent(product.category)}`)
+    expect(home.body).not.toContain('draft-secret')
+    const category = await handler({ ...event, path: `/celeb/${encodeURIComponent(product.category)}`, queryStringParameters: null })
+    expect(category.statusCode).toBe(200)
+    expect(category.body).toContain('/product/test-product')
+    const legacy = await handler({ ...event, path: '/', queryStringParameters: { category: product.category } })
+    expect(legacy.body).toContain(`href="https://canonical.example/celeb/${encodeURIComponent(product.category)}"`)
+  })
+
   it('serves one canonical, complete product details and truthful offers before JavaScript runs', async () => {
     mockResponses()
     const result = await handler(event)
@@ -82,6 +111,18 @@ describe('SEO page responses', () => {
 })
 
 describe('SEO data correctness', () => {
+  it('uses the custom primary domain even with an old Netlify URL or a preview host', async () => {
+    vi.stubEnv('VITE_SITE_URL', '')
+    vi.stubEnv('URL', 'https://ssenshop.netlify.app')
+    expect(siteOrigin({ host: 'preview.netlify.app' })).toBe('https://ssenshop.co.kr')
+    expect(canonicalSiteOrigin('https://www.ssenshop.co.kr')).toBe('https://ssenshop.co.kr')
+    expect(canonicalSiteOrigin('https://ssenshop.netlify.app')).toBe('https://ssenshop.co.kr')
+    const robots = await robotsHandler({ httpMethod: 'GET', headers: { host: 'preview.netlify.app' } })
+    expect(robots.statusCode).toBe(200)
+    expect(robots.body).toContain('Sitemap: https://ssenshop.co.kr/sitemap.xml')
+    expect(robots.body).toContain('User-agent: *\nAllow: /')
+    expect((await robotsHandler({ httpMethod: 'HEAD', headers: {} })).body).toBe('')
+  })
   it('keeps brand names on long titles and rejects ambiguous prices or non-public URLs', () => {
     expect(seoTitle('긴 상품 '.repeat(100))).toMatch(/… \| 셀럽하우스$/)
     expect(readKrwPrice('₩ 12,900')).toBe(12900)

@@ -68,7 +68,7 @@ export function normalizePosts(values: unknown, categoryHints: unknown = []): Po
         coverImage: readString(value.coverImage, ''),
         detailImages: normalizeFixedStringSlots(value.detailImages, 4),
         detailDescriptions: normalizeFixedStringSlots(value.detailDescriptions, 4),
-        purchaseTitle: readString(value.purchaseTitle, '최저가 제휴몰 바로가기'),
+        purchaseTitle: readString(value.purchaseTitle, '보러가기'),
         productLinks: normalizeProductLinks(value.productLinks),
         status: normalizePostStatus(value.status),
         createdAt: readString(value.createdAt, new Date().toISOString()),

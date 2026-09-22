@@ -7,7 +7,7 @@ import { useKeenSlider } from 'keen-slider/react'
 import 'keen-slider/keen-slider.min.css'
 import { countWords } from '../../../entities/post/lib/formatters'
 import type { Post } from '../../../entities/post/model/types'
-import { applyPublicSeo, getCategoryPath, getProductPath, readSeoRoute } from '../../../shared/lib/seo'
+import { applyPublicSeo, getCategoryPath, getProductPath, getProductShareUrl, readSeoRoute } from '../../../shared/lib/seo'
 import { RenderedContent } from '../../../shared/ui/RenderedContent'
 import celebHouseLogoImage from '../../../assets/celeb-house-logo.svg'
 import { castCelebVote, fetchCelebVotes, getOrCreateCelebVoterId } from '../api/celebVoteApi'
@@ -16,6 +16,7 @@ import { getInfluenceGauge } from '../lib/influenceGauge'
 import { keenSliderRecovery, refreshKeenSlider } from '../lib/keenSliderRecovery'
 import type { AdBannerSettings, HeroVideoSettings } from '../model/types'
 import { AdStripBanners, CategoryVisual, TrendVideo } from './StorefrontMedia'
+import { MobileProductSearch } from './MobileProductSearch'
 
 type StorefrontHomeProps = {
   posts: Post[]
@@ -455,7 +456,7 @@ export function StorefrontHome({
   }
 
   const sharePost = async (post: Post) => {
-    const url = new URL(getProductPath(post.slug || post.id), window.location.origin).href
+    const url = getProductShareUrl(post.slug || post.id)
     const shareData = {
       title: `${post.title} | ${post.category} 핫템 - 셀럽하우스`,
       text: `${post.category}가 소개·착용한 ${post.title}${post.excerpt ? ` — ${post.excerpt}` : ''}`,
@@ -1015,10 +1016,10 @@ export function StorefrontHome({
                           {selectedPost.excerpt}
                         </Dialog.Description>
                         <ProductLinkPanel priceRef={setPriceElement} post={selectedPost} />
-                        <div className="product-detail-assurance" aria-label="구매 안내">
-                          <span>실시간 가격 비교</span>
+                        <div className="product-detail-assurance" aria-label="제휴몰 이용 안내">
+                          <span>등록된 제휴몰 가격 비교</span>
                           <span>등록된 제휴몰로 바로 이동</span>
-                          <span>새 창에서 안전하게 확인</span>
+                          <span>보러가기를 누르면 제휴몰이 새 창으로 열립니다</span>
                         </div>
                       </div>
                     </section>
@@ -1106,6 +1107,7 @@ export function StorefrontHome({
         </div>
       </footer>
 
+      <MobileProductSearch posts={publishedPosts} onSelect={selectPost} />
       <div className="public-quick-actions" aria-label="빠른 기능">
         <a href="mailto:nmc2711@naver.com" aria-label="제휴 문의 이메일 보내기">
           <Mail size={21} />
@@ -1422,7 +1424,7 @@ function BestSliderLowestLink({ post }: { post: Post }) {
       onClick={openLink}
       onKeyDown={openLink}
     >
-      <Zap size={18} /> 최저가 바로가기
+      <Zap size={18} /> 보러가기
     </strong>
   )
 }
@@ -1435,9 +1437,9 @@ function ProductLinkPanel({ post, priceRef }: { post: Post; priceRef?: Ref<HTMLE
       <section className="product-buy-panel is-empty">
         <div>
           <span>
-            <ShoppingBag size={16} /> 구매 링크
+            <ShoppingBag size={16} /> 제휴 링크
           </span>
-          <strong>등록된 구매처가 없습니다.</strong>
+          <strong>등록된 제휴몰이 없습니다.</strong>
         </div>
       </section>
     )
@@ -1447,7 +1449,7 @@ function ProductLinkPanel({ post, priceRef }: { post: Post; priceRef?: Ref<HTMLE
   const comparisonLinks = links.filter((link) => link.id !== primaryLink.id)
 
   return (
-    <section className="product-buy-panel" aria-label="구매처 비교">
+    <section className="product-buy-panel" aria-label="제휴몰 비교">
       <div className="product-buy-primary">
         <div className="product-buy-primary-head">
           <span>
@@ -1457,13 +1459,13 @@ function ProductLinkPanel({ post, priceRef }: { post: Post; priceRef?: Ref<HTMLE
           <strong ref={priceRef}>{primaryLink.price || '가격 확인'}</strong>
         </div>
         <a href={primaryLink.href} target="_blank" rel="noreferrer sponsored">
-          <ShoppingBag size={18} /> {primaryLink.label || '최저가 바로가기'} <ExternalLink size={16} />
+          <ShoppingBag size={18} /> 보러가기 <ExternalLink size={16} />
         </a>
       </div>
       {comparisonLinks.length > 0 && (
         <div className="product-buy-compare">
           <div className="product-buy-compare-head">
-            <strong>다른 구매처 비교</strong>
+            <strong>다른 제휴몰 비교</strong>
             <small>{comparisonLinks.length}곳</small>
           </div>
           <div className="product-buy-list">
@@ -1474,7 +1476,7 @@ function ProductLinkPanel({ post, priceRef }: { post: Post; priceRef?: Ref<HTMLE
                   {link.badge && <em>{link.badge}</em>}
                 </span>
                 <strong>{link.price || '가격 확인'}</strong>
-                <small aria-label={`${link.mall || '쇼핑몰'}에서 확인`}>
+                <small aria-label={`${link.mall || '쇼핑몰'} 보러가기`}>
                   <ExternalLink size={14} />
                 </small>
               </a>
@@ -1492,14 +1494,14 @@ function MobileProductBuyDock({ post }: { post: Post }) {
   if (!primaryLink?.href.trim()) return null
 
   return (
-    <aside className="mobile-product-buy-dock" aria-label="빠른 구매">
+    <aside className="mobile-product-buy-dock" aria-label="제휴몰 보러가기">
       <div>
         <small>지금 최저가</small>
         <strong>{primaryLink.price || '가격 확인'}</strong>
       </div>
       <a href={primaryLink.href} target="_blank" rel="noreferrer sponsored">
         <ShoppingBag aria-hidden="true" />
-        <span>구매하기</span>
+        <span>보러가기</span>
         <ChevronRight aria-hidden="true" />
       </a>
     </aside>
@@ -1523,7 +1525,7 @@ function ProductDetailSideFooter({ post, onCategorySelect }: { post: Post; onCat
       </div>
       {primaryLink?.href.trim() && (
         <a href={primaryLink.href} target="_blank" rel="noreferrer sponsored">
-          <span>최저가 보기</span>
+          <span>보러가기</span>
           <ShoppingCart aria-hidden="true" />
         </a>
       )}

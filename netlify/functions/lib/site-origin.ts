@@ -1,4 +1,4 @@
-import { publicHttpUrl } from '../../../src/shared/lib/seo-config.ts'
+import { canonicalSiteOrigin, publicHttpUrl } from '../../../src/shared/lib/seo-config.ts'
 
 export function requestOrigin(headers: Record<string, string | undefined>) {
   const host = headers['x-forwarded-host'] ?? headers.host
@@ -7,7 +7,6 @@ export function requestOrigin(headers: Record<string, string | undefined>) {
   return url ? new URL(url).origin : 'http://localhost:8888'
 }
 
-export function siteOrigin(headers: Record<string, string | undefined>) {
-  const configured = publicHttpUrl(process.env.VITE_SITE_URL || process.env.URL)
-  return configured ? new URL(configured).origin : requestOrigin(headers)
+export function siteOrigin(_headers: Record<string, string | undefined>) {
+  return canonicalSiteOrigin(process.env.VITE_SITE_URL)
 }

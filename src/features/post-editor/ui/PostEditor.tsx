@@ -281,7 +281,7 @@ export function PostEditor({ categories, post, onCoverUpload, onUpdate }: PostEd
           id: createId(),
           mall: '쿠팡',
           price: '',
-          label: '최저가 구매하기',
+          label: '보러가기',
           href: '',
           badge: '추천',
         },
@@ -564,7 +564,7 @@ export function PostEditor({ categories, post, onCoverUpload, onUpdate }: PostEd
             placeholder="쿠팡, 카드할인, 오늘특가"
           />
         </label>
-        <section className="product-link-admin" aria-label="구매 링크 관리">
+        <section className="product-link-admin" aria-label="제휴 링크 관리">
           <div>
             <span>제휴 링크</span>
             <button type="button" onClick={addProductLink}>
@@ -572,7 +572,7 @@ export function PostEditor({ categories, post, onCoverUpload, onUpdate }: PostEd
             </button>
           </div>
           <label className="product-link-url">
-            구매바 상단 문구
+            제휴 링크 영역 안내 문구
             <input
               value={post.purchaseTitle}
               placeholder="지금 가장 좋은 가격으로 이동"
@@ -582,7 +582,7 @@ export function PostEditor({ categories, post, onCoverUpload, onUpdate }: PostEd
           {post.productLinks.length ? (
             post.productLinks.map((link, index) => (
               <div className="product-link-card" key={link.id}>
-                <strong>구매처 {index + 1}</strong>
+                <strong>제휴몰 {index + 1}</strong>
                 <label>
                   쇼핑몰
                   <input value={link.mall} placeholder="쿠팡, G마켓, 11번가" onChange={(event) => updateProductLink(link.id, { mall: event.target.value })} />
@@ -593,7 +593,7 @@ export function PostEditor({ categories, post, onCoverUpload, onUpdate }: PostEd
                 </label>
                 <label>
                   버튼 문구
-                  <input value={link.label} placeholder="최저가 구매하기" onChange={(event) => updateProductLink(link.id, { label: event.target.value })} />
+                  <input value="보러가기" readOnly aria-label="제휴몰 이동 버튼 문구" />
                 </label>
                 <label>
                   배지
@@ -609,7 +609,7 @@ export function PostEditor({ categories, post, onCoverUpload, onUpdate }: PostEd
               </div>
             ))
           ) : (
-            <p className="product-link-empty">쿠팡, G마켓, 11번가 등 제휴 링크를 추가하면 공개 화면에 구매 버튼이 표시됩니다.</p>
+            <p className="product-link-empty">쿠팡, G마켓, 11번가 등 제휴 링크를 추가하면 공개 화면에 보러가기 버튼이 표시됩니다.</p>
           )}
         </section>
         <label className="cover-uploader">

@@ -1,9 +1,11 @@
-import { SEO_SITE_NAME, SEO_HOME_DESCRIPTION, seoTitle, publicHttpUrl, readKrwPrice } from '../../src/shared/lib/seo-config.ts'
+import { SEO_SITE_NAME, SEO_HOME_TITLE, SEO_HOME_DESCRIPTION, seoTitle, publicHttpUrl, readKrwPrice } from '../../src/shared/lib/seo-config.ts'
 import { requestOrigin, siteOrigin } from './lib/site-origin.ts'
 
 type NetlifyEvent = {
   headers: Record<string, string | undefined>
   httpMethod: string
+  path?: string
+  rawUrl?: string
   queryStringParameters?: Record<string, string | undefined> | null
 }
 
@@ -43,9 +45,8 @@ export async function handler(event: NetlifyEvent) {
 async function handlePage(event: NetlifyEvent) {
   if (event.httpMethod !== 'GET') return response(405, 'Method not allowed', 'text/plain; charset=utf-8', 'no-store')
 
-  const kind = event.queryStringParameters?.kind
-  const value = safelyDecode(event.queryStringParameters?.value?.trim() ?? '')
-  if ((kind !== 'product' && kind !== 'category') || !value) {
+  const { kind, value } = resolvePageRoute(event)
+  if (!kind || (kind !== 'home' && !value)) {
     return response(400, '잘못된 검색 페이지 요청입니다.', 'text/plain; charset=utf-8', 'no-store')
   }
 
@@ -69,10 +70,61 @@ async function handlePage(event: NetlifyEvent) {
     }
 
     const data = await dataResponse.json() as CommerceSummary
-    return renderCategoryPage(shell, origin, data, value)
+    return kind === 'home' ? renderHomePage(shell, origin, data) : renderCategoryPage(shell, origin, data, value)
   } catch {
     return unavailablePage()
   }
+}
+
+// Netlify rewrites may preserve the original query instead of injecting the
+// destination query. Resolve public paths first so shared links need no params.
+export function resolvePageRoute(event: NetlifyEvent) {
+  const paths = [event.path]
+  if (event.rawUrl) {
+    try { paths.push(new URL(event.rawUrl).pathname) } catch { /* Try the remaining route inputs. */ }
+  }
+  for (const path of paths) {
+    const match = path?.match(/^\/(?:\.netlify\/functions\/seo-page\/)?(product|celeb)\/([^/]+)\/?$/)
+    if (match) return { kind: match[1] === 'product' ? 'product' : 'category', value: safelyDecode(match[2]) }
+    if (path === '/' || path === '/.netlify/functions/seo-page/home') {
+      const query = event.queryStringParameters
+      if (query?.post?.trim()) return { kind: 'product', value: query.post.trim() }
+      if (query?.category?.trim()) return { kind: 'category', value: query.category.trim() }
+      return { kind: 'home', value: '' }
+    }
+  }
+  const kind = event.queryStringParameters?.kind
+  return {
+    kind: ['product', 'category', 'home'].includes(kind ?? '') ? kind : undefined,
+    value: event.queryStringParameters?.value?.trim() ?? '',
+  }
+}
+
+function renderHomePage(shell: string, origin: string, data: CommerceSummary) {
+  const posts = (Array.isArray(data.posts) ? data.posts.filter(isRecord) : [])
+    .filter((post) => post.status === 'published' && (readString(post.slug) || readString(post.id)))
+  const categories = Array.from(new Set(posts.map((post) => readString(post.category)).filter(Boolean)))
+  const fallback = `<main class="seo-fallback seo-fallback-category">
+    <header><h1>${escapeHtml(SEO_HOME_TITLE)}</h1><p>${escapeHtml(DEFAULT_DESCRIPTION)}</p></header>
+    <nav aria-label="셀럽별 상품">${categories.map((category) => `<a href="/celeb/${encodeURIComponent(category)}">${escapeHtml(category)}</a>`).join(' ')}</nav>
+    <ul>${posts.map((post) => {
+      const title = readString(post.title)
+      const image = readPublicImage(post.coverImage, origin)
+      return `<li><a href="/product/${encodeURIComponent(readString(post.slug) || readString(post.id))}">${image ? `<img src="${escapeHtml(image)}" alt="${escapeHtml(title)}" loading="lazy" />` : ''}<strong>${escapeHtml(title)}</strong><span>${escapeHtml(readString(post.excerpt))}</span></a></li>`
+    }).join('')}</ul></main>`
+  return htmlResponse(injectSeo(shell, {
+    canonical: `${origin}/`, description: DEFAULT_DESCRIPTION, fallback,
+    image: `${origin}/og-image.png`, keywords: '셀럽하우스, 연예인 착용 상품, 인플루언서 추천 상품, 제휴몰 가격 비교',
+    pageTitle: SEO_HOME_TITLE, type: 'website',
+    structuredData: { '@context': 'https://schema.org', '@graph': [createOrganization(origin), createWebsite(origin), {
+      '@type': 'CollectionPage', '@id': `${origin}/#collection`, url: `${origin}/`, name: SEO_HOME_TITLE,
+      description: DEFAULT_DESCRIPTION, inLanguage: 'ko-KR', isPartOf: { '@id': `${origin}/#website` },
+      mainEntity: { '@type': 'ItemList', numberOfItems: posts.length, itemListElement: posts.map((post, index) => ({
+        '@type': 'ListItem', position: index + 1, name: readString(post.title),
+        url: `${origin}/product/${encodeURIComponent(readString(post.slug) || readString(post.id))}`,
+      })) },
+    }] },
+  }))
 }
 
 function renderProductPage(shell: string, origin: string, product: Product) {
@@ -82,9 +134,9 @@ function renderProductPage(shell: string, origin: string, product: Product) {
   if (!slug || product.status !== 'published') return notFoundPage(origin, 'product', titleText)
 
   const canonical = `${origin}/product/${encodeURIComponent(slug)}`
-  const description = truncate(`${category}가 유튜브·인스타그램에서 소개하거나 착용한 ${titleText}. ${readString(product.excerpt) || '등록된 제휴몰 가격과 구매 링크를 확인하세요.'}`, 160)
+  const description = truncate(`${category}가 유튜브·인스타그램에서 소개하거나 착용한 ${titleText}. ${readString(product.excerpt) || '등록된 제휴몰 가격과 제휴 링크를 확인하세요.'}`, 160)
   const pageTitle = seoTitle(`${titleText} | ${category} 착용·광고 핫템`)
-  const image = readPublicImage(product.coverImage, origin) || `${origin}/celeb-house-logo.svg`
+  const image = readPublicImage(product.coverImage, origin) || `${origin}/og-image.png`
   const productLinks = Array.isArray(product.productLinks) ? product.productLinks.filter(isRecord) as ProductLink[] : []
   const offers = productLinks.map((link) => createOffer(link)).filter((offer) => offer !== null)
   const productPrice = offers.length ? Math.min(...offers.map((offer) => offer.price)) : undefined
@@ -159,7 +211,7 @@ function renderCategoryPage(shell: string, origin: string, data: CommerceSummary
   const canonical = `${origin}/celeb/${encodeURIComponent(category)}`
   const pageTitle = seoTitle(`${category} 착용·광고 상품, 인스타·유튜브 핫템`)
   const description = `${category}가 유튜브와 인스타그램에서 착용·소개·광고한 상품을 모았습니다. 화제의 핫템과 잇템, 등록된 제휴몰 최저가를 셀럽하우스에서 확인하세요.`
-  const firstImage = posts.map((post) => readPublicImage(post.coverImage, origin)).find(Boolean) || `${origin}/celeb-house-logo.svg`
+  const firstImage = posts.map((post) => readPublicImage(post.coverImage, origin)).find(Boolean) || `${origin}/og-image.png`
   const structuredData = {
     '@context': 'https://schema.org',
     '@graph': [
@@ -270,7 +322,7 @@ function renderOfferList(links: ProductLink[]) {
     if (!href) return []
     const mall = readString(link.mall) || '제휴몰'
     const price = readString(link.price) || '가격 보기'
-    return [`<li><a href="${escapeHtml(href)}" rel="sponsored nofollow"><span>${escapeHtml(mall)}</span><strong>${escapeHtml(price)}</strong></a></li>`]
+    return [`<li><a href="${escapeHtml(href)}" rel="sponsored nofollow"><span>${escapeHtml(mall)}</span><strong>${escapeHtml(price)}</strong><span>보러가기</span></a></li>`]
   }).join('')
   return items ? `<h2>제휴몰 가격</h2><ul class="seo-fallback-offers">${items}</ul>` : ''
 }

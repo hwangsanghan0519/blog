@@ -13,7 +13,7 @@ export const createEmptyPost = (): Post => ({
   coverImage: '',
   detailImages: ['', '', '', ''],
   detailDescriptions: ['', '', '', ''],
-  purchaseTitle: '최저가 제휴몰 바로가기',
+  purchaseTitle: '보러가기',
   productLinks: [],
   status: 'draft',
   createdAt: new Date().toISOString(),

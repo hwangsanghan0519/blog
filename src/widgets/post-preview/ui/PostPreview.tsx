@@ -29,12 +29,12 @@ export function PostPreview({ post }: PostPreviewProps) {
       <RenderedContent content={post.content} />
       {post.productLinks.length > 0 && (
         <section className="preview-product-links">
-          <h3>구매 링크</h3>
+          <h3>제휴 링크</h3>
           {post.productLinks.map((link) => (
             <a href={link.href || undefined} key={link.id} target="_blank" rel="noreferrer sponsored">
               <span>{link.mall || '쇼핑몰'}</span>
               <strong>{link.price || '가격 확인'}</strong>
-              <small>{link.label || '구매하러 가기'}</small>
+              <small>보러가기</small>
             </a>
           ))}
         </section>

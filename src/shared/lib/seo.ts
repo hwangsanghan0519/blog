@@ -1,6 +1,6 @@
 import type { Post, ProductLink } from '../../entities/post/model/types'
 
-import { SEO_SITE_NAME, SEO_HOME_TITLE, SEO_HOME_DESCRIPTION, seoTitle, publicHttpUrl, readKrwPrice } from './seo-config'
+import { SEO_SITE_NAME, SEO_HOME_TITLE, SEO_HOME_DESCRIPTION, canonicalSiteOrigin, seoTitle, publicHttpUrl, readKrwPrice } from './seo-config'
 export { SEO_SITE_NAME, SEO_HOME_TITLE, SEO_HOME_DESCRIPTION } from './seo-config'
 
 type SeoState = {
@@ -16,8 +16,7 @@ export function applyPublicSeo({ category, posts, selectedPost }: SeoState) {
   // Preserve the server's detail metadata until URL-driven React state has caught up.
   if (route.product && route.product !== selectedPost?.slug && route.product !== selectedPost?.id) return
   if (route.category && route.category !== category) return
-  const configuredOrigin = publicHttpUrl(document.head.querySelector<HTMLMetaElement>('meta[name="site-origin"]')?.content)
-  const origin = configuredOrigin ? new URL(configuredOrigin).origin : window.location.origin
+  const origin = getPublicSiteOrigin()
   const isCategory = !selectedPost && category !== 'all'
   const canonicalPath = selectedPost
     ? getProductPath(selectedPost.slug || selectedPost.id)
@@ -32,14 +31,14 @@ export function applyPublicSeo({ category, posts, selectedPost }: SeoState) {
       : SEO_HOME_TITLE
   const description = selectedPost
     ? truncate(
-        `${selectedPost.category}가 유튜브·인스타그램에서 소개하거나 착용한 ${selectedPost.title}. ${selectedPost.excerpt || '등록된 제휴몰 가격과 구매 링크를 확인하세요.'}`,
+        `${selectedPost.category}가 유튜브·인스타그램에서 소개하거나 착용한 ${selectedPost.title}. ${selectedPost.excerpt || '등록된 제휴몰 가격과 제휴 링크를 확인하세요.'}`,
         160,
       )
     : isCategory
       ? `${category}가 유튜브와 인스타그램에서 착용·소개·광고한 상품을 모았습니다. 화제의 핫템과 잇템, 등록된 제휴몰 최저가를 셀럽하우스에서 확인하세요.`
       : SEO_HOME_DESCRIPTION
   const categoryImage = isCategory ? posts.find((post) => post.status === 'published' && post.category === category && publicHttpUrl(post.coverImage, origin))?.coverImage : ''
-  const image = publicHttpUrl(selectedPost?.coverImage || categoryImage, origin) || `${origin}/celeb-house-logo.svg`
+  const image = publicHttpUrl(selectedPost?.coverImage || categoryImage, origin) || `${origin}/og-image.png`
   const keywords = Array.from(new Set([
     ...(selectedPost ? [selectedPost.title, selectedPost.category, ...selectedPost.tags] : []),
     ...(isCategory ? [category] : posts.slice(0, 12).map((post) => post.category)),
@@ -71,7 +70,7 @@ export function applyPublicSeo({ category, posts, selectedPost }: SeoState) {
   setMeta('name', 'twitter:description', description)
   setMeta('name', 'twitter:image', image)
   for (const key of ['og:image:width', 'og:image:height']) removeMeta('property', key)
-  if (image === `${origin}/celeb-house-logo.svg`) {
+  if (image === `${origin}/og-image.png`) {
     setMeta('property', 'og:image:width', '1200')
     setMeta('property', 'og:image:height', '630')
   }
@@ -91,6 +90,14 @@ export function applyPublicSeo({ category, posts, selectedPost }: SeoState) {
 
 export function getProductPath(slug: string) {
   return `/product/${encodeURIComponent(slug)}`
+}
+
+export function getPublicSiteOrigin() {
+  return canonicalSiteOrigin(document.head.querySelector<HTMLMetaElement>('meta[name="site-origin"]')?.content)
+}
+
+export function getProductShareUrl(slug: string) {
+  return new URL(getProductPath(slug), getPublicSiteOrigin()).href
 }
 
 export function getCategoryPath(category: string) {

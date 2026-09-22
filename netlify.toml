@@ -40,26 +40,44 @@
     X-Robots-Tag = "noindex, nofollow, noarchive"
 
 [[redirects]]
+  from = "https://ssenshop.netlify.app/*"
+  to = "https://ssenshop.co.kr/:splat"
+  status = 301
+  force = true
+
+[[redirects]]
+  from = "http://ssenshop.netlify.app/*"
+  to = "https://ssenshop.co.kr/:splat"
+  status = 301
+  force = true
+
+[[redirects]]
   from = "/robots.txt"
-  to = "/.netlify/functions/blog-data?format=robots"
+  to = "/.netlify/functions/robots"
   status = 200
   force = true
 
 [[redirects]]
   from = "/sitemap.xml"
-  to = "/.netlify/functions/blog-data?format=sitemap"
+  to = "/.netlify/functions/sitemap"
   status = 200
   force = true
 
 [[redirects]]
   from = "/product/:slug"
-  to = "/.netlify/functions/seo-page?kind=product&value=:slug"
+  to = "/.netlify/functions/seo-page/product/:slug"
   status = 200
   force = true
 
 [[redirects]]
   from = "/celeb/:name"
-  to = "/.netlify/functions/seo-page?kind=category&value=:name"
+  to = "/.netlify/functions/seo-page/celeb/:name"
+  status = 200
+  force = true
+
+[[redirects]]
+  from = "/"
+  to = "/.netlify/functions/seo-page/home"
   status = 200
   force = true
 

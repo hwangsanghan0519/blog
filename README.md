@@ -472,8 +472,10 @@ npm run preview
 | `BLOG_ADMIN_TOKEN` | 운영 저장 시 | 데이터 API 쓰기 인증 |
 | `SUPABASE_URL` | 운영 저장 시 | Supabase 프로젝트 URL |
 | `SUPABASE_SERVICE_ROLE_KEY` | 운영 저장 시 | 서버 전용 DB/Storage 권한 |
-| `URL` | Netlify 권장 | canonical 및 sitemap origin |
-| `VITE_SITE_URL` | 선택 | build 시 기본 사이트 URL 대체 |
+| `VITE_SITE_URL` | 선택 | 대표 주소 대체. 기본 `https://ssenshop.co.kr`; 빌드와 함수에 동일하게 설정 |
+| `GOOGLE_SITE_VERIFICATION` | 선택 | Google Search Console에서 발급한 HTML 태그 인증값, 빌드 시 반영 |
+| `NAVER_SITE_VERIFICATION` | 선택 | 네이버 서치어드바이저 HTML 태그 인증값, 빌드 시 반영 |
+| `BING_SITE_VERIFICATION` | 선택 | Bing Webmaster Tools HTML 태그 인증값, 빌드 시 반영 |
 | `GITHUB_PAGES=true` | 선택 | `/blog/` base build |
 
 `SUPABASE_SERVICE_KEY`, `SERVICE_ROLE_KEY`, `VITE_SUPABASE_URL`, `NEXT_PUBLIC_SUPABASE_URL`도 이전 환경 호환을 위해 읽지만 신규 환경은 표의 기본 이름을 사용합니다. service-role 키를 `VITE_*` 변수로 제공하지 마십시오.
@@ -559,9 +561,15 @@ timeline
 
 ### 셀럽하우스 SEO 운영
 
-- `VITE_SITE_URL`을 대표 사이트 주소로 설정하면 빌드 HTML, 브라우저 canonical, 서버 SEO 응답, robots.txt와 사이트맵이 같은 도메인을 사용합니다. 미설정 시 Netlify의 `URL`을 사용합니다.
-- 상품/셀럽 페이지는 초기 HTML에 제목, 설명, canonical, 구조화 데이터와 공개 상품 링크를 제공합니다. 상품의 완성된 네컷 설명도 포함합니다.
+- 대표 주소는 Netlify에서 실제 연결된 `https://ssenshop.co.kr`입니다. `www.ssenshop.co.kr`은 Netlify의 primary domain 설정으로 이동하고 기존 Netlify 주소는 301 이동합니다. `ssensshop.co.kr`은 다른 도메인이므로 구매·DNS 연결을 확인하기 전에는 사용하지 않습니다.
+- 기본 HTML, 공유 링크, 브라우저 canonical, 서버 SEO, robots.txt와 사이트맵은 같은 대표 주소를 사용합니다. Netlify `URL` 또는 미리보기 도메인이 검색 주소를 덮어쓰지 않습니다. 별도 운영 주소는 빌드와 함수의 `VITE_SITE_URL`을 함께 설정합니다.
+- 홈/상품/셀럽 페이지는 초기 HTML에 제목, 설명, canonical, 구조화 데이터와 공개 상품 링크를 제공합니다. 상품의 완성된 네컷 설명도 포함합니다. 봇과 일반 방문자에게 같은 HTML을 제공합니다.
+- 상품 경로는 rewrite query 전달에 의존하지 않고 원래 요청 경로와 함수 하위 경로에서 읽습니다. `/robots.txt`, `/sitemap.xml`은 전용 함수로 연결되어 query 누락이나 공유용 추적 파라미터에 영향을 받지 않습니다.
+- Open Graph 기본 이미지는 1200×630 PNG입니다. 로고 원본 수정 후 `npm run build:social-image`로 갱신하고 `public/og-image.png`를 함께 배포합니다.
+- 제휴몰 이동 버튼은 저장된 예전 버튼 문구와 관계없이 `보러가기`로 표시합니다. 사이트 안에서 주문이나 결제를 진행하지 않습니다.
+- 모바일(900px 미만) 왼쪽 하단 검색 버튼은 상품 제목 검색 패널을 엽니다. 공개된 상품 전체에서 대소문자·띄어쓰기를 정규화해 검색하고 여러 단어는 모두 포함된 제목을 찾습니다. 추천 검색어, 제목 강조, 결과 없음 안내, 상품 상세 연결을 제공하며 검색어는 서버에 저장하지 않습니다.
 - 긴 상품 제목에서도 브랜드 이름을 유지하고, 가격 범위·할부·할인 문구는 구조화 데이터의 숫자 가격으로 오인하지 않습니다.
 - 실제 없는 상품은 404, 일시적인 원본 서버 장애는 503과 Retry-After로 구분합니다. 사이트맵은 공개 상품만 포함하고 중복 URL·잘못된 수정일을 제거합니다.
 - 배포 후 Google Search Console 및 네이버 서치어드바이저에서 사이트 소유권을 확인하고 `/sitemap.xml`을 제출해야 합니다. 계정 등록과 검색엔진 색인 요청은 코드 변경에 포함되지 않습니다.
+- 제출 주소: `https://ssenshop.co.kr/sitemap.xml`. HTML 인증을 사용할 때는 해당 서비스에서 발급받은 인증값을 위 환경변수로 등록하고 재배포합니다. 검색 수집 여부·노출 순위는 검색엔진이 결정합니다.
 - 검증: `npm run check`. `tests/seo.test.ts`에서 서버 응답, 공개 상품 필터, 메타데이터 중복, 가격, 사이트맵을 확인합니다.

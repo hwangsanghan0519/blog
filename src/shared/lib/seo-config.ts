@@ -27,3 +27,12 @@ export function readKrwPrice(value: unknown) {
   const price = Number(match[1].replaceAll(',', ''))
   return Number.isSafeInteger(price) && price > 0 ? price : null
 }
+export const SEO_SITE_ORIGIN = 'https://ssenshop.co.kr'
+
+export function canonicalSiteOrigin(value?: string) {
+  const configured = publicHttpUrl(value)
+  if (!configured) return SEO_SITE_ORIGIN
+  const url = new URL(configured)
+  return ['ssenshop.netlify.app', 'ssenshop.co.kr', 'www.ssenshop.co.kr'].includes(url.hostname)
+    ? SEO_SITE_ORIGIN : url.origin
+}
