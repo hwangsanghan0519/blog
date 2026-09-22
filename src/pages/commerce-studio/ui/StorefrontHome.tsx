@@ -1107,7 +1107,7 @@ export function StorefrontHome({
         </div>
       </footer>
 
-      <MobileProductSearch posts={publishedPosts} onSelect={selectPost} />
+      {!selectedPost && <MobileProductSearch posts={publishedPosts} onSelect={selectPost} />}
       <div className="public-quick-actions" aria-label="빠른 기능">
         <a href="mailto:nmc2711@naver.com" aria-label="제휴 문의 이메일 보내기">
           <Mail size={21} />

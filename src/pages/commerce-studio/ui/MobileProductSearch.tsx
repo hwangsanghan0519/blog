@@ -43,7 +43,7 @@ export function MobileProductSearch({ posts, onSelect }: { posts: Post[]; onSele
       <Dialog.Trigger className="mobile-search-trigger" aria-label="상품 제목 검색 열기">
         <Search size={22} strokeWidth={2.2} aria-hidden="true" />
       </Dialog.Trigger>
-      <Dialog.Portal>별
+      <Dialog.Portal>
         <Dialog.Overlay className="mobile-search-overlay" />
         <Dialog.Content className="mobile-product-search" data-compact={viewport.height > 0 && viewport.height < 520 ? '' : undefined} style={viewport.height ? {
           '--search-viewport-height': `${viewport.height}px`, '--search-keyboard-offset': `${viewport.bottom}px`,
