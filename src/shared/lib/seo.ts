@@ -1,6 +1,7 @@
-import type { Post, ProductLink } from '../../entities/post/model/types'
+import type { Post } from '../../entities/post/model/types'
 
-import { SEO_SITE_NAME, SEO_HOME_TITLE, SEO_HOME_DESCRIPTION, canonicalSiteOrigin, seoTitle, publicHttpUrl, readKrwPrice } from './seo-config'
+import { SEO_SITE_NAME, SEO_HOME_TITLE, SEO_HOME_DESCRIPTION, canonicalSiteOrigin, seoTitle, publicHttpUrl } from './seo-config'
+import { createProductSeoNodes, getProductSeo } from './product-seo'
 export { SEO_SITE_NAME, SEO_HOME_TITLE, SEO_HOME_DESCRIPTION } from './seo-config'
 
 type SeoState = {
@@ -17,6 +18,7 @@ export function applyPublicSeo({ category, posts, selectedPost }: SeoState) {
   if (route.product && route.product !== selectedPost?.slug && route.product !== selectedPost?.id) return
   if (route.category && route.category !== category) return
   const origin = getPublicSiteOrigin()
+  const productSeo = selectedPost ? getProductSeo(selectedPost, origin) : undefined
   const isCategory = !selectedPost && category !== 'all'
   const canonicalPath = selectedPost
     ? getProductPath(selectedPost.slug || selectedPost.id)
@@ -25,21 +27,18 @@ export function applyPublicSeo({ category, posts, selectedPost }: SeoState) {
       : '/'
   const canonicalUrl = new URL(canonicalPath, origin).href
   const title = selectedPost
-    ? seoTitle(`${selectedPost.title} | ${selectedPost.category} 착용·광고 핫템`)
+    ? productSeo!.pageTitle
     : isCategory
       ? seoTitle(`${category} 착용·광고 상품, 인스타·유튜브 핫템`)
       : SEO_HOME_TITLE
   const description = selectedPost
-    ? truncate(
-        `${selectedPost.category}가 유튜브·인스타그램에서 소개하거나 착용한 ${selectedPost.title}. ${selectedPost.excerpt || '등록된 제휴몰 가격과 제휴 링크를 확인하세요.'}`,
-        160,
-      )
+    ? productSeo!.description
     : isCategory
       ? `${category}가 유튜브와 인스타그램에서 착용·소개·광고한 상품을 모았습니다. 화제의 핫템과 잇템, 등록된 제휴몰 최저가를 파워퍼프셀럽에서 확인하세요.`
       : SEO_HOME_DESCRIPTION
   const categoryImage = isCategory ? posts.find((post) => post.status === 'published' && post.category === category && publicHttpUrl(post.coverImage, origin))?.coverImage : ''
-  const image = publicHttpUrl(selectedPost?.coverImage || categoryImage, origin) || `${origin}/powerpuffceleb-og.png`
-  const keywords = Array.from(new Set([
+  const image = productSeo?.image || publicHttpUrl(selectedPost?.coverImage || categoryImage, origin) || `${origin}/powerpuffceleb-og.png`
+  const keywords = productSeo?.keywords ?? Array.from(new Set([
     ...(selectedPost ? [selectedPost.title, selectedPost.category, ...selectedPost.tags] : []),
     ...(isCategory ? [category] : posts.slice(0, 12).map((post) => post.category)),
     '연예인 핫템',
@@ -74,7 +73,7 @@ export function applyPublicSeo({ category, posts, selectedPost }: SeoState) {
     setMeta('property', 'og:image:width', '1200')
     setMeta('property', 'og:image:height', '630')
   }
-  const lowestPrice = selectedPost ? readLowestPrice(selectedPost.productLinks) : null
+  const lowestPrice = productSeo?.productPrice
   if (lowestPrice) {
     setMeta('property', 'product:price:amount', String(lowestPrice))
     setMeta('property', 'product:price:currency', 'KRW')
@@ -85,7 +84,7 @@ export function applyPublicSeo({ category, posts, selectedPost }: SeoState) {
   setLink('canonical', canonicalUrl)
   setLink('alternate', canonicalUrl, 'ko-KR')
   setLink('alternate', canonicalUrl, 'x-default')
-  setJsonLd(createStructuredData({ canonicalUrl, category, description, image, origin, posts, selectedPost, title }))
+  setJsonLd(createStructuredData({ canonicalUrl, category, description, origin, posts, selectedPost }))
 }
 
 export function getProductPath(slug: string) {
@@ -117,12 +116,10 @@ function createStructuredData({
   canonicalUrl,
   category,
   description,
-  image,
   origin,
   posts,
   selectedPost,
-  title,
-}: SeoState & { canonicalUrl: string; description: string; image: string; origin: string; title: string }) {
+}: SeoState & { canonicalUrl: string; description: string; origin: string }) {
   const organization = {
     '@type': 'Organization',
     '@id': `${origin}/#organization`,
@@ -144,41 +141,9 @@ function createStructuredData({
   }
 
   if (selectedPost) {
-    const offers = selectedPost.productLinks.map(createOffer).filter(Boolean)
-    const product = {
-      '@type': 'Product',
-      '@id': `${canonicalUrl}#product`,
-      name: selectedPost.title,
-      description,
-      image: selectedPost.coverImage ? [image] : undefined,
-      category: `${selectedPost.category} 착용·소개 상품`,
-      sku: selectedPost.id,
-      url: canonicalUrl,
-      offers: offers.length === 1 ? offers[0] : offers.length > 1 ? offers : undefined,
-    }
-
     return {
       '@context': 'https://schema.org',
-      '@graph': [
-        organization,
-        website,
-        {
-          '@type': 'WebPage',
-          '@id': `${canonicalUrl}#webpage`,
-          url: canonicalUrl,
-          name: title,
-          description,
-          inLanguage: 'ko-KR',
-          isPartOf: { '@id': `${origin}/#website` },
-          mainEntity: { '@id': `${canonicalUrl}#product` },
-        },
-        product,
-        createBreadcrumb(origin, [
-          ['홈', '/'],
-          [selectedPost.category, getCategoryPath(selectedPost.category)],
-          [selectedPost.title, getProductPath(selectedPost.slug || selectedPost.id)],
-        ]),
-      ],
+      '@graph': [organization, website, ...createProductSeoNodes(selectedPost, origin)],
     }
   }
 
@@ -214,19 +179,6 @@ function createStructuredData({
   }
 }
 
-function createOffer(link: ProductLink) {
-  const price = readKrwPrice(link.price)
-  const href = publicHttpUrl(link.href)
-  if (!href || price === null) return null
-  return {
-    '@type': 'Offer',
-    url: href,
-    price,
-    priceCurrency: 'KRW',
-    seller: link.mall.trim() ? { '@type': 'Organization', name: link.mall.trim() } : undefined,
-  }
-}
-
 function createBreadcrumb(origin: string, items: Array<[string, string]>) {
   return {
     '@type': 'BreadcrumbList',
@@ -251,14 +203,6 @@ function setMeta(attribute: 'name' | 'property', key: string, content: string) {
 
 function removeMeta(attribute: 'name' | 'property', key: string) {
   document.head.querySelector(`meta[${attribute}="${key}"]`)?.remove()
-}
-
-function readLowestPrice(links: ProductLink[]) {
-  const prices = links
-    .map(createOffer)
-    .filter((offer) => offer !== null)
-    .map((offer) => offer.price)
-  return prices.length ? Math.min(...prices) : null
 }
 
 function setLink(rel: string, href: string, hreflang?: string) {
@@ -290,9 +234,4 @@ function safelyDecode(value: string) {
   } catch {
     return value
   }
-}
-
-function truncate(value: string, maxLength: number) {
-  const normalized = value.replace(/\s+/g, ' ').trim()
-  return normalized.length > maxLength ? `${normalized.slice(0, maxLength - 1).trim()}…` : normalized
 }

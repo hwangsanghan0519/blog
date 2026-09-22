@@ -1,5 +1,5 @@
 import { siteOrigin } from './lib/site-origin.ts'
-import { publicHttpUrl } from '../../src/shared/lib/seo-config.ts'
+import { getProductImages } from '../../src/shared/lib/product-seo.ts'
 import { createHash } from 'node:crypto'
 
 const ROW_ID = 'main'
@@ -234,7 +234,7 @@ export function createSitemapXml(data: CommerceData, origin: string) {
   const categories = Array.from(new Set(
     publishedPosts.map((post) => typeof post.category === 'string' ? post.category.trim() : '').filter(Boolean),
   ))
-  const entries: Array<{ image?: string; lastmod?: string; loc: string }> = [
+  const entries: Array<{ images?: string[]; lastmod?: string; loc: string }> = [
     { loc: `${origin}/`, lastmod: normalizeLastModified(data.savedAt) },
     ...categories.map((category) => ({
       loc: `${origin}/celeb/${encodeURIComponent(category)}`,
@@ -245,22 +245,19 @@ export function createSitemapXml(data: CommerceData, origin: string) {
         ? post.slug.trim()
         : typeof post.id === 'string' ? post.id : ''
       if (!slug) return []
-      const coverImage = typeof post.coverImage === 'string' && post.coverImage && !post.coverImage.startsWith('data:')
-        ? toAbsoluteUrl(post.coverImage, origin)
-        : undefined
       const lastmod = normalizeLastModified(
         typeof post.updatedAt === 'string' ? post.updatedAt : typeof post.publishedAt === 'string' ? post.publishedAt : data.savedAt,
       )
-      return [{ loc: `${origin}/product/${encodeURIComponent(slug)}`, lastmod, image: coverImage }]
+      return [{ loc: `${origin}/product/${encodeURIComponent(slug)}`, lastmod, images: getProductImages(post, origin) }]
     }),
   ]
 
   const uniqueEntries = Array.from(new Map(entries.map((entry) => [entry.loc, entry])).values())
-  const nodes = uniqueEntries.map(({ image, lastmod, loc }) => [
+  const nodes = uniqueEntries.map(({ images, lastmod, loc }) => [
     '  <url>',
     `    <loc>${escapeXml(loc)}</loc>`,
     lastmod ? `    <lastmod>${escapeXml(lastmod)}</lastmod>` : '',
-    image ? `    <image:image><image:loc>${escapeXml(image)}</image:loc></image:image>` : '',
+    ...(images ?? []).map((image) => `    <image:image><image:loc>${escapeXml(image)}</image:loc></image:image>`),
     '  </url>',
   ].filter(Boolean).join('\n')).join('\n')
 
@@ -277,10 +274,6 @@ function normalizeLastModified(value: unknown) {
   if (typeof value !== 'string' || !value.trim()) return undefined
   const timestamp = Date.parse(value)
   return Number.isNaN(timestamp) || timestamp > Date.now() ? undefined : new Date(timestamp).toISOString()
-}
-
-function toAbsoluteUrl(value: string, origin: string) {
-  return publicHttpUrl(value, origin) || undefined
 }
 
 function escapeXml(value: string) {

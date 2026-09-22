@@ -244,7 +244,7 @@ flowchart TD
   E -->|10초 제한·실패| G[안전한 빈 상태]
 ```
 
-부트 로더와 스켈레톤은 상태 label을 제공하고 `prefers-reduced-motion`에서는 회전·shimmer 애니메이션을 끕니다. 부트 로더의 진행 막대는 이동 대신 느린 명암 변화로 로딩 상태를 알립니다. 캐시가 있는 앱 새로고침에서도 로더를 첫 프레임부터 최소 850ms 표시하고, 앱 복귀 시 중단된 부트 애니메이션을 다시 시작합니다. 네컷 상세는 사진별 로딩 중 카메라 촬영 애니메이션을 표시하며, 로드 실패 시 다시 불러오기 버튼을 제공합니다. JavaScript가 비활성화된 경우에는 `<noscript>`의 서비스 설명이 대신 표시됩니다.
+부트 로더와 스켈레톤은 상태 label을 제공하고 `prefers-reduced-motion`에서는 회전·shimmer 애니메이션을 끕니다. 부트 게이지는 앱 시작→데이터 준비→첫 화면 이미지·글꼴 처리→화면 준비 단계를 `storefront-progress` 이벤트로 받아 실제 너비를 갱신합니다. CSS 애니메이션이 중단된 앱 환경에서도 채워지며, 모션 감소 설정에서는 단계별로 즉시 갱신합니다. 다운로드 바이트의 백분율을 뜻하지 않습니다. 캐시가 있는 앱 새로고침에서도 최소 850ms 표시하고 완료 상태를 표시한 뒤 화면으로 진입합니다. 앱 복귀 시 게이지를 다시 그리며, 애니메이션 프레임이 중단돼도 타이머로 진행 표시를 시작합니다. 네컷 상세는 사진별 로딩 중 카메라 촬영 애니메이션을 표시하며, 로드 실패 시 다시 불러오기 버튼을 제공합니다. JavaScript가 비활성화된 경우에는 `<noscript>`의 서비스 설명이 대신 표시됩니다.
 
 ### 4.2 공개 목록과 상세의 분리 로딩
 
@@ -565,7 +565,10 @@ timeline
 
 - 대표 주소는 `https://powerpuffceleb.co.kr`입니다. `www.powerpuffceleb.co.kr`, 기존 `ssenshop.co.kr`·`www.ssenshop.co.kr`, `ssenshop.netlify.app`의 HTTP/HTTPS 요청은 상품·셀럽 경로와 쿼리를 유지해 대표 HTTPS 주소로 301 이동합니다. 도메인 이동 규칙은 SPA/SEO rewrite보다 먼저 적용합니다.
 - 기본 HTML, 공유 링크, 브라우저 canonical, 서버 SEO, robots.txt와 사이트맵은 같은 대표 주소를 사용합니다. Netlify `URL` 또는 미리보기 도메인이 검색 주소를 덮어쓰지 않습니다. 별도 운영 주소는 빌드와 함수의 `VITE_SITE_URL`을 함께 설정합니다. 이전 도메인이 환경변수에 남아 있어도 새 대표 주소로 정규화하며, 로컬 개발의 상품·투표 API도 새 운영 주소를 사용합니다.
-- 홈/상품/셀럽 페이지는 초기 HTML에 제목, 설명, canonical, 구조화 데이터와 공개 상품 링크를 제공합니다. 상품의 완성된 네컷 설명도 포함합니다. 봇과 일반 방문자에게 같은 HTML을 제공합니다.
+- 홈/상품/셀럽 페이지는 초기 HTML에 제목, 설명, canonical, 구조화 데이터와 공개 상품 링크를 제공합니다. 상품의 완성된 네컷 설명 또는 일반 에디터 본문을 포함합니다. 봇과 일반 방문자에게 같은 HTML을 제공합니다.
+- 상품 SEO는 `src/shared/lib/product-seo.ts`에서 서버·브라우저·어드민 미리보기가 공통으로 생성합니다. 제목에 이미 있는 셀럽 이름은 반복하지 않고, 제목 길이에 여유가 있으면 중복되지 않는 짧은 태그 하나를 반영합니다. 설명은 실제 상품 소개와 상세 본문을 사용하며, 모든 상품을 유튜브·인스타 광고 상품이라고 추정하지 않습니다.
+- 어드민 태그는 칩 형태로 여러 개 등록하고 개별 삭제할 수 있습니다. Enter·쉼표·입력창에서 벗어나기로 추가하며, 쉼표·줄바꿈으로 구분한 여러 태그를 한 번에 붙여넣을 수 있습니다. 한글 조합 중 Enter는 확정하지 않습니다. `#`·중복·빈 값은 정리하고 태그 하나는 48자 이하로 제한합니다. 브랜드·모델명·상품 종류처럼 관련 있는 단어를 앞에 입력하세요. 저장 개수와 별개로 첫 12개가 상품상세 태그 목록과 WebPage 키워드에 반영됩니다. Google은 `meta keywords`를 색인·순위에 사용하지 않으므로 해당 메타 태그만을 SEO 수단으로 삼지 않습니다.
+- 상품상세는 상품명을 H1으로 표시하고 홈·셀럽 페이지로 연결되는 실제 경로 링크를 제공합니다. Product·WebPage·BreadcrumbList를 연결하고, 유효한 단일 가격은 Offer, 여러 제휴몰 가격은 AggregateOffer로 표현합니다. 임의의 평점·재고·제조사·할인가·가격 유효기간은 생성하지 않습니다. 공개된 대표 사진과 네컷 사진 모두 구조화 데이터와 이미지 사이트맵에 포함합니다.
 - 상품 경로는 rewrite query 전달에 의존하지 않고 원래 요청 경로와 함수 하위 경로에서 읽습니다. `/robots.txt`, `/sitemap.xml`은 전용 함수로 연결되어 query 누락이나 공유용 추적 파라미터에 영향을 받지 않습니다.
 - Open Graph 기본 이미지는 1200×630 PNG입니다. 벡터 로고는 `scripts/build-brand-assets.mjs`의 전용 글자 윤곽과 큰 눈·라벤더 단발·핑크 리본의 소녀 캐릭터로 생성합니다. 로고 수정 후 `npm run build:brand`로 SVG, 공유 PNG, 파비콘을 함께 갱신합니다.
 - 검색 결과용 파비콘은 `/favicon-96x96.png`, 브라우저 기본 경로는 `/favicon.ico`(32·48px), Apple 홈 화면 아이콘은 `/apple-touch-icon.png`(180px)입니다. 웹 앱 매니페스트에는 192·512px PNG도 제공합니다. `scripts/build-favicons.mjs`가 기존 캐릭터 SVG에서 생성하며 `npm run build`에도 포함됩니다. 배포 후 Search Console URL 검사에서 홈 URL의 색인 생성을 요청할 수 있습니다. 검색 결과 아이콘은 Google 재수집 후 반영되며 즉시 표시되지는 않습니다.
@@ -576,6 +579,7 @@ timeline
 - 배포 후 Google Search Console 및 네이버 서치어드바이저에서 사이트 소유권을 확인하고 `/sitemap.xml`을 제출해야 합니다. 계정 등록과 검색엔진 색인 요청은 코드 변경에 포함되지 않습니다.
 - 제출 주소: `https://powerpuffceleb.co.kr/sitemap.xml`. HTML 인증을 사용할 때는 해당 서비스에서 발급받은 인증값을 위 환경변수로 등록하고 재배포합니다. 검색 수집 여부·노출 순위는 검색엔진이 결정합니다.
 - 검증: `npm run check`. `tests/seo.test.ts`에서 서버 응답, 공개 상품 필터, 메타데이터 중복, 가격, 사이트맵을 확인합니다.
+- 작성 기준: [Google 제목 가이드](https://developers.google.com/search/docs/appearance/title-link), [Google 상품 구조화 데이터](https://developers.google.com/search/docs/appearance/structured-data/product-snippet), [네이버 콘텐츠 마크업](https://searchadvisor.naver.com/guide/markup-content). 배포 후 대표 상품 URL을 Google URL 검사와 네이버 URL 검사에서 확인하고, 실제 수집 HTML·색인 여부·사이트맵 처리 결과를 점검합니다. 검색 노출·상위 순위·리치 결과는 코드만으로 보장하지 않습니다.
 
 ### powerpuffceleb.co.kr 도메인 이전
 

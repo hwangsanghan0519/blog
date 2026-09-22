@@ -7,6 +7,7 @@ import { canonicalSiteOrigin, publicHttpUrl, readKrwPrice, seoTitle } from '../s
 import { siteOrigin } from '../netlify/functions/lib/site-origin'
 import { getProductShareUrl } from '../src/shared/lib/seo'
 import { PRODUCTION_CLOUD_DATA_ENDPOINT } from '../src/pages/commerce-studio/model/config'
+import { createProductSeoNodes, getProductSeo } from '../src/shared/lib/product-seo'
 
 const shell = readFileSync(new URL('../index.html', import.meta.url), 'utf8')
 const product = {
@@ -29,6 +30,38 @@ function graph(html: string) {
 afterEach(() => { vi.unstubAllGlobals(); vi.unstubAllEnvs() })
 
 describe('SEO page responses', () => {
+  it('uses the shared preview metadata and renders registered tags in crawlable product HTML', async () => {
+    const taggedProduct = { ...product, title: '수영 일본여행 야상', category: '수영', tags: ['#온앤온', 'NEW6AM831_43', '온앤온'], updatedAt: '2026-01-01' }
+    mockResponses(taggedProduct)
+    const page = await handler(event)
+    const seo = getProductSeo(taggedProduct, 'https://canonical.example')
+    expect(page.body).toContain(`<title>${seo.pageTitle}</title>`)
+    expect(page.body).toContain(`name="description" content="${seo.description}"`)
+    expect(page.body).toContain('<ul class="seo-product-tags"><li>#온앤온</li><li>#NEW6AM831_43</li></ul>')
+    expect(page.body.match(/<h1>/g)).toHaveLength(1)
+    expect(graph(page.body).slice(2)).toEqual(JSON.parse(JSON.stringify(createProductSeoNodes(taggedProduct, 'https://canonical.example'))))
+  })
+
+  it('includes editor body text when four-cut content is incomplete without injecting HTML', async () => {
+    mockResponses({ ...product, detailImages: [], content: '<h2>소재와 핏</h2><p>면 100% &amp; 여유 있는 핏</p><script>unsafe()</script>', tags: ['할인 $& $$', '&lt;img src=x onerror=alert(1)&gt;'] })
+    const page = await handler(event)
+    expect(page.body).toContain('<h2>상품 상세</h2><p>소재와 핏</p><p>면 100% &amp; 여유 있는 핏</p>')
+    expect(page.body).toContain('#할인 $&amp; $$')
+    expect(page.body).not.toContain('unsafe()')
+    expect(page.body).not.toContain('<img src=x')
+    expect(page.body.match(/id="root"/g)).toHaveLength(1)
+    expect(() => graph(page.body)).not.toThrow()
+  })
+
+  it('keeps legacy image uploads accessible through public asset URLs', async () => {
+    mockResponses({ ...product, coverImage: 'data:image/png;base64,AAAA', detailImages: Array(4).fill('data:image/png;base64,AAAA') })
+    const page = await handler(event)
+    const item = graph(page.body).find((node) => node['@type'] === 'Product')
+    expect(item?.image).toHaveLength(5)
+    expect(page.body).toContain('asset=post-detail&amp;id=product-1%3A0')
+    expect(page.body).not.toContain('data:image/png')
+  })
+
   it.each(['/', '/product/test-product', `/celeb/${encodeURIComponent(product.category)}`])(
     'keeps the initial loader outside the crawlable React root for %s', async (path) => {
       mockResponses(path.startsWith('/product/') ? product : { posts: [product] })
@@ -204,5 +237,7 @@ describe('SEO data correctness', () => {
     expect(sitemap).not.toContain('2999')
     expect(sitemap).not.toContain('invalid')
     expect(sitemap).toContain('<image:loc>https://canonical.example/product.jpg</image:loc>')
+    for (const image of ['1.jpg', '2.jpg', '3.jpg', '4.jpg']) expect(sitemap).toContain(`<image:loc>https://canonical.example/${image}</image:loc>`)
+    expect(sitemap.match(/<image:image>/g)).toHaveLength(5)
   })
 })

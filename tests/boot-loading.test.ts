@@ -5,20 +5,22 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 const html = readFileSync(new URL('../index.html', import.meta.url), 'utf8')
 const bootScript = html.match(/<script>([\s\S]*?)<\/script>/)![1]
 
-function boot() {
+function boot({ reducedMotion = false, suspendFrames = false } = {}) {
   const animation = { cancel: vi.fn(), play: vi.fn() }
   const loader = { setAttribute: vi.fn(), getAnimations: () => [animation] }
+  const bar = { style: { width: '8%' } }
   const document = Object.assign(new EventTarget(), {
     hidden: false,
     documentElement: { dataset: { bootState: '' } },
-    getElementById: () => loader,
+    getElementById: (id: string) => id === 'app-boot-progress' ? bar : loader,
   })
   const window = Object.assign(new EventTarget(), {
-    setTimeout, clearTimeout,
-    requestAnimationFrame: (callback: () => void) => setTimeout(callback, 16),
+    setTimeout, clearTimeout, setInterval, clearInterval,
+    matchMedia: () => ({ matches: reducedMotion }),
+    requestAnimationFrame: (callback: () => void) => suspendFrames ? 0 : setTimeout(callback, 16),
   })
   runInNewContext(bootScript, { window, document, performance: { now: () => Date.now() } })
-  return { document, window, loader, animation, state: () => document.documentElement.dataset.bootState }
+  return { document, window, loader, bar, animation, state: () => document.documentElement.dataset.bootState }
 }
 
 beforeEach(() => vi.useFakeTimers())
@@ -38,13 +40,16 @@ describe('app reload boot loader', () => {
     expect(h.loader.setAttribute).toHaveBeenCalledWith('aria-hidden', 'true')
   })
 
-  it('adds no extra delay once a slow load is ready', () => {
+  it('paints a full gauge briefly before releasing a slow load', () => {
     const h = boot()
     h.document.dispatchEvent(new Event('DOMContentLoaded'))
     vi.advanceTimersByTime(3000)
     expect(h.state()).toBe('loading')
     h.window.dispatchEvent(new Event('storefront-ready'))
-    vi.advanceTimersByTime(1)
+    vi.advanceTimersByTime(280)
+    expect(parseFloat(h.bar.style.width)).toBe(100)
+    expect(h.state()).toBe('loading')
+    vi.advanceTimersByTime(20)
     expect(h.state()).toBe('ready')
   })
 
@@ -68,5 +73,43 @@ describe('app reload boot loader', () => {
     vi.advanceTimersByTime(15000)
     h.window.dispatchEvent(new Event('pageshow'))
     expect(h.animation.play).toHaveBeenCalledTimes(2)
+  })
+
+  it('fills the actual bar through readiness stages without CSS animations or animation frames', () => {
+    const h = boot({ suspendFrames: true })
+    h.document.dispatchEvent(new Event('DOMContentLoaded'))
+    vi.advanceTimersByTime(120)
+    h.window.dispatchEvent(new CustomEvent('storefront-progress', { detail: 30 }))
+    vi.advanceTimersByTime(120)
+    expect(parseFloat(h.bar.style.width)).toBeGreaterThan(8)
+    expect(parseFloat(h.bar.style.width)).toBeLessThan(30)
+    vi.advanceTimersByTime(160)
+    expect(parseFloat(h.bar.style.width)).toBe(30)
+    h.window.dispatchEvent(new CustomEvent('storefront-progress', { detail: 65 }))
+    vi.advanceTimersByTime(280)
+    expect(parseFloat(h.bar.style.width)).toBe(65)
+    // StrictMode effects and late asset callbacks must never move progress backwards.
+    h.window.dispatchEvent(new CustomEvent('storefront-progress', { detail: 30 }))
+    vi.advanceTimersByTime(80)
+    expect(parseFloat(h.bar.style.width)).toBe(65)
+    h.window.dispatchEvent(new Event('storefront-ready'))
+    vi.advanceTimersByTime(1000)
+    expect(h.bar.style.width).toBe('100%')
+    expect(h.state()).toBe('ready')
+  })
+
+  it('updates instantly with reduced motion and restores progress after app backgrounding', () => {
+    const h = boot({ reducedMotion: true })
+    h.document.dispatchEvent(new Event('DOMContentLoaded'))
+    vi.advanceTimersByTime(16)
+    h.window.dispatchEvent(new CustomEvent('storefront-progress', { detail: 65 }))
+    expect(parseFloat(h.bar.style.width)).toBe(65)
+    h.bar.style.width = '0%'
+    h.window.dispatchEvent(new Event('pageshow'))
+    expect(parseFloat(h.bar.style.width)).toBe(65)
+    h.window.dispatchEvent(new CustomEvent('storefront-progress', { detail: NaN }))
+    expect(parseFloat(h.bar.style.width)).toBe(65)
+    h.window.dispatchEvent(new Event('storefront-ready'))
+    expect(parseFloat(h.bar.style.width)).toBe(100)
   })
 })

@@ -1,4 +1,5 @@
-import { SEO_SITE_NAME, SEO_HOME_TITLE, SEO_HOME_DESCRIPTION, seoTitle, publicHttpUrl, readKrwPrice } from '../../src/shared/lib/seo-config.ts'
+import { SEO_SITE_NAME, SEO_HOME_TITLE, SEO_HOME_DESCRIPTION, seoTitle, publicHttpUrl } from '../../src/shared/lib/seo-config.ts'
+import { createProductSeoNodes, getProductBodyText, getProductImageUrl, getProductSeo, hasProductFourCut } from '../../src/shared/lib/product-seo.ts'
 import { requestOrigin, siteOrigin } from './lib/site-origin.ts'
 
 type NetlifyEvent = {
@@ -129,59 +130,26 @@ function renderHomePage(shell: string, origin: string, data: CommerceSummary) {
 
 function renderProductPage(shell: string, origin: string, product: Product) {
   const titleText = readString(product.title) || '상품'
-  const category = readString(product.category) || '셀럽'
+  const category = readString(product.category)
   const slug = readString(product.slug) || readString(product.id)
   if (!slug || product.status !== 'published') return notFoundPage(origin, 'product', titleText)
 
-  const canonical = `${origin}/product/${encodeURIComponent(slug)}`
-  const description = truncate(`${category}가 유튜브·인스타그램에서 소개하거나 착용한 ${titleText}. ${readString(product.excerpt) || '등록된 제휴몰 가격과 제휴 링크를 확인하세요.'}`, 160)
-  const pageTitle = seoTitle(`${titleText} | ${category} 착용·광고 핫템`)
-  const image = readPublicImage(product.coverImage, origin) || `${origin}/powerpuffceleb-og.png`
+  const seo = getProductSeo(product, origin)
+  const { canonical, description, pageTitle, image, productPrice, tags } = seo
   const productLinks = Array.isArray(product.productLinks) ? product.productLinks.filter(isRecord) as ProductLink[] : []
-  const offers = productLinks.map((link) => createOffer(link)).filter((offer) => offer !== null)
-  const productPrice = offers.length ? Math.min(...offers.map((offer) => offer.price)) : undefined
   const structuredData = {
     '@context': 'https://schema.org',
-    '@graph': [
-      createOrganization(origin),
-      createWebsite(origin),
-      {
-        '@type': 'Product',
-        '@id': `${canonical}#product`,
-        name: titleText,
-        description,
-        image: readPublicImage(product.coverImage, origin) ? [image] : undefined,
-        category: `${category} 착용·소개 상품`,
-        sku: readString(product.id) || slug,
-        url: canonical,
-        offers: offers.length === 1 ? offers[0] : offers.length > 1 ? offers : undefined,
-      },
-      {
-        '@type': 'WebPage',
-        '@id': `${canonical}#webpage`,
-        url: canonical,
-        name: pageTitle,
-        description,
-        inLanguage: 'ko-KR',
-        isPartOf: { '@id': `${origin}/#website` },
-        mainEntity: { '@id': `${canonical}#product` },
-        primaryImageOfPage: { '@type': 'ImageObject', url: image },
-      },
-      createBreadcrumb(origin, [
-        ['홈', '/'],
-        [category, `/celeb/${encodeURIComponent(category)}`],
-        [titleText, `/product/${encodeURIComponent(slug)}`],
-      ]),
-    ],
+    '@graph': [createOrganization(origin), createWebsite(origin), ...createProductSeoNodes(product, origin)],
   }
   const fallback = `
     <main class="seo-fallback">
-      <nav aria-label="경로"><a href="/">파워퍼프셀럽</a><span>/</span><a href="/celeb/${encodeURIComponent(category)}">${escapeHtml(category)}</a></nav>
+      <nav aria-label="경로"><a href="/">파워퍼프셀럽</a>${category ? `<span>/</span><a href="/celeb/${encodeURIComponent(category)}">${escapeHtml(category)}</a>` : ''}<span>/</span><span aria-current="page">상품 상세</span></nav>
       <article>
         <div class="seo-fallback-copy">
-          <p class="seo-fallback-kicker">${escapeHtml(category)} PICK</p>
+          ${category ? `<p class="seo-fallback-kicker">${escapeHtml(category)} PICK</p>` : ''}
           <h1>${escapeHtml(titleText)}</h1>
           <p>${escapeHtml(description)}</p>
+          ${tags.length ? `<section aria-label="상품 키워드"><h2>상품 키워드</h2><ul class="seo-product-tags">${tags.map((tag) => `<li>#${escapeHtml(tag)}</li>`).join('')}</ul></section>` : ''}
           ${renderOfferList(productLinks)}
         </div>
         <img src="${escapeHtml(image)}" alt="${escapeHtml(`${titleText} 상품 이미지`)}" />
@@ -193,7 +161,7 @@ function renderProductPage(shell: string, origin: string, product: Product) {
     canonical,
     description,
     image,
-    keywords: createKeywords(product, category),
+    keywords: seo.keywords,
     pageTitle,
     productPrice,
     structuredData,
@@ -307,13 +275,14 @@ function injectSeo(shell: string, seo: {
     <meta name="twitter:image" content="${escapeHtml(seo.image)}" />
     <script type="application/ld+json" data-powerpuffceleb-seo>${safeJson(seo.structuredData)}</script>
     <style>
+      .seo-product-tags{display:flex;flex-wrap:wrap;gap:8px;padding:0;list-style:none}.seo-product-tags li{padding:7px 12px;border-radius:20px;background:#ece1f6;color:#68448a;font-size:14px}
       .seo-fallback{box-sizing:border-box;min-height:100vh;background:#f4efe5;color:#080808;padding:32px clamp(20px,6vw,88px);font-family:Arial,sans-serif}.seo-fallback *{box-sizing:border-box}.seo-fallback nav{display:flex;gap:10px;margin-bottom:42px;font-size:14px}.seo-fallback a{color:inherit}.seo-fallback article{display:grid;grid-template-columns:minmax(0,1fr) minmax(280px,42%);gap:clamp(28px,6vw,90px);align-items:center}.seo-fallback article>img{width:100%;max-height:70vh;object-fit:cover}.seo-fallback h1{max-width:900px;margin:8px 0 22px;font-size:clamp(38px,7vw,92px);line-height:.96;letter-spacing:-.06em}.seo-fallback p{max-width:720px;line-height:1.7}.seo-fallback-kicker{font-size:13px!important;font-weight:800;letter-spacing:.12em}.seo-fallback-offers{padding:0;list-style:none}.seo-fallback-offers a{display:flex;justify-content:space-between;gap:18px;padding:16px 0;border-bottom:1px solid #aaa;text-decoration:none}.seo-fallback-category header{max-width:880px}.seo-fallback-category ul{display:grid;grid-template-columns:repeat(auto-fit,minmax(210px,1fr));gap:22px;padding:30px 0;list-style:none}.seo-fallback-category li a{display:grid;gap:10px;text-decoration:none}.seo-fallback-category li img{width:100%;aspect-ratio:4/5;object-fit:cover}.seo-fallback-category li strong{font-size:20px}.seo-fallback-category li span{line-height:1.5}@media(max-width:700px){.seo-fallback article{grid-template-columns:1fr}.seo-fallback article>img{grid-row:1}.seo-fallback{padding-top:20px}}
     </style>`
 
   return cleaned
     .replace(/<noscript>[\s\S]*?<\/noscript>/gi, '')
-    .replace('</head>', `${meta}\n  </head>`)
-    .replace(/<div\s+id="root"\s*>[\s\S]*?<\/div>/i, `<div id="root">${seo.fallback}</div>`)
+    .replace('</head>', () => `${meta}\n  </head>`)
+    .replace(/<div\s+id="root"\s*>[\s\S]*?<\/div>/i, () => `<div id="root">${seo.fallback}</div>`)
 }
 
 function renderOfferList(links: ProductLink[]) {
@@ -325,20 +294,6 @@ function renderOfferList(links: ProductLink[]) {
     return [`<li><a href="${escapeHtml(href)}" rel="sponsored nofollow"><span>${escapeHtml(mall)}</span><strong>${escapeHtml(price)}</strong><span>보러가기</span></a></li>`]
   }).join('')
   return items ? `<h2>제휴몰 가격</h2><ul class="seo-fallback-offers">${items}</ul>` : ''
-}
-
-function createOffer(link: ProductLink) {
-  const href = readHttpUrl(link.href)
-  const price = readKrwPrice(link.price)
-  if (!href || price === null) return null
-  const mall = readString(link.mall)
-  return {
-    '@type': 'Offer',
-    url: href,
-    price,
-    priceCurrency: 'KRW',
-    seller: mall ? { '@type': 'Organization', name: mall } : undefined,
-  }
 }
 
 function createOrganization(origin: string) {
@@ -375,22 +330,6 @@ function createBreadcrumb(origin: string, items: Array<[string, string]>) {
       item: new URL(path, origin).href,
     })),
   }
-}
-
-function createKeywords(product: Product, category: string) {
-  const tags = Array.isArray(product.tags) ? product.tags.map(readString).filter(Boolean) : []
-  return Array.from(new Set([
-    readString(product.title),
-    category,
-    ...tags,
-    '연예인 핫템',
-    '인플루언서 핫템',
-    '연예인 착용 상품',
-    '인스타 광고 상품',
-    '유튜브 소개 상품',
-    '셀럽 잇템',
-    '최저가',
-  ].filter(Boolean))).join(', ')
 }
 
 function notFoundPage(origin: string, kind: string, value: string) {
@@ -433,9 +372,12 @@ function renderProductDetails(product: Product, origin: string) {
   const descriptions = Array.isArray(product.detailDescriptions) ? product.detailDescriptions.map(readString) : []
   const images = Array.isArray(product.detailImages) ? product.detailImages : []
   // Match the four-cut content shown by the React product reader.
-  if (descriptions.length !== 4 || !descriptions.every(Boolean) || images.length !== 4 || !images.every(readString)) return ''
-  return `<section aria-label="파워퍼프셀럽 네컷 상품 상세"><h2>파워퍼프셀럽 네컷</h2>${descriptions.map((description, index) => {
-    const image = readPublicImage(images[index], origin)
+  if (!hasProductFourCut(product)) {
+    const body = getProductBodyText(product)
+    return body ? `<section aria-label="상품 상세 정보"><h2>상품 상세</h2>${body.split('\n').map((paragraph) => `<p>${escapeHtml(paragraph)}</p>`).join('')}</section>` : ''
+  }
+  return `<section aria-label="파워퍼프셀럽 네컷 상품 상세"><h2>파워퍼프셀럽 네컷</h2>${descriptions.slice(0, 4).map((description, index) => {
+    const image = getProductImageUrl(product, images[index], origin, index)
     return `<figure>${image ? `<img src="${escapeHtml(image)}" alt="${escapeHtml(`${readString(product.title)} 상세 ${index + 1}`)}" loading="lazy" style="max-width:100%;height:auto" />` : ''}<figcaption>${escapeHtml(description)}</figcaption></figure>`
   }).join('')}</section>`
 }
@@ -467,9 +409,4 @@ function safelyDecode(value: string) {
   } catch {
     return value
   }
-}
-
-function truncate(value: string, maxLength: number) {
-  const normalized = value.replace(/\s+/g, ' ').trim()
-  return normalized.length > maxLength ? `${normalized.slice(0, maxLength - 1).trim()}…` : normalized
 }

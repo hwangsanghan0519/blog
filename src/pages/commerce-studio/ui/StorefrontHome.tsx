@@ -18,6 +18,7 @@ import type { AdBannerSettings, HeroVideoSettings } from '../model/types'
 import { AdStripBanners, CategoryVisual, TrendVideo } from './StorefrontMedia'
 import { MobileProductSearch } from './MobileProductSearch'
 import { FourCutImage, FourCutLoading } from './FourCutImage'
+import { getProductSeo, getProductTags } from '../../../shared/lib/product-seo'
 
 type StorefrontHomeProps = {
   posts: Post[]
@@ -149,6 +150,7 @@ export function StorefrontHome({
   }, [categoryFilter, publishedPosts])
 
   const selectedPost = publishedPosts.find((post) => post.id === selectedId)
+  const selectedTags = getProductTags(selectedPost?.tags)
   const selectedPostIndex = selectedPost ? publishedPosts.findIndex((post) => post.id === selectedPost.id) : -1
   const [sliderRef, slider] = useKeenSlider<HTMLDivElement>({
     loop: topPosts.length > 1,
@@ -168,8 +170,9 @@ export function StorefrontHome({
   }, [keenSliderRecovery])
 
   useEffect(() => {
+    if (selectedPost && loadingDetailId === selectedPost.id) return
     applyPublicSeo({ category: categoryFilter, posts: publishedPosts, selectedPost })
-  }, [categoryFilter, publishedPosts, selectedPost])
+  }, [categoryFilter, publishedPosts, selectedPost, loadingDetailId])
 
   useEffect(() => {
     if (!priceElement || !selectedId) return undefined
@@ -458,9 +461,10 @@ export function StorefrontHome({
 
   const sharePost = async (post: Post) => {
     const url = getProductShareUrl(post.slug || post.id)
+    const seo = getProductSeo(post, new URL(url).origin)
     const shareData = {
-      title: `${post.title} | ${post.category} 핫템 - 파워퍼프셀럽`,
-      text: `${post.category}가 소개·착용한 ${post.title}${post.excerpt ? ` — ${post.excerpt}` : ''}`,
+      title: seo.pageTitle,
+      text: seo.description,
       url,
     }
 
@@ -999,6 +1003,11 @@ export function StorefrontHome({
               <div className="public-reader-scroll" onScroll={updateReadingProgress}>
                 <div className="public-reader-book">
                   <div className="public-reader-page">
+                    <nav className="product-breadcrumbs" aria-label="상품 경로">
+                      <a href="/" onClick={(event) => { if (event.button === 0 && !event.metaKey && !event.ctrlKey && !event.shiftKey && !event.altKey) { event.preventDefault(); browseReaderCategory('all') } }}>홈</a>
+                      {selectedPost.category && <><span aria-hidden="true">/</span><a href={getCategoryPath(selectedPost.category)} onClick={(event) => { if (event.button === 0 && !event.metaKey && !event.ctrlKey && !event.shiftKey && !event.altKey) { event.preventDefault(); browseReaderCategory(selectedPost.category) } }}>{selectedPost.category}</a></>}
+                      <span aria-hidden="true">/</span><span aria-current="page">상품 상세</span>
+                    </nav>
                     <section className="product-detail-hero" style={getCategoryStyle(selectedPost.category)}>
                       <div className="product-detail-image">
                         <ProductImageGallery post={selectedPost} />
@@ -1012,12 +1021,13 @@ export function StorefrontHome({
                             </button>
                           )}
                         </div>
-                        <Dialog.Title className={`public-reader-title ${getProductTitleSizeClass(selectedPost.title)}`}>
-                          {selectedPost.title}
+                        <Dialog.Title asChild>
+                          <h1 className={`public-reader-title ${getProductTitleSizeClass(selectedPost.title)}`}>{selectedPost.title}</h1>
                         </Dialog.Title>
                         <Dialog.Description id="reader-description" className="public-reader-description">
                           {selectedPost.excerpt}
                         </Dialog.Description>
+                        {selectedTags.length > 0 && <ul className="product-detail-tags" aria-label="상품 키워드">{selectedTags.map((tag) => <li key={tag}>#{tag}</li>)}</ul>}
                         <ProductLinkPanel priceRef={setPriceElement} post={selectedPost} />
                         <div className="product-detail-assurance" aria-label="제휴몰 이용 안내">
                           <span>등록된 제휴몰 가격 비교</span>

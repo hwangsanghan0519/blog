@@ -51,6 +51,8 @@ import type { ProductSourceType } from '../../../entities/post/model/types'
 import type { Post, PostStatus, ProductLink } from '../../../entities/post/model/types'
 import { imageFileToOptimizedDataUrl } from '../../../shared/lib/file'
 import { createId } from '../../../shared/lib/id'
+import { ProductSeoPreview } from './ProductSeoPreview'
+import { ProductTagEditor } from './ProductTagEditor'
 
 type PostEditorProps = {
   categories: string[]
@@ -554,16 +556,8 @@ export function PostEditor({ categories, post, onCoverUpload, onUpdate }: PostEd
             ))}
           </select>
         </label>
-        <label>
-          태그/혜택 키워드
-          <input
-            value={post.tags.join(', ')}
-            onChange={(event) =>
-              onUpdate({ tags: event.target.value.split(',').map((tag) => tag.trim()).filter(Boolean) })
-            }
-            placeholder="쿠팡, 카드할인, 오늘특가"
-          />
-        </label>
+        <ProductTagEditor key={post.id} tags={post.tags} onChange={(tags) => onUpdate({ tags })} />
+        <ProductSeoPreview post={post} />
         <section className="product-link-admin" aria-label="제휴 링크 관리">
           <div>
             <span>제휴 링크</span>

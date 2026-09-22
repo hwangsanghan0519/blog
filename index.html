@@ -8,30 +8,67 @@
       var bootVisibleAt = null
       var bootReady = false
       var bootRevealTimeout = 0
+      var bootProgressTimer = 0
+      var bootProgress = 8
+      var bootProgressFrom = 8
+      var bootProgressTarget = 8
+      var bootProgressAt = 0
+      var bootReduceMotion = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches
       var bootTimeout = window.setTimeout(revealStorefront, 15000)
       document.addEventListener('DOMContentLoaded', function () {
-        window.requestAnimationFrame(function () {
-          bootVisibleAt = performance.now()
-          if (bootReady) finishBoot()
-        })
+        window.requestAnimationFrame(startBootProgress)
+        // Embedded apps can suspend animation frames even while their loader is visible.
+        window.setTimeout(startBootProgress, 120)
       }, { once: true })
+      window.addEventListener('storefront-progress', function (event) {
+        if (typeof event.detail === 'number' && Number.isFinite(event.detail)) setBootProgress(Math.min(95, event.detail))
+      })
       window.addEventListener('storefront-ready', finishBoot, { once: true })
+      function startBootProgress() {
+        if (bootVisibleAt !== null || document.documentElement.dataset.bootState !== 'loading') return
+        bootVisibleAt = performance.now()
+        bootProgressAt = bootVisibleAt
+        // Set actual width with JS: the gauge still fills when app CSS animations are disabled.
+        bootProgressTimer = window.setInterval(paintBootProgress, 40)
+        paintBootProgress()
+        if (bootReady) finishBoot()
+      }
+      function setBootProgress(value) {
+        if (document.documentElement.dataset.bootState !== 'loading' || value <= bootProgressTarget) return
+        bootProgressFrom = bootProgress
+        bootProgressTarget = value
+        bootProgressAt = performance.now()
+        if (bootVisibleAt !== null) paintBootProgress()
+      }
+      function paintBootProgress() {
+        var bar = document.getElementById('app-boot-progress')
+        if (!bar) return
+        var elapsed = Math.min(1, Math.max(0, (performance.now() - bootProgressAt) / 260))
+        var eased = bootReduceMotion ? 1 : 1 - Math.pow(1 - elapsed, 3)
+        bootProgress = bootProgressFrom + (bootProgressTarget - bootProgressFrom) * eased
+        bar.style.width = bootProgress.toFixed(2) + '%'
+      }
       function finishBoot() {
         bootReady = true
+        setBootProgress(100)
         if (bootVisibleAt === null) return
-        // A cached app reload still gets one visible animation cycle.
+        // Let the completed gauge paint, including on cached app reloads.
         window.clearTimeout(bootRevealTimeout)
-        bootRevealTimeout = window.setTimeout(revealStorefront, Math.max(0, 850 - (performance.now() - bootVisibleAt)))
+        bootRevealTimeout = window.setTimeout(revealStorefront, Math.max(300, 850 - (performance.now() - bootVisibleAt)))
       }
       function revealStorefront() {
         window.clearTimeout(bootTimeout)
         window.clearTimeout(bootRevealTimeout)
+        window.clearInterval(bootProgressTimer)
+        var bar = document.getElementById('app-boot-progress')
+        if (bar) bar.style.width = '100%'
         document.documentElement.dataset.bootState = 'ready'
         var loader = document.getElementById('app-boot')
         if (loader) loader.setAttribute('aria-hidden', 'true')
       }
       function resumeBootAnimation() {
         if (document.hidden || document.documentElement.dataset.bootState !== 'loading') return
+        paintBootProgress()
         var loader = document.getElementById('app-boot')
         // App WebViews can suspend animations while the page is in the background.
         if (loader && loader.getAnimations) {
@@ -128,22 +165,17 @@
       html[data-boot-state='loading'],html[data-boot-state='loading'] body{overflow:hidden}
       html[data-boot-state='loading'] #root{visibility:hidden}
       html[data-boot-state='ready'] #app-boot{opacity:0;visibility:hidden;pointer-events:none}
-      /* Animate compositor-friendly transforms instead of track width on app WebViews. */
+      /* Decorative movement is optional; loading progress does not depend on CSS animation. */
       .viole-boot-inner > picture{display:block;animation:viole-boot-float 1.7s ease-in-out infinite;will-change:transform}
       .viole-boot-logo{animation:none}
       .viole-boot-dot{will-change:transform}
       .viole-boot-track::after{display:none}
-      .viole-boot-progress{display:block;width:45%;height:100%;background:#fff;box-shadow:0 0 16px rgba(255,255,255,.5);transform:translate3d(-110%,0,0);animation:viole-boot-slide .85s ease-in-out infinite;will-change:transform}
+      .viole-boot-progress{display:block;width:8%;height:100%;background:#fff;box-shadow:0 0 16px rgba(255,255,255,.5)}
       @keyframes viole-boot-float{0%,100%{transform:translate3d(0,0,0)}50%{transform:translate3d(0,-7px,0)}}
-      @keyframes viole-boot-slide{from{transform:translate3d(-110%,0,0)}to{transform:translate3d(325%,0,0)}}
-      @keyframes viole-boot-soft-pulse{0%,100%{opacity:.4}50%{opacity:1}}
       html[data-boot-state='ready'] #app-boot *,html[data-boot-state='ready'] #app-boot::before,html[data-boot-state='ready'] #app-boot .viole-boot-track::after{animation:none}
       @media(prefers-reduced-motion:reduce){
         html[data-boot-state] #app-boot{transition:none}
         #app-boot *,#app-boot::before,#app-boot .viole-boot-track::after{animation:none}
-        /* Keep loading perceptible without rotation or spatial movement. */
-        #app-boot .viole-boot-progress{width:100%;transform:none;will-change:opacity;animation:viole-boot-soft-pulse 2.4s ease-in-out infinite}
-        html[data-boot-state='ready'] #app-boot .viole-boot-progress{animation:none}
       }
     </style>
   </head>
@@ -155,7 +187,7 @@
             <source media="(max-width: 899px)" srcset="/src/assets/powerpuffceleb-logo-stacked.svg" />
             <img class="viole-boot-logo" src="/src/assets/powerpuffceleb-logo.svg" alt="파워퍼프셀럽" />
           </picture>
-          <span class="viole-boot-track" aria-hidden="true"><span class="viole-boot-progress"></span></span>
+          <span class="viole-boot-track" aria-hidden="true"><span id="app-boot-progress" class="viole-boot-progress"></span></span>
           <p class="viole-boot-copy"><span>CURATING THE</span> <span>STRONGEST PICKS</span></p>
         </section>
       </div>
