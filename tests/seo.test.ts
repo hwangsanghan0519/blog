@@ -29,6 +29,19 @@ function graph(html: string) {
 afterEach(() => { vi.unstubAllGlobals(); vi.unstubAllEnvs() })
 
 describe('SEO page responses', () => {
+  it.each(['/', '/product/test-product', `/celeb/${encodeURIComponent(product.category)}`])(
+    'keeps the initial loader outside the crawlable React root for %s', async (path) => {
+      mockResponses(path.startsWith('/product/') ? product : { posts: [product] })
+      const result = await handler({ ...event, path, queryStringParameters: null })
+      const rootStart = result.body.indexOf('<div id="root">')
+      expect(result.statusCode).toBe(200)
+      expect(result.body.slice(0, rootStart)).toContain('<div id="app-boot"')
+      expect(result.body.slice(rootStart)).toContain('class="seo-fallback')
+      expect(result.body.slice(rootStart)).not.toContain('id="app-boot"')
+      expect(result.body).toContain("window.addEventListener('storefront-ready'")
+    },
+  )
+
   it.each([
     { path: '/product/test-product', queryStringParameters: null },
     { path: '/.netlify/functions/seo-page/product/test-product', queryStringParameters: { utm_source: 'kakaotalk' } },
@@ -73,7 +86,9 @@ describe('SEO page responses', () => {
     expect(data.find((node) => node['@type'] === 'Organization')?.name).toBe('파워퍼프셀럽')
     expect(data.find((node) => node['@type'] === 'Organization')?.logo).toBe('https://canonical.example/powerpuffceleb-logo.svg')
     expect(result.body).toContain('data-powerpuffceleb-seo')
-    expect(result.body).toContain('/powerpuffceleb-icon.svg')
+    expect(result.body).toContain('type="image/png" sizes="96x96" href="/favicon-96x96.png"')
+    expect(result.body).toContain('type="image/x-icon" sizes="32x32 48x48" href="/favicon.ico"')
+    expect(result.body).toContain('rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png"')
     expect(result.body).not.toMatch(/셀럽하우스|CELEB HOUSE|celeb-house/)
     const title = result.body.match(/<title>(.*?)<\/title>/)![1]
     expect(title.length).toBeLessThanOrEqual(68)

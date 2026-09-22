@@ -6,8 +6,9 @@
   "scripts": {
     "dev": "vite",
     "build:social-image": "node scripts/build-social-image.mjs",
-    "build:brand": "node scripts/build-brand-assets.mjs && npm run build:social-image",
-    "build": "tsc -b && vite build",
+    "build:favicons": "node scripts/build-favicons.mjs",
+    "build:brand": "node scripts/build-brand-assets.mjs && npm run build:social-image && npm run build:favicons",
+    "build": "npm run build:favicons && tsc -b && vite build",
     "lint": "oxlint",
     "test": "vitest run",
     "check": "npm run lint && npm run test && npm run build",

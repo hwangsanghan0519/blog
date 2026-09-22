@@ -2,8 +2,22 @@
 <html lang="ko-KR">
   <head>
     <meta charset="UTF-8" />
+    <script>
+      // Keep the same loader across the server HTML and React's first render.
+      document.documentElement.dataset.bootState = 'loading'
+      var bootTimeout = window.setTimeout(finishBoot, 15000)
+      window.addEventListener('storefront-ready', finishBoot, { once: true })
+      function finishBoot() {
+        window.clearTimeout(bootTimeout)
+        document.documentElement.dataset.bootState = 'ready'
+        var loader = document.getElementById('app-boot')
+        if (loader) loader.setAttribute('aria-hidden', 'true')
+      }
+    </script>
     <meta name="naver-site-verification" content="9fcb3d484fd280d033e8bd9d61beea8a4ab3e30e" />
-    <link rel="icon" type="image/svg+xml" href="/powerpuffceleb-icon.svg" />
+    <link rel="icon" type="image/x-icon" sizes="32x32 48x48" href="/favicon.ico" />
+    <link rel="icon" type="image/png" sizes="96x96" href="/favicon-96x96.png" />
+    <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png" />
     <link rel="manifest" href="/site.webmanifest" />
     <link rel="canonical" href="https://powerpuffceleb.co.kr/" />
     <link rel="alternate" hreflang="ko-KR" href="https://powerpuffceleb.co.kr/" />
@@ -79,11 +93,17 @@
       @media(max-width:899px){.viole-boot-copy{text-align:center;line-height:1.7}.viole-boot-copy span{display:block}}
       .seo-noscript{color:#fff;background:linear-gradient(145deg,#a477dc,#7f50bd)}
       .seo-noscript p{color:rgba(255,255,255,.86)}
+      #app-boot{display:none}
+      html[data-boot-state] #app-boot{position:fixed;inset:0;z-index:2147483647;display:grid;box-sizing:border-box;opacity:1;visibility:visible;transition:opacity .22s ease,visibility .22s ease}
+      html[data-boot-state='loading'],html[data-boot-state='loading'] body{overflow:hidden}
+      html[data-boot-state='loading'] #root{visibility:hidden}
+      html[data-boot-state='ready'] #app-boot{opacity:0;visibility:hidden;pointer-events:none}
+      html[data-boot-state='ready'] #app-boot *,html[data-boot-state='ready'] #app-boot::before,html[data-boot-state='ready'] #app-boot .viole-boot-track::after{animation:none}
+      @media(prefers-reduced-motion:reduce){html[data-boot-state] #app-boot{transition:none}#app-boot *,#app-boot::before,#app-boot .viole-boot-track::after{animation:none}}
     </style>
   </head>
   <body>
-    <div id="root">
-      <main class="viole-boot" role="status" aria-label="파워퍼프셀럽 상품을 불러오는 중">
+      <div id="app-boot" class="viole-boot" role="status" aria-label="파워퍼프셀럽 상품을 불러오는 중">
         <span class="viole-boot-dot" aria-hidden="true"></span>
         <section class="viole-boot-inner">
           <picture>
@@ -93,8 +113,8 @@
           <span class="viole-boot-track" aria-hidden="true"></span>
           <p class="viole-boot-copy"><span>CURATING THE</span> <span>STRONGEST PICKS</span></p>
         </section>
-      </main>
-    </div>
+      </div>
+    <div id="root"></div>
     <noscript>
       <style>.viole-boot{display:none}</style>
       <main class="seo-noscript">

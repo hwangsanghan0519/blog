@@ -5,6 +5,7 @@ import { CatalogSidebar } from '../../../widgets/catalog-sidebar/ui/CatalogSideb
 import { PostPreview } from '../../../widgets/post-preview/ui/PostPreview'
 import { Topbar } from '../../../widgets/topbar/ui/Topbar'
 import { useCommerceStudio } from '../model/useCommerceStudio'
+import { useInitialLoading } from '../lib/useInitialLoading'
 import { AdBannerAdminPanel, HeroVideoAdminPanel } from './AdminSettingsPanels'
 import { StorefrontHome } from './StorefrontHome'
 import { StorefrontSkeleton } from './StorefrontSkeleton'
@@ -16,6 +17,7 @@ const PostEditor = lazy(async () => {
 
 export function CommerceStudioPage() {
   const studio = useCommerceStudio()
+  useInitialLoading(studio.cloudReady)
   const { activePost } = studio
   const isSecretAdminPath = isSecretPath(window.location.pathname)
   const secretUnlockAttemptedRef = useRef(false)
