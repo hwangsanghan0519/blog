@@ -5,14 +5,44 @@
     <script>
       // Keep the same loader across the server HTML and React's first render.
       document.documentElement.dataset.bootState = 'loading'
-      var bootTimeout = window.setTimeout(finishBoot, 15000)
+      var bootVisibleAt = null
+      var bootReady = false
+      var bootRevealTimeout = 0
+      var bootTimeout = window.setTimeout(revealStorefront, 15000)
+      document.addEventListener('DOMContentLoaded', function () {
+        window.requestAnimationFrame(function () {
+          bootVisibleAt = performance.now()
+          if (bootReady) finishBoot()
+        })
+      }, { once: true })
       window.addEventListener('storefront-ready', finishBoot, { once: true })
       function finishBoot() {
+        bootReady = true
+        if (bootVisibleAt === null) return
+        // A cached app reload still gets one visible animation cycle.
+        window.clearTimeout(bootRevealTimeout)
+        bootRevealTimeout = window.setTimeout(revealStorefront, Math.max(0, 850 - (performance.now() - bootVisibleAt)))
+      }
+      function revealStorefront() {
         window.clearTimeout(bootTimeout)
+        window.clearTimeout(bootRevealTimeout)
         document.documentElement.dataset.bootState = 'ready'
         var loader = document.getElementById('app-boot')
         if (loader) loader.setAttribute('aria-hidden', 'true')
       }
+      function resumeBootAnimation() {
+        if (document.hidden || document.documentElement.dataset.bootState !== 'loading') return
+        var loader = document.getElementById('app-boot')
+        // App WebViews can suspend animations while the page is in the background.
+        if (loader && loader.getAnimations) {
+          loader.getAnimations({ subtree: true }).forEach(function (animation) {
+            animation.cancel()
+            animation.play()
+          })
+        }
+      }
+      window.addEventListener('pageshow', resumeBootAnimation)
+      document.addEventListener('visibilitychange', resumeBootAnimation)
     </script>
     <meta name="naver-site-verification" content="9fcb3d484fd280d033e8bd9d61beea8a4ab3e30e" />
     <link rel="icon" type="image/x-icon" sizes="32x32 48x48" href="/favicon.ico" />
@@ -98,8 +128,23 @@
       html[data-boot-state='loading'],html[data-boot-state='loading'] body{overflow:hidden}
       html[data-boot-state='loading'] #root{visibility:hidden}
       html[data-boot-state='ready'] #app-boot{opacity:0;visibility:hidden;pointer-events:none}
+      /* Animate compositor-friendly transforms instead of track width on app WebViews. */
+      .viole-boot-inner > picture{display:block;animation:viole-boot-float 1.7s ease-in-out infinite;will-change:transform}
+      .viole-boot-logo{animation:none}
+      .viole-boot-dot{will-change:transform}
+      .viole-boot-track::after{display:none}
+      .viole-boot-progress{display:block;width:45%;height:100%;background:#fff;box-shadow:0 0 16px rgba(255,255,255,.5);transform:translate3d(-110%,0,0);animation:viole-boot-slide .85s ease-in-out infinite;will-change:transform}
+      @keyframes viole-boot-float{0%,100%{transform:translate3d(0,0,0)}50%{transform:translate3d(0,-7px,0)}}
+      @keyframes viole-boot-slide{from{transform:translate3d(-110%,0,0)}to{transform:translate3d(325%,0,0)}}
+      @keyframes viole-boot-soft-pulse{0%,100%{opacity:.4}50%{opacity:1}}
       html[data-boot-state='ready'] #app-boot *,html[data-boot-state='ready'] #app-boot::before,html[data-boot-state='ready'] #app-boot .viole-boot-track::after{animation:none}
-      @media(prefers-reduced-motion:reduce){html[data-boot-state] #app-boot{transition:none}#app-boot *,#app-boot::before,#app-boot .viole-boot-track::after{animation:none}}
+      @media(prefers-reduced-motion:reduce){
+        html[data-boot-state] #app-boot{transition:none}
+        #app-boot *,#app-boot::before,#app-boot .viole-boot-track::after{animation:none}
+        /* Keep loading perceptible without rotation or spatial movement. */
+        #app-boot .viole-boot-progress{width:100%;transform:none;will-change:opacity;animation:viole-boot-soft-pulse 2.4s ease-in-out infinite}
+        html[data-boot-state='ready'] #app-boot .viole-boot-progress{animation:none}
+      }
     </style>
   </head>
   <body>
@@ -110,7 +155,7 @@
             <source media="(max-width: 899px)" srcset="/src/assets/powerpuffceleb-logo-stacked.svg" />
             <img class="viole-boot-logo" src="/src/assets/powerpuffceleb-logo.svg" alt="파워퍼프셀럽" />
           </picture>
-          <span class="viole-boot-track" aria-hidden="true"></span>
+          <span class="viole-boot-track" aria-hidden="true"><span class="viole-boot-progress"></span></span>
           <p class="viole-boot-copy"><span>CURATING THE</span> <span>STRONGEST PICKS</span></p>
         </section>
       </div>

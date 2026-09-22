@@ -17,6 +17,7 @@ import { keenSliderRecovery, refreshKeenSlider } from '../lib/keenSliderRecovery
 import type { AdBannerSettings, HeroVideoSettings } from '../model/types'
 import { AdStripBanners, CategoryVisual, TrendVideo } from './StorefrontMedia'
 import { MobileProductSearch } from './MobileProductSearch'
+import { FourCutImage, FourCutLoading } from './FourCutImage'
 
 type StorefrontHomeProps = {
   posts: Post[]
@@ -1038,7 +1039,7 @@ export function StorefrontHome({
                         />
                       </div>
                       {loadingDetailId === selectedPost.id ? (
-                        <div className="product-detail-loading" aria-live="polite">상품 상세를 준비하고 있습니다.</div>
+                        <div className="product-detail-loading"><FourCutLoading /></div>
                       ) : (
                         <ProductDetailContent key={selectedPost.id} post={selectedPost} />
                       )}
@@ -1323,15 +1324,8 @@ function ProductDetailContent({ post }: { post: Post }) {
       </header>
       <ol>
         {frames.map((frame, index) => (
-          <li data-four-cut-index={index} key={`${frame.image.slice(0, 48)}-${index}`}>
-            <figure>
-              <Dialog.Trigger asChild>
-                <button className="four-cut-image-trigger" type="button" aria-label={`${index + 1}번 셀럽네컷 원본 이미지 보기`} onClick={(event) => { imageTriggerRef.current = event.currentTarget; setActiveImage(index) }}>
-                  <img src={frame.image} alt={`${post.title} 상세 ${index + 1}`} decoding="async" loading="lazy" />
-                  <span>{String(index + 1).padStart(2, '0')}</span>
-                </button>
-              </Dialog.Trigger>
-            </figure>
+          <li data-four-cut-index={index} key={`${frame.image}-${index}`}>
+            <FourCutImage src={frame.image} alt={`${post.title} 상세 ${index + 1}`} index={index} onOpen={(event) => { imageTriggerRef.current = event.currentTarget; setActiveImage(index) }} />
             <div>
               <small>CUT {String(index + 1).padStart(2, '0')}</small>
               <p>{frame.description}</p>
