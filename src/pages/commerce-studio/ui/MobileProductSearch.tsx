@@ -41,7 +41,7 @@ export function MobileProductSearch({ posts, onSelect }: { posts: Post[]; onSele
   return (
     <Dialog.Root open={open} onOpenChange={(next) => { openingProduct.current = false; setOpen(next) }}>
       <Dialog.Trigger className="mobile-search-trigger" aria-label="상품 제목 검색 열기">
-        <Search size={23} aria-hidden="true" /><span>검색</span><i aria-hidden="true" />
+        <Search size={22} strokeWidth={2.2} aria-hidden="true" /><span>검색</span>
       </Dialog.Trigger>
       <Dialog.Portal>
         <Dialog.Overlay className="mobile-search-overlay" />
