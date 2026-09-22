@@ -18,7 +18,6 @@ export const CLOUD_UPDATE_CHANNEL = 'solo-commerce-blog-cloud-update'
 // 함수 이름은 기존 배포 URL과 외부 링크 호환을 위해 유지합니다.
 export const CLOUD_DATA_ENDPOINT = '/.netlify/functions/blog-data'
 export const PRODUCTION_CLOUD_DATA_ENDPOINT = `${SEO_SITE_ORIGIN}${CLOUD_DATA_ENDPOINT}`
-export const UNCATEGORIZED = '분류 없음'
 
 export const GMARKET_SAMPLE_BANNER_IMAGE = `data:image/svg+xml,${encodeURIComponent(`
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1440 104" role="img" aria-label="Gmarket sample ad banner">

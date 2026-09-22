@@ -95,7 +95,7 @@ export function PostEditor({ categories, post, onCoverUpload, onUpdate }: PostEd
       .map((category) => category.trim())
       .filter(Boolean)
 
-    return Array.from(new Set(names.length ? names : ['분류 없음'])).sort((a, b) => a.localeCompare(b, 'ko'))
+    return Array.from(new Set(names)).sort((a, b) => a.localeCompare(b, 'ko'))
   }, [categories, selectedCategory])
 
   const editor = useEditor({

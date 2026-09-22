@@ -69,6 +69,7 @@ export function CommerceStudioPage() {
         categoryFilter={studio.categoryFilter}
         isOpen={studio.sidebarOpen}
         posts={studio.filteredPosts}
+        totalPostCount={studio.posts.length}
         query={studio.query}
         statusFilter={studio.statusFilter}
         onCategoryFilterChange={studio.selectAdminCategory}

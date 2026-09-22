@@ -773,14 +773,14 @@ export function StorefrontHome({
                         </strong>
                         <div className="public-best-v2-category-live">
                           <ProductSourceBadge post={post} />
-                          <span aria-hidden="true"><i /></span>
-                          <strong>{post.category}</strong>
+                          {post.category && <span aria-hidden="true"><i /></span>}
+                          {post.category && <strong>{post.category}</strong>}
                         </div>
                       </div>
                       <div className="public-best-v2-content">
                         <div className="public-best-v2-mobile-meta">
                           <ProductSourceBadge post={post} />
-                          <span className="public-best-v2-mobile-category">{post.category}</span>
+                          {post.category && <span className="public-best-v2-mobile-category">{post.category}</span>}
                         </div>
                         <h2>{post.title}</h2>
                         <p>{post.excerpt || '지금 비교하기 좋은 상품입니다.'}</p>
@@ -1005,9 +1005,11 @@ export function StorefrontHome({
                       <div className="product-detail-summary">
                         <div className="public-reader-meta">
                           <ProductSourceBadge post={selectedPost} />
-                          <button type="button" onClick={() => browseReaderCategory(selectedPost.category)}>
-                            {selectedPost.category}
-                          </button>
+                          {selectedPost.category && (
+                            <button type="button" onClick={() => browseReaderCategory(selectedPost.category)}>
+                              {selectedPost.category}
+                            </button>
+                          )}
                         </div>
                         <Dialog.Title className={`public-reader-title ${getProductTitleSizeClass(selectedPost.title)}`}>
                           {selectedPost.title}
@@ -1371,7 +1373,7 @@ function PouchCardOverlay({ post, showCategory }: { post: Post; showCategory: bo
 
   return (
     <div className={`public-pouch-overlay ${showCategory ? 'is-all' : 'is-category'}`}>
-      {showCategory && <span>{post.category}</span>}
+      {showCategory && post.category && <span>{post.category}</span>}
       <strong>
         {showCategory && <em className="public-pouch-mobile-title" aria-hidden="true">{post.title}</em>}
         {!showCategory && <em>{post.title}</em>}
@@ -1513,9 +1515,11 @@ function ProductDetailSideFooter({ post, onCategorySelect }: { post: Post; onCat
 
   return (
     <aside className="product-detail-side-footer" aria-label="상품 상세 푸터">
-      <button className="product-detail-side-footer-category" type="button" onClick={onCategorySelect}>
-        <span>{post.category || 'POWER PUFF CELEB PICK'}</span>
-      </button>
+      {post.category && (
+        <button className="product-detail-side-footer-category" type="button" onClick={onCategorySelect}>
+          <span>{post.category}</span>
+        </button>
+      )}
       <div className="product-detail-side-footer-copy">
         <strong>{post.title}</strong>
         <p>{post.excerpt || '파워퍼프셀럽가 고른 상품의 핵심 정보를 네 컷으로 확인하세요.'}</p>

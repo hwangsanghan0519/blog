@@ -13,6 +13,7 @@ type CatalogSidebarProps = {
   posts: Post[]
   query: string
   statusFilter: PostStatusFilter
+  totalPostCount: number
   onCategoryFilterChange: (category: string) => void
   onCreate: () => void
   onCreateCategory: () => void
@@ -36,6 +37,7 @@ export function CatalogSidebar({
   posts,
   query,
   statusFilter,
+  totalPostCount,
   onCategoryFilterChange,
   onCreate,
   onCreateCategory,
@@ -116,7 +118,7 @@ export function CatalogSidebar({
           onClick={() => onCategoryFilterChange('all')}
         >
           <span>전체 셀럽</span>
-          <small>{categoryCounts.reduce((sum, category) => sum + category.count, 0)}</small>
+          <small>{totalPostCount}</small>
         </button>
 
         {categoryCounts.map((category, index) => (
@@ -213,7 +215,7 @@ export function CatalogSidebar({
                 <span>
                   <strong>{post.title}</strong>
                   <small>
-                    {post.category || '분류 없음'} · {formatDate(post.updatedAt)}
+                    {post.category && `${post.category} · `}{formatDate(post.updatedAt)}
                   </small>
                 </span>
               </button>

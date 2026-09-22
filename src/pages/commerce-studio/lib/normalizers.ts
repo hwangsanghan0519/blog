@@ -6,13 +6,13 @@ import {
   DEFAULT_HERO_VIDEO,
   DEFAULT_SETTINGS,
   STORAGE_KEYS,
-  UNCATEGORIZED,
 } from '../model/config'
 import type { AdBannerSettings, CommerceSettings, HeroVideoSettings } from '../model/types'
 
 /** 사용자 입력과 이전 버전 백업을 현재 카테고리 형식으로 정규화합니다. */
 export function normalizeCategoryName(value: string | null) {
-  return value?.trim().replace(/\s+/g, ' ') ?? ''
+  const name = value?.trim().replace(/\s+/g, ' ') ?? ''
+  return name.replace(/\s/g, '') === '분류없음' ? '' : name
 }
 
 export function normalizeCategories(values: unknown) {
@@ -39,7 +39,7 @@ export function normalizeCategoryImages(value: unknown) {
 }
 
 export function uniqueCategories(posts: Post[]) {
-  const names = posts.map((post) => normalizeCategoryName(post.category) || UNCATEGORIZED)
+  const names = posts.map((post) => normalizeCategoryName(post.category))
   return normalizeCategories(names)
 }
 
@@ -47,12 +47,12 @@ export function uniqueCategories(posts: Post[]) {
 export function normalizePosts(values: unknown, categoryHints: unknown = []): Post[] {
   if (!Array.isArray(values)) return []
 
-  const fallbackCategory = normalizeCategories(categoryHints)[0] ?? UNCATEGORIZED
+  const fallbackCategory = normalizeCategories(categoryHints)[0] ?? ''
 
   return values
     .filter((value): value is Record<string, unknown> => Boolean(value) && typeof value === 'object')
     .map((value, index) => {
-      const category = normalizeCategoryName(readString(value.category, fallbackCategory)) || fallbackCategory
+      const category = normalizeCategoryName(readString(value.category, fallbackCategory))
 
       return {
         id: readString(value.id, `post-${Date.now()}-${index}`),

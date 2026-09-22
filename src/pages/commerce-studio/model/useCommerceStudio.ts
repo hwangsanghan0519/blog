@@ -37,7 +37,6 @@ import {
   DEFAULT_AD_BANNERS,
   DEFAULT_HERO_VIDEO,
   STORAGE_KEYS,
-  UNCATEGORIZED,
 } from './config'
 import type {
   AdBannerSettings,
@@ -361,22 +360,19 @@ export function useCommerceStudio() {
   const deleteCategory = (category: string) => {
     const count = posts.filter((post) => post.category === category).length
     const message = count
-      ? `"${category}" 셀럽을 삭제하고 ${count}개 상품을 "${UNCATEGORIZED}"로 옮길까요?`
+      ? `"${category}" 셀럽을 삭제하고 ${count}개 상품의 셀럽 연결을 해제할까요? 상품은 유지됩니다.`
       : `"${category}" 셀럽을 삭제할까요?`
 
     if (!window.confirm(message)) return
 
-    setCategories((current) => {
-      const remaining = current.filter((name) => name !== category)
-      return count && !remaining.includes(UNCATEGORIZED) ? [...remaining, UNCATEGORIZED] : remaining
-    })
+    setCategories((current) => current.filter((name) => name !== category))
     setCategoryImages((current) => {
       const { [category]: _removed, ...rest } = current
       return rest
     })
     setPosts((current) =>
       current.map((post) =>
-        post.category === category ? { ...post, category: UNCATEGORIZED, updatedAt: new Date().toISOString() } : post,
+        post.category === category ? { ...post, category: '', updatedAt: new Date().toISOString() } : post,
       ),
     )
     setCategoryFilter((current) => (current === category ? 'all' : current))
@@ -413,11 +409,11 @@ export function useCommerceStudio() {
 
   const createPost = (template: Partial<Post> = {}) => {
     const safeTemplate = isPostTemplate(template) ? template : {}
-    const selectedCategory = normalizeCategoryName(categoryFilter === 'all' ? visibleCategories[0] ?? UNCATEGORIZED : categoryFilter)
+    const selectedCategory = normalizeCategoryName(categoryFilter === 'all' ? visibleCategories[0] ?? '' : categoryFilter)
     const next = {
       ...createEmptyPost(),
       ...safeTemplate,
-      category: normalizeCategoryName(safeTemplate.category ?? selectedCategory) || UNCATEGORIZED,
+      category: normalizeCategoryName(safeTemplate.category ?? selectedCategory),
       id: createId(),
       createdAt: new Date().toISOString(),
       updatedAt: new Date().toISOString(),

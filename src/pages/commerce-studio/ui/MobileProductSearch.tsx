@@ -75,7 +75,7 @@ export function MobileProductSearch({ posts, onSelect }: { posts: Post[]; onSele
                 event.preventDefault(); openingProduct.current = true; setOpen(false); onSelect(post.id)
               }}>
                 <div className="mobile-search-thumbnail">{post.coverImage ? <img src={post.coverImage} alt="" loading="lazy" decoding="async" /> : <Sparkles aria-hidden="true" />}<span>{String(index + 1).padStart(2, '0')}</span></div>
-                <div className="mobile-search-result-copy"><small>{post.category}</small><strong><HighlightedTitle title={post.title} query={query} /></strong><span>상품 자세히 보기 <ArrowRight size={13} aria-hidden="true" /></span></div>
+                <div className="mobile-search-result-copy">{post.category && <small>{post.category}</small>}<strong><HighlightedTitle title={post.title} query={query} /></strong><span>상품 자세히 보기 <ArrowRight size={13} aria-hidden="true" /></span></div>
               </a>
             </li>)}</ul> : <div className="mobile-search-empty"><Search size={34} aria-hidden="true" /><strong>{hasQuery ? '아직 발견하지 못했어요' : '새로운 아이템을 준비 중이에요'}</strong>
               <p>{hasQuery ? '조금 더 짧은 상품명이나 다른 단어로 찾아보세요.' : '상품이 올라오면 여기서 바로 찾아볼 수 있어요.'}</p>

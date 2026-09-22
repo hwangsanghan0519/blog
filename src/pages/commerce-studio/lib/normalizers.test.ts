@@ -4,11 +4,27 @@ import {
   normalizeCategories,
   normalizeHeroVideo,
   normalizePosts,
+  uniqueCategories,
 } from './normalizers'
 
 describe('commerce data normalizers', () => {
   it('trims, compacts and de-duplicates category names without changing order', () => {
     expect(normalizeCategories(['  아이유 ', '아이유', '뉴진스   하니', null])).toEqual(['아이유', '뉴진스 하니'])
+  })
+
+  it('keeps deleted category assignments empty after saving and reloading', () => {
+    const posts = normalizePosts([
+      { id: 'deleted-category', category: '' },
+      { id: 'legacy-category', category: '분류 없음' },
+      { id: 'compact-legacy-category', category: '분류없음' },
+      { id: 'assigned-category', category: '아이유' },
+    ], ['아이유'])
+    const reloaded = normalizePosts(JSON.parse(JSON.stringify(posts)), ['아이유'])
+
+    expect(reloaded.map((post) => post.category)).toEqual(['', '', '', '아이유'])
+    expect(uniqueCategories(reloaded)).toEqual(['아이유'])
+    expect(normalizeCategories(['분류 없음', '아이유', '분류없음'])).toEqual(['아이유'])
+    expect(normalizePosts([{ id: 'new-product' }])[0].category).toBe('')
   })
 
   it('recovers a complete post contract from partial external data', () => {
