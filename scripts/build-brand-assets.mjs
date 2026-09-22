@@ -62,18 +62,18 @@ function write(path, content) {
   writeFileSync(new URL(`../${path}`, import.meta.url), content)
 }
 
-const horizontal = (fill) => word('POWER PUFF', 24, 14, 572, 72, fill) + word('CELEB', 24, 100, 412, 76, fill)
+const horizontal = (fill) => word('POWER PUFF', 12, 18, 411, 64, fill) + word('CELEB', 12, 102, 380, 74, fill)
 write('src/assets/powerpuffceleb-logo.svg', svg(620, 190,
-  `<g transform="translate(0 5)">${horizontal('#dcb0e9')}</g>${horizontal('#fff9ff')}${symbol(478, 88, 100)}`))
+  `<g transform="translate(0 5)">${horizontal('#dcb0e9')}</g>${horizontal('#fff9ff')}${symbol(433, -4, 195)}`))
 
-const stacked = (fill) => word('POWER PUFF', 34, 28, 552, 108, fill) + word('CELEB', 34, 159, 414, 116, fill)
+const stacked = (fill) => word('POWER PUFF', 18, 52, 390, 82, fill) + word('CELEB', 18, 163, 365, 96, fill)
 write('src/assets/powerpuffceleb-logo-stacked.svg', svg(620, 320,
-  `<g transform="translate(0 7)">${stacked('#dcb0e9')}</g>${stacked('#fff9ff')}${symbol(476, 172, 108)}`))
+  `<g transform="translate(0 7)">${stacked('#dcb0e9')}</g>${stacked('#fff9ff')}${symbol(407, 49, 212)}`))
 
 write('public/powerpuffceleb-icon.svg', svg(64, 64,
   `<rect width="64" height="64" rx="18" fill="#f8f0ff"/>${symbol(1, 1, 62)}`))
 
-const socialWordmark = (fill) => word('POWER PUFF', 88, 134, 1024, 125, fill) + word('CELEB', 88, 287, 727, 138, fill)
+const socialWordmark = (fill) => word('POWER PUFF', 88, 134, 750, 125, fill) + word('CELEB', 88, 287, 695, 138, fill)
 write('public/powerpuffceleb-logo.svg', svg(1200, 630, `
   <defs><linearGradient id="social-bg" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#fffafd"/><stop offset="1" stop-color="#eee2ff"/></linearGradient><linearGradient id="social-ink" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#fff9ff"/><stop offset="1" stop-color="#ffe0f1"/></linearGradient></defs>
   <rect width="1200" height="630" fill="url(#social-bg)"/>
@@ -83,7 +83,7 @@ write('public/powerpuffceleb-logo.svg', svg(1200, 630, `
   <text x="108" y="83" fill="#ad8dbf" font-family="Arial, sans-serif" font-size="18" font-weight="700" letter-spacing="5">CELEB · INFLUENCER · CURATED PICKS</text>
   <g transform="translate(0 9)">${socialWordmark('#d9bdf0')}</g>
   ${socialWordmark('url(#social-ink)')}
-  ${symbol(892, 277, 166)}
+  ${symbol(852, 133, 320)}
   <path d="M104 464H1094" stroke="#d4b8e6" stroke-width="2"/>
   <text x="106" y="519" fill="#79558e" font-family="Arial, sans-serif" font-size="30" font-weight="700">파워퍼프셀럽</text>
   <text x="108" y="558" fill="#a386b2" font-family="Arial, sans-serif" font-size="22">나의 최애가 선택한 아이템</text>
