@@ -23,7 +23,7 @@ export function CommerceStudioPage() {
   useEffect(() => {
     if (!isSecretAdminPath) return
 
-    document.title = '셀럽하우스 관리자'
+    document.title = '파워퍼프셀럽 관리자'
     setRobotsMeta('robots', 'noindex,nofollow,noarchive')
     setRobotsMeta('googlebot', 'noindex,nofollow,noarchive')
   }, [isSecretAdminPath, studio.ownerMode])

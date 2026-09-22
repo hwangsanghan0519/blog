@@ -110,7 +110,7 @@ export function normalizeHeroVideo(value?: Partial<HeroVideoSettings>): HeroVide
     enabled: visibilityConfigured ? Boolean(value?.enabled) : Boolean(youtubeUrl.trim()),
     eyebrow: typeof value?.eyebrow === 'string' ? value.eyebrow : DEFAULT_HERO_VIDEO.eyebrow,
     // Refresh the previous brand's saved default in both local caches and cloud snapshots.
-    title: typeof value?.title === 'string' && value.title.trim() !== 'VIOLE VIDEO PICK'
+    title: typeof value?.title === 'string' && !['VIOLE VIDEO PICK', 'CELEB HOUSE VIDEO PICK'].includes(value.title.trim())
       ? value.title
       : DEFAULT_HERO_VIDEO.title,
     stickerImage: typeof value?.stickerImage === 'string' ? value.stickerImage : '',

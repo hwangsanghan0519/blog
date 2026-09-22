@@ -107,7 +107,7 @@
 }
 
 .celeb-vote-stage::before {
-  content: 'CELEB HOUSE 101  ·  LIVE RANKING  ·  CELEB HOUSE 101  ·  LIVE RANKING  ·  CELEB HOUSE 101';
+  content: 'POWER PUFF CELEB 101  ·  LIVE RANKING  ·  POWER PUFF CELEB 101  ·  LIVE RANKING  ·  POWER PUFF CELEB 101';
   top: 10px;
   left: var(--stage-gutter);
 }
@@ -746,7 +746,7 @@
   }
 }
 
-/* CELEB HOUSE light voting board: one continuous pale-lavender system. */
+/* POWER PUFF CELEB light voting board: one continuous pale-lavender system. */
 .celeb-vote-stage {
   border-color: rgba(155, 114, 234, 0.12) !important;
   background:
@@ -1068,7 +1068,7 @@
   }
 }
 
-/* Harmonize podium accents with the CELEB HOUSE palette. */
+/* Harmonize podium accents with the POWER PUFF CELEB palette. */
 .celeb-vote-stage .celeb-vote-ranking > li.is-top-1,
 .celeb-vote-stage .celeb-vote-ranking > li.is-top-2,
 .celeb-vote-stage .celeb-vote-ranking > li.is-top-3 {

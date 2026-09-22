@@ -51,11 +51,11 @@ export function MobileProductSearch({ posts, onSelect }: { posts: Post[]; onSele
           <div className="mobile-search-handle" aria-hidden="true" />
           <header className="mobile-search-header">
             <div><span className="mobile-search-eyebrow"><Sparkles size={13} aria-hidden="true" /> PICK FINDER</span>
-              <Dialog.Title>찾던 그 아이템<span>여기 있을지도.</span></Dialog.Title>
+              <Dialog.Title>찾던 그 셀템을<span>검색해보세요</span></Dialog.Title>
             </div>
             <Dialog.Close className="mobile-search-close" aria-label="상품 검색 닫기"><X size={21} /></Dialog.Close>
           </header>
-          <Dialog.Description className="mobile-search-description">상품 제목으로 나만의 셀럽템을 찾아보세요.</Dialog.Description>
+          <Dialog.Description className="mobile-search-description">셀럽의 이름이나 상품명으로 쉽게 찾을 수 있어요</Dialog.Description>
           <form className="mobile-search-form" role="search" onSubmit={(event) => { event.preventDefault(); inputRef.current?.blur() }}>
             <Search size={21} aria-hidden="true" />
             <input ref={inputRef} type="search" aria-label="상품 제목 검색" placeholder="어떤 아이템을 찾으세요?" value={query}
@@ -82,7 +82,7 @@ export function MobileProductSearch({ posts, onSelect }: { posts: Post[]; onSele
               {hasQuery && <button type="button" onClick={() => { setQuery(''); inputRef.current?.focus() }}>다시 찾아보기 <ArrowRight size={15} /></button>}
             </div>}
           </div>
-          <footer className="mobile-search-footer">발견은 여기서, 구매는 제휴몰에서.<span>CELEB HOUSE</span></footer>
+          <footer className="mobile-search-footer">발견은 여기서, 구매는 제휴몰에서.<span>POWER PUFF CELEB</span></footer>
         </Dialog.Content>
       </Dialog.Portal>
     </Dialog.Root>

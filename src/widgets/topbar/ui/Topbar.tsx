@@ -16,7 +16,7 @@ export function Topbar({ importRef, title, onBackup, onImport, onOpenSidebar }: 
         <Menu size={19} />
       </button>
       <div>
-        <p>셀럽하우스 딜 스튜디오</p>
+        <p>파워퍼프셀럽 딜 스튜디오</p>
         <h1>{title}</h1>
       </div>
       <div className="topbar-actions">

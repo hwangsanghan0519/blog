@@ -119,7 +119,7 @@ export function TrendVideo({ settings }: { settings: HeroVideoSettings }) {
         onLoad={handlePlayerLoad}
         src={playerUrl.toString()}
         tabIndex={-1}
-        title={settings.title || '셀럽하우스 추천 영상'}
+        title={settings.title || '파워퍼프셀럽 추천 영상'}
       />
       <div className="public-trend-video-shade" aria-hidden="true" />
       {hasSticker && (
@@ -136,7 +136,7 @@ export function TrendVideo({ settings }: { settings: HeroVideoSettings }) {
       )}
       <div className="public-trend-video-copy">
         <span>{settings.eyebrow || 'NOW PLAYING'}</span>
-        <strong>{settings.title || 'CELEB HOUSE VIDEO PICK'}</strong>
+        <strong>{settings.title || 'POWER PUFF CELEB VIDEO PICK'}</strong>
       </div>
       <div className="public-trend-video-status" aria-hidden="true">
         <i /> MUTED · AUTO PLAY

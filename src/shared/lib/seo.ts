@@ -35,10 +35,10 @@ export function applyPublicSeo({ category, posts, selectedPost }: SeoState) {
         160,
       )
     : isCategory
-      ? `${category}가 유튜브와 인스타그램에서 착용·소개·광고한 상품을 모았습니다. 화제의 핫템과 잇템, 등록된 제휴몰 최저가를 셀럽하우스에서 확인하세요.`
+      ? `${category}가 유튜브와 인스타그램에서 착용·소개·광고한 상품을 모았습니다. 화제의 핫템과 잇템, 등록된 제휴몰 최저가를 파워퍼프셀럽에서 확인하세요.`
       : SEO_HOME_DESCRIPTION
   const categoryImage = isCategory ? posts.find((post) => post.status === 'published' && post.category === category && publicHttpUrl(post.coverImage, origin))?.coverImage : ''
-  const image = publicHttpUrl(selectedPost?.coverImage || categoryImage, origin) || `${origin}/og-image.png`
+  const image = publicHttpUrl(selectedPost?.coverImage || categoryImage, origin) || `${origin}/powerpuffceleb-og.png`
   const keywords = Array.from(new Set([
     ...(selectedPost ? [selectedPost.title, selectedPost.category, ...selectedPost.tags] : []),
     ...(isCategory ? [category] : posts.slice(0, 12).map((post) => post.category)),
@@ -64,13 +64,13 @@ export function applyPublicSeo({ category, posts, selectedPost }: SeoState) {
   setMeta('property', 'og:url', canonicalUrl)
   setMeta('property', 'og:image', image)
   setMeta('property', 'og:image:secure_url', image)
-  setMeta('property', 'og:image:alt', selectedPost ? `${selectedPost.title} 상품 이미지` : '셀럽하우스 연예인 인플루언서 핫템 큐레이션')
+  setMeta('property', 'og:image:alt', selectedPost ? `${selectedPost.title} 상품 이미지` : '파워퍼프셀럽 연예인 인플루언서 핫템 큐레이션')
   setMeta('name', 'twitter:card', 'summary_large_image')
   setMeta('name', 'twitter:title', title)
   setMeta('name', 'twitter:description', description)
   setMeta('name', 'twitter:image', image)
   for (const key of ['og:image:width', 'og:image:height']) removeMeta('property', key)
-  if (image === `${origin}/og-image.png`) {
+  if (image === `${origin}/powerpuffceleb-og.png`) {
     setMeta('property', 'og:image:width', '1200')
     setMeta('property', 'og:image:height', '630')
   }
@@ -127,9 +127,9 @@ function createStructuredData({
     '@type': 'Organization',
     '@id': `${origin}/#organization`,
     name: SEO_SITE_NAME,
-    alternateName: 'CELEB HOUSE',
+    alternateName: 'POWER PUFF CELEB',
     url: `${origin}/`,
-    logo: `${origin}/celeb-house-logo.svg`,
+    logo: `${origin}/powerpuffceleb-logo.svg`,
   }
 
   const website = {
@@ -137,7 +137,7 @@ function createStructuredData({
     '@id': `${origin}/#website`,
     url: `${origin}/`,
     name: SEO_SITE_NAME,
-    alternateName: 'CELEB HOUSE',
+    alternateName: 'POWER PUFF CELEB',
     description: SEO_HOME_DESCRIPTION,
     inLanguage: 'ko-KR',
     publisher: { '@id': `${origin}/#organization` },
@@ -274,11 +274,11 @@ function setLink(rel: string, href: string, hreflang?: string) {
 }
 
 function setJsonLd(value: unknown) {
-  let element = document.head.querySelector<HTMLScriptElement>('script[data-celeb-house-seo]')
+  let element = document.head.querySelector<HTMLScriptElement>('script[data-powerpuffceleb-seo]')
   if (!element) {
     element = document.createElement('script')
     element.type = 'application/ld+json'
-    element.dataset.celebHouseSeo = 'true'
+    element.dataset.powerpuffcelebSeo = 'true'
     document.head.append(element)
   }
   element.textContent = JSON.stringify(value).replace(/</g, '\\u003c')

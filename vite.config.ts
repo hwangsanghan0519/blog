@@ -12,7 +12,7 @@ export default defineConfig({
   plugins: [
     react(),
     {
-      name: 'celeb-house-production-site-url',
+      name: 'powerpuffceleb-production-site-url',
       transformIndexHtml(html) {
         const verification = [
           ['google-site-verification', process.env.GOOGLE_SITE_VERIFICATION],

@@ -71,7 +71,7 @@ export function CatalogSidebar({
       <div className="brand">
         <div className="brand-mark">B</div>
         <div>
-          <strong>셀럽하우스 관리</strong>
+          <strong>파워퍼프셀럽 관리</strong>
           <span>상품 등록과 링크 관리</span>
         </div>
       </div>

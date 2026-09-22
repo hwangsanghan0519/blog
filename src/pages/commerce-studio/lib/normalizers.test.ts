@@ -47,7 +47,8 @@ describe('commerce data normalizers', () => {
   })
 
   it('refreshes the previous brand video title while preserving custom settings', () => {
-    expect(normalizeHeroVideo({ title: ' VIOLE VIDEO PICK ' }).title).toBe('CELEB HOUSE VIDEO PICK')
+    expect(normalizeHeroVideo({ title: ' CELEB HOUSE VIDEO PICK ' }).title).toBe('POWER PUFF CELEB VIDEO PICK')
+    expect(normalizeHeroVideo({ title: ' VIOLE VIDEO PICK ' }).title).toBe('POWER PUFF CELEB VIDEO PICK')
     expect(normalizeHeroVideo({ title: '이번 주 추천 영상' }).title).toBe('이번 주 추천 영상')
     expect(normalizeHeroVideo({ title: '' }).title).toBe('')
   })

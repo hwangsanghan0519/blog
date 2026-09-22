@@ -52,6 +52,21 @@
   force = true
 
 [[redirects]]
+  from = "/celeb-house-logo.svg"
+  to = "/powerpuffceleb-logo.svg"
+  status = 301
+
+[[redirects]]
+  from = "/og-image.png"
+  to = "/powerpuffceleb-og.png"
+  status = 301
+
+[[redirects]]
+  from = "/favicon.svg"
+  to = "/powerpuffceleb-icon.svg"
+  status = 301
+
+[[redirects]]
   from = "/robots.txt"
   to = "/.netlify/functions/robots"
   status = 200

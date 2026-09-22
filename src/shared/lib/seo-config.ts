@@ -1,6 +1,6 @@
-export const SEO_SITE_NAME = '셀럽하우스'
-export const SEO_HOME_TITLE = '셀럽하우스 | 연예인·인플루언서 핫템, 잇템, 광고 상품 최저가'
-export const SEO_HOME_DESCRIPTION = '유튜브와 인스타그램에서 연예인·인플루언서가 착용하고 소개한 핫템, 잇템, 광고 상품을 모아 제휴몰 최저가 링크로 연결하는 셀럽하우스 큐레이션입니다.'
+export const SEO_SITE_NAME = '파워퍼프셀럽'
+export const SEO_HOME_TITLE = '파워퍼프셀럽 | 연예인·인플루언서 핫템, 잇템, 광고 상품 최저가'
+export const SEO_HOME_DESCRIPTION = '유튜브와 인스타그램에서 연예인·인플루언서가 착용하고 소개한 핫템, 잇템, 광고 상품을 모아 제휴몰 최저가 링크로 연결하는 파워퍼프셀럽 큐레이션입니다.'
 
 export function seoTitle(subject: string, maxLength = 68) {
   const suffix = ` | ${SEO_SITE_NAME}`

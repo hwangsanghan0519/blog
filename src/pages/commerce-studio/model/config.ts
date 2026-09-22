@@ -79,7 +79,7 @@ export const DEFAULT_HERO_VIDEO: HeroVideoSettings = {
   visibilityConfigured: false,
   youtubeUrl: '',
   eyebrow: 'NOW PLAYING',
-  title: 'CELEB HOUSE VIDEO PICK',
+  title: 'POWER PUFF CELEB VIDEO PICK',
   stickerImage: '',
   stickerHref: '',
 }

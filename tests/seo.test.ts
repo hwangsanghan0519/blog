@@ -67,10 +67,15 @@ describe('SEO page responses', () => {
     expect(result.body).not.toContain('https://ssenshop.netlify.app')
     const data = graph(result.body)
     expect(data.find((node) => node['@type'] === 'Product')?.offers.price).toBe(12900)
-    expect(data.find((node) => node['@type'] === 'WebSite')?.alternateName).toBe('CELEB HOUSE')
+    expect(data.find((node) => node['@type'] === 'WebSite')?.alternateName).toBe('POWER PUFF CELEB')
+    expect(data.find((node) => node['@type'] === 'Organization')?.name).toBe('파워퍼프셀럽')
+    expect(data.find((node) => node['@type'] === 'Organization')?.logo).toBe('https://canonical.example/powerpuffceleb-logo.svg')
+    expect(result.body).toContain('data-powerpuffceleb-seo')
+    expect(result.body).toContain('/powerpuffceleb-icon.svg')
+    expect(result.body).not.toMatch(/셀럽하우스|CELEB HOUSE|celeb-house/)
     const title = result.body.match(/<title>(.*?)<\/title>/)![1]
     expect(title.length).toBeLessThanOrEqual(68)
-    expect(title).toMatch(/셀럽하우스$/)
+    expect(title).toMatch(/파워퍼프셀럽$/)
   })
 
   it('distinguishes missing products from temporary service failures', async () => {
@@ -124,7 +129,7 @@ describe('SEO data correctness', () => {
     expect((await robotsHandler({ httpMethod: 'HEAD', headers: {} })).body).toBe('')
   })
   it('keeps brand names on long titles and rejects ambiguous prices or non-public URLs', () => {
-    expect(seoTitle('긴 상품 '.repeat(100))).toMatch(/… \| 셀럽하우스$/)
+    expect(seoTitle('긴 상품 '.repeat(100))).toMatch(/… \| 파워퍼프셀럽$/)
     expect(readKrwPrice('₩ 12,900')).toBe(12900)
     for (const price of ['10,000~20,000원', '월 3,000원 x 12개월', '20% 할인 12,000원', '가격 문의', '12,34원']) expect(readKrwPrice(price)).toBeNull()
     expect(publicHttpUrl('data:image/svg+xml,anything', 'https://example.com')).toBe('')
