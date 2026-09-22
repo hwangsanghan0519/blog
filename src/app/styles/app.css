@@ -21852,6 +21852,16 @@ button.category-row.is-selected,
 
 /* Desktop masthead: reserve a real logo column and simplify the docked state. */
 @media (min-width: 900px) {
+  .public-blog .public-header:not(.is-scroll-compact) .public-brand-kicker {
+    max-width: 100%;
+    box-sizing: border-box;
+    padding: 4px 8px 3px;
+    font-size: clamp(9px, 0.78vw, 11px);
+    letter-spacing: 0.045em;
+    line-height: 1.3;
+    white-space: nowrap;
+  }
+
   .public-blog .public-header:not(.is-scroll-compact) .public-brand .public-viole-logo,
   .public-blog .public-header:not(.is-scroll-compact) .public-brand .public-viole-logo img {
     min-width: 0 !important;

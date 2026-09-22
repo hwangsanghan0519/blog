@@ -628,10 +628,10 @@ export function StorefrontHome({
           <img src={powerpuffcelebLogoImage} alt="" />
         </span>
         <div>
-          <span>POWER PUFF CELEB CURATED</span>
-          <strong><em>나의 최애가</em><b>선택한 아이템</b></strong>
+          <span>POWER PUFF CURATED</span>
+          <strong><em>찾아줄게요</em><b>최애의 아이템</b></strong>
         </div>
-        <small>타게팅 인플루언서 큐레이션</small>
+        <small>팔로워 맞춤형 셀럽 큐레이션</small>
         <span className="public-mobile-banner-signal" aria-hidden="true"><i /></span>
       </section>
 
@@ -652,12 +652,12 @@ export function StorefrontHome({
             <img src={powerpuffcelebLogoImage} alt="" />
           </span>
           <span className="public-brand-message" aria-hidden="true">
-            <span className="public-brand-kicker">  어느 별에서 왔니?  </span>
+            <span className="public-brand-kicker"> POWER PUFF CELEB CURATED </span>
             <span className="public-brand-title">
-              <em>나의 최애가</em>
-              <b>선택한 아이템</b>
+              <em>찾아줄게요</em>
+              <b>최애의 아이템</b>
             </span>
-            <span className="public-brand-caption">국내 최초 인풀루언서 컨텍팅</span>
+            <span className="public-brand-caption">팔로워 맞춤형 셀럽 큐레이션</span>
           </span>
         </button>
 
