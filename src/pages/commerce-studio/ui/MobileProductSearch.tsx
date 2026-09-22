@@ -43,7 +43,7 @@ export function MobileProductSearch({ posts, onSelect }: { posts: Post[]; onSele
       <Dialog.Trigger className="mobile-search-trigger" aria-label="상품 제목 검색 열기">
         <Search size={22} strokeWidth={2.2} aria-hidden="true" />
       </Dialog.Trigger>
-      <Dialog.Portal>
+      <Dialog.Portal>별
         <Dialog.Overlay className="mobile-search-overlay" />
         <Dialog.Content className="mobile-product-search" data-compact={viewport.height > 0 && viewport.height < 520 ? '' : undefined} style={viewport.height ? {
           '--search-viewport-height': `${viewport.height}px`, '--search-keyboard-offset': `${viewport.bottom}px`,
@@ -51,7 +51,7 @@ export function MobileProductSearch({ posts, onSelect }: { posts: Post[]; onSele
           <div className="mobile-search-handle" aria-hidden="true" />
           <header className="mobile-search-header">
             <div><span className="mobile-search-eyebrow"><Sparkles size={13} aria-hidden="true" /> PICK FINDER</span>
-              <Dialog.Title>찾던 그 셀템을<span>검색해보세요</span></Dialog.Title>
+              <Dialog.Title>밤새 찾아 헤매던<span>셀럽템을 검색해보세요</span></Dialog.Title>
             </div>
             <Dialog.Close className="mobile-search-close" aria-label="상품 검색 닫기"><X size={21} /></Dialog.Close>
           </header>
@@ -82,7 +82,7 @@ export function MobileProductSearch({ posts, onSelect }: { posts: Post[]; onSele
               {hasQuery && <button type="button" onClick={() => { setQuery(''); inputRef.current?.focus() }}>다시 찾아보기 <ArrowRight size={15} /></button>}
             </div>}
           </div>
-          <footer className="mobile-search-footer">발견은 여기서, 구매는 제휴몰에서.<span>POWER PUFF CELEB</span></footer>
+          <footer className="mobile-search-footer">셀럽과 팬들에게 힘을 주는<span>POWER PUFF CELEB</span></footer>
         </Dialog.Content>
       </Dialog.Portal>
     </Dialog.Root>
