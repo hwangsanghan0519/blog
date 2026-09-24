@@ -477,6 +477,10 @@ npm run preview
 | `NAVER_SITE_VERIFICATION` | 선택 | 네이버 서치어드바이저 HTML 태그 인증값, 빌드 시 반영 |
 | `BING_SITE_VERIFICATION` | 선택 | Bing Webmaster Tools HTML 태그 인증값, 빌드 시 반영 |
 | `GITHUB_PAGES=true` | 선택 | `/blog/` base build |
+| `VITE_GA_MEASUREMENT_ID` | 방문·클릭 수집 시 | GA4 웹 스트림 측정 ID (`G-…`), 빌드 시 반영 |
+| `GA_PROPERTY_ID` | 통계 대시보드 사용 시 | GA4 숫자 속성 ID, Netlify Functions 전용 |
+| `GA_SERVICE_ACCOUNT_JSON` | 통계 대시보드 사용 시 | GA4 뷰어 권한을 가진 서비스 계정 JSON 전체, Netlify Functions 전용 |
+| `VITE_GA_DEBUG` | 개발 검증 시만 | `true`이면 로컬·미리보기에서도 DebugView 이벤트 전송. 기본 `false` |
 
 `SUPABASE_SERVICE_KEY`, `SERVICE_ROLE_KEY`, `VITE_SUPABASE_URL`, `NEXT_PUBLIC_SUPABASE_URL`도 이전 환경 호환을 위해 읽지만 신규 환경은 표의 기본 이름을 사용합니다. service-role 키를 `VITE_*` 변수로 제공하지 마십시오.
 
@@ -486,6 +490,43 @@ npm run preview
 2. Netlify에 `SUPABASE_URL`, `SUPABASE_SERVICE_ROLE_KEY`, `BLOG_ADMIN_TOKEN`을 등록합니다.
 3. 배포 후 관리자 경로에서 동일한 `BLOG_ADMIN_TOKEN` 값을 브라우저에 입력합니다.
 4. 첫 저장 후 공개 화면, 상품 상세, sitemap을 확인합니다.
+
+### 7.6 GA4 방문·상품 클릭과 관리자 대시보드
+
+관리자 화면의 **통계 대시보드** 탭에서 오늘·최근 7일·30일·90일 방문, 방문자, 페이지 조회, 상품 클릭, 상세 조회, 제휴몰 이동을 확인합니다. 일별 차트와 수치 표, 상품별 상위 50개 순위를 제공합니다. 상품이 없는 초기 상태에서도 대시보드에 접근할 수 있습니다. 상품명 변경 시 GA4의 `itemId`/`itemName` 조합별로 행이 나뉘며 합계는 전체 항목을 포함합니다.
+
+집계는 Google 공식 `gtag.js`, 조회는 서버의 공식 `@google-analytics/data` SDK를 사용합니다. 자체 방문 카운터나 Supabase 통계 테이블은 추가하지 않습니다. `/.netlify/functions/analytics`는 기존 `BLOG_ADMIN_TOKEN`으로 인증하고 응답을 캐시하지 않습니다. 측정 ID만 클라이언트에 포함되며 서비스 계정 비밀키는 브라우저로 전달하지 않습니다.
+
+**연결 순서**
+
+1. 이 사이트 전용 GA4 속성과 웹 데이터 스트림을 만듭니다. 속성 시간대를 `Asia/Seoul`로 설정하고 측정 ID(`G-…`)와 숫자 속성 ID를 확인합니다. 대시보드는 해당 속성의 전체 웹/앱 데이터를 조회하므로 여러 사이트를 같은 속성에 섞지 않습니다.
+2. Google Cloud에서 **Google Analytics Data API**를 활성화하고 서비스 계정을 생성합니다. GA4 → 관리자 → 속성 액세스 관리에서 서비스 계정의 `client_email`을 **뷰어**로 추가합니다.
+3. Netlify 환경변수에 `VITE_GA_MEASUREMENT_ID`(Builds), `GA_PROPERTY_ID`와 `GA_SERVICE_ACCOUNT_JSON`(Functions)을 등록합니다. JSON 변수에는 키 파일의 JSON 전체를 넣습니다. 기존 `BLOG_ADMIN_TOKEN`도 Functions 범위에 필요합니다. `.env.example`은 변수 이름만 제공하며 실제 비밀키 파일을 저장소에 커밋하지 않습니다.
+4. 웹 스트림 → **향상된 측정 → 페이지 조회 → 고급 설정**에서 페이지 로드와 **브라우저 방문 기록 변경에 따른 페이지 변경**을 켭니다. 이 앱은 History API로 상품 상세·셀럽 필터를 전환하므로 GA4 자동 페이지 측정을 사용합니다. 코드에서 `page_view`를 별도로 보내지 않습니다. 동일 측정 ID를 GTM·HTML 등에 중복 설치하지 않습니다.
+5. 빌드·배포 후 관리자 **통계 대시보드**에서 연결을 확인합니다. GitHub Pages 단독 호스팅에서는 Netlify 통계 함수가 제공되지 않습니다.
+
+| 지표 | GA4 이벤트 / API 지표 | 기준 |
+| --- | --- | --- |
+| 방문 수 | `sessions` | GA4 세션 기준. 새로고침 횟수나 고유 방문자 수와 다름 |
+| 방문자 수 | `totalUsers` | 조회 기간 전체 사용자. 일별 사용자를 단순 합산하지 않음 |
+| 페이지 조회 | 자동 `page_view` / `screenPageViews` | 홈·셀럽·상세의 최초 로드 및 History API 이동 |
+| 상품 클릭 | `select_item` / `itemsClickedInList` | 추천·목록·검색·상세 이전/다음에서 상품 선택. 클릭당 상품 수량 1 |
+| 상품 상세 조회 | `view_item` / `itemsViewed` | 상세 진입 시 1회. URL 직접 방문 포함, 같은 상세의 데이터 갱신은 중복 제외 |
+| 제휴몰 이동 | `affiliate_click` / 해당 이벤트의 `eventCount` | 추천 보러가기·상세 제휴몰·비교몰·모바일 하단 버튼. 구매 완료 아님 |
+
+기본 측정은 대표 도메인에서만 동작하며 관리자 경로·로컬 개발·배포 미리보기는 제외합니다. 이미 공개 화면에 들어온 운영자의 쇼핑 활동까지 자동 구분하지는 않습니다. 측정 ID가 없으면 태그를 로드하지 않습니다. 조회 설정 누락·권한 거부·API 장애는 0건 통계 대신 오류와 연결 안내로 표시합니다. 키가 없으므로 과거 방문·클릭을 소급 수집할 수 없습니다.
+
+GA4 처리에는 24~48시간이 걸릴 수 있습니다. 오늘 수치는 잠정치이며, 광고 차단·추적 제한으로 일부 활동이 누락될 수 있어 서버 전체 요청 수와 일치하지 않습니다. GA4가 기준점·샘플링·기타 행 통합을 적용하면 대시보드에서 이를 알립니다. 방문·클릭의 무손실 전수 집계를 보장하는 기능은 아닙니다.
+
+**배포 후 검증**
+
+- GA4 실시간 보고서에서 새 방문을 확인합니다. 별도 테스트 속성의 측정 ID와 `VITE_GA_DEBUG=true`를 설정하면 로컬에서 DebugView 검증이 가능합니다. 운영 빌드에서는 다시 `false`로 설정합니다.
+- 상품 클릭 시 `select_item` 1회와 상세 진입의 `view_item` 1회, 공유 URL 직접 진입 시 `view_item`만 발생하는지 확인합니다. 데이터 갱신·React Strict Mode로 태그를 중복 초기화하지 않습니다.
+- 홈 → 상품 → 닫기 → 셀럽 → 브라우저 뒤로 가기에서 `page_view`가 이동마다 1회인지 확인합니다. 중복이면 GTM 중복 태그를 확인하고, 누락이면 향상된 측정의 브라우저 방문 기록 설정을 확인합니다.
+- 제휴몰 링크(모바일 고정 버튼 포함)에서 `affiliate_click`을 확인합니다. Ctrl/Cmd 클릭과 가운데 버튼 클릭도 집계하며 오른쪽 클릭 메뉴에서 새 탭 열기는 클릭 이벤트를 발생시키지 않아 집계하지 못합니다.
+- `npm run check`는 수집 초기화·이벤트 분리·관리자 인증·Google API 요청·기간 및 시간대 처리·전체 합계와 상위 50개 분리·오류 처리를 검증합니다. 실제 GA4 수신 검증은 측정 ID와 서비스 계정 연결 후 진행합니다.
+
+공식 참고: [SPA 페이지 측정](https://developers.google.com/analytics/devguides/collection/ga4/single-page-applications), [전자상거래 이벤트](https://developers.google.com/analytics/devguides/collection/ga4/ecommerce), [Data API 시작하기](https://developers.google.com/analytics/devguides/reporting/data/v1/quickstart), [API 지표](https://developers.google.com/analytics/devguides/reporting/data/v1/api-schema), [데이터 반영 시간](https://support.google.com/analytics/answer/11198161?hl=ko).
 
 ## 8. 협업 규칙
 

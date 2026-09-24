@@ -1,4 +1,4 @@
-import { Eye, Lock, PenLine, Play, Plus, Settings2, X } from 'lucide-react'
+import { BarChart3, Eye, Lock, PenLine, Play, Plus, Settings2, X } from 'lucide-react'
 import { lazy, Suspense, useEffect, useRef } from 'react'
 import { EmptyState } from '../../../shared/ui/EmptyState'
 import { CatalogSidebar } from '../../../widgets/catalog-sidebar/ui/CatalogSidebar'
@@ -13,6 +13,11 @@ import { StorefrontSkeleton } from './StorefrontSkeleton'
 const PostEditor = lazy(async () => {
   const module = await import('../../../features/post-editor/ui/PostEditor')
   return { default: module.PostEditor }
+})
+
+const AnalyticsDashboard = lazy(async () => {
+  const module = await import('./AnalyticsDashboard')
+  return { default: module.AnalyticsDashboard }
 })
 
 export function CommerceStudioPage() {
@@ -56,14 +61,10 @@ export function CommerceStudioPage() {
     )
   }
 
-  if (!activePost) {
-    return <EmptyState onCreate={() => studio.createPost()} />
-  }
-
   return (
     <div className="app-shell">
       <CatalogSidebar
-        activePostId={activePost.id}
+        activePostId={activePost?.id ?? ''}
         categoryCounts={studio.categoryCounts}
         categoryImages={studio.categoryImages}
         categoryFilter={studio.categoryFilter}
@@ -93,7 +94,7 @@ export function CommerceStudioPage() {
       <main className="workspace">
         <Topbar
           importRef={studio.importRef}
-          title={activePost.title}
+          title={studio.view === 'analytics' ? '방문 · 상품 통계' : activePost?.title ?? '상품 관리'}
           onBackup={studio.exportBackup}
           onImport={studio.importBackup}
           onOpenSidebar={() => studio.setSidebarOpen(true)}
@@ -101,6 +102,9 @@ export function CommerceStudioPage() {
 
         <section className="admin-command-bar" aria-label="관리자 작업">
           <nav className="view-tabs compact-view-tabs" aria-label="작성 화면">
+            <button className={studio.view === 'analytics' ? 'is-active' : ''} type="button" onClick={() => studio.setView('analytics')}>
+              <BarChart3 size={16} /> 통계 대시보드
+            </button>
             <button className={studio.view === 'editor' ? 'is-active' : ''} type="button" onClick={() => studio.setView('editor')}>
               <PenLine size={16} /> 상품 편집
             </button>
@@ -119,6 +123,9 @@ export function CommerceStudioPage() {
           </div>
         </section>
 
+        {studio.view === 'analytics' && <Suspense fallback={<p role="status">대시보드를 불러오는 중…</p>}><AnalyticsDashboard /></Suspense>}
+
+        {studio.view !== 'analytics' && <>
         <details className="admin-settings-panel">
           <summary>
             <span>
@@ -153,7 +160,11 @@ export function CommerceStudioPage() {
           />
         </details>
 
-        {studio.view !== 'preview' && (
+        </>}
+
+        {!activePost && studio.view !== 'analytics' && <EmptyState onCreate={() => studio.createPost()} />}
+
+        {activePost && studio.view === 'editor' && (
           <Suspense fallback={null}>
             <PostEditor
               categories={studio.categories}
@@ -164,7 +175,7 @@ export function CommerceStudioPage() {
           </Suspense>
         )}
 
-        {studio.view === 'preview' && <PostPreview post={activePost} />}
+        {activePost && studio.view === 'preview' && <PostPreview post={activePost} />}
 
       </main>
 

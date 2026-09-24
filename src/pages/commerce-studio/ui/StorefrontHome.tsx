@@ -19,6 +19,7 @@ import { AdStripBanners, CategoryVisual, TrendVideo } from './StorefrontMedia'
 import { MobileProductSearch } from './MobileProductSearch'
 import { FourCutImage, FourCutLoading } from './FourCutImage'
 import { getProductSeo, getProductTags } from '../../../shared/lib/product-seo'
+import { trackAffiliateClick, trackProductClick, trackProductView } from '../../../shared/lib/analytics'
 
 type StorefrontHomeProps = {
   posts: Post[]
@@ -150,6 +151,13 @@ export function StorefrontHome({
   }, [categoryFilter, publishedPosts])
 
   const selectedPost = publishedPosts.find((post) => post.id === selectedId)
+  const measuredProductRef = useRef('')
+  useEffect(() => {
+    if (!selectedPost) { measuredProductRef.current = ''; return }
+    if (measuredProductRef.current === selectedPost.id) return
+    measuredProductRef.current = selectedPost.id
+    trackProductView(selectedPost)
+  }, [selectedPost])
   const selectedTags = getProductTags(selectedPost?.tags)
   const selectedPostIndex = selectedPost ? publishedPosts.findIndex((post) => post.id === selectedPost.id) : -1
   const [sliderRef, slider] = useKeenSlider<HTMLDivElement>({
@@ -441,10 +449,11 @@ export function StorefrontHome({
     return () => window.clearTimeout(timer)
   }, [categoryFilter, filteredPosts.length])
 
-  const selectPost = (postId: string) => {
+  const selectPost = (postId: string, list = 'storefront') => {
     const post = publishedPosts.find((item) => item.id === postId)
     if (!post) return
 
+    trackProductClick(post, list)
     setSelectedId(post.id)
     setIsMobileBuyDockVisible(false)
     requestPostDetail(post.id)
@@ -495,7 +504,7 @@ export function StorefrontHome({
     const nextIndex = selectedPostIndex + direction
     const nextPost = publishedPosts[nextIndex]
     if (nextPost) {
-      selectPost(nextPost.id)
+      selectPost(nextPost.id, 'reader_navigation')
     }
   }
 
@@ -769,7 +778,7 @@ export function StorefrontHome({
                     key={post.id}
                     style={getBestRankStyle(index)}
                   >
-                    <div className="public-best-v2-card" onClick={() => selectPost(post.id)}>
+                    <div className="public-best-v2-card" onClick={() => selectPost(post.id, 'best')}>
                       <div className="public-best-v2-media" data-rank={String(index + 1).padStart(2, '0')}>
                         <PostImage post={post} priority={index === 0} />
                         <strong className="public-rank">
@@ -944,10 +953,11 @@ export function StorefrontHome({
                     className="public-post-card-link"
                     aria-label={`${post.title} 상품 상세 보기`}
                     href={getProductPath(post.slug || post.id)}
+                    onAuxClick={(event) => { if (event.button === 1) trackProductClick(post, 'catalog') }}
                     onClick={(event) => {
-                      if (event.metaKey || event.ctrlKey || event.shiftKey || event.altKey) return
+                      if (event.metaKey || event.ctrlKey || event.shiftKey || event.altKey) { trackProductClick(post, 'catalog'); return }
                       event.preventDefault()
-                      selectPost(post.id)
+                      selectPost(post.id, 'catalog')
                     }}
                   >
                     <div className="public-post-media">
@@ -1120,7 +1130,7 @@ export function StorefrontHome({
         </div>
       </footer>
 
-      {!selectedPost && <MobileProductSearch posts={publishedPosts} onSelect={selectPost} />}
+      {!selectedPost && <MobileProductSearch posts={publishedPosts} onSelect={(postId) => selectPost(postId, 'search')} />}
       <div className="public-quick-actions" aria-label="빠른 기능">
         <a href="mailto:nmc2711@naver.com" aria-label="제휴 문의 이메일 보내기">
           <Mail size={21} />
@@ -1418,6 +1428,7 @@ function BestSliderLowestLink({ post }: { post: Post }) {
 
     event.preventDefault()
     event.stopPropagation()
+    if (bestLink) trackAffiliateClick(post, bestLink)
     window.open(href, '_blank', 'noopener,noreferrer')
   }
 
@@ -1464,7 +1475,7 @@ function ProductLinkPanel({ post, priceRef }: { post: Post; priceRef?: Ref<HTMLE
           {primaryLink.mall.trim() && <small>{primaryLink.mall}</small>}
           <strong ref={priceRef}>{primaryLink.price || '가격 확인'}</strong>
         </div>
-        <a href={primaryLink.href} target="_blank" rel="noreferrer sponsored">
+        <a href={primaryLink.href} {...affiliateTracking(post, primaryLink)} target="_blank" rel="noreferrer sponsored">
           <ShoppingBag size={18} /> 보러가기 <ExternalLink size={16} />
         </a>
       </div>
@@ -1476,7 +1487,7 @@ function ProductLinkPanel({ post, priceRef }: { post: Post; priceRef?: Ref<HTMLE
           </div>
           <div className="product-buy-list">
             {comparisonLinks.map((link) => (
-              <a href={link.href} key={link.id} target="_blank" rel="noreferrer sponsored">
+              <a href={link.href} {...affiliateTracking(post, link)} key={link.id} target="_blank" rel="noreferrer sponsored">
                 <span>
                   <b>{link.mall || '쇼핑몰'}</b>
                   {link.badge && <em>{link.badge}</em>}
@@ -1505,7 +1516,7 @@ function MobileProductBuyDock({ post }: { post: Post }) {
         <small>지금 최저가</small>
         <strong>{primaryLink.price || '가격 확인'}</strong>
       </div>
-      <a href={primaryLink.href} target="_blank" rel="noreferrer sponsored">
+      <a href={primaryLink.href} {...affiliateTracking(post, primaryLink)} target="_blank" rel="noreferrer sponsored">
         <ShoppingBag aria-hidden="true" />
         <span>보러가기</span>
         <ChevronRight aria-hidden="true" />
@@ -1532,7 +1543,7 @@ function ProductDetailSideFooter({ post, onCategorySelect }: { post: Post; onCat
         <strong>{primaryLink?.price || '가격 확인'}</strong>
       </div>
       {primaryLink?.href.trim() && (
-        <a href={primaryLink.href} target="_blank" rel="noreferrer sponsored">
+        <a href={primaryLink.href} {...affiliateTracking(post, primaryLink)} target="_blank" rel="noreferrer sponsored">
           <span>보러가기</span>
           <ShoppingCart aria-hidden="true" />
         </a>
@@ -1552,6 +1563,13 @@ function getBestProductLink(post: Post) {
     ?? linkedProducts[0]
     ?? post.productLinks.find((link) => link.price.trim())
     ?? post.productLinks[0]
+}
+
+function affiliateTracking(post: Post, link: Post['productLinks'][number]) {
+  return {
+    onClick: () => trackAffiliateClick(post, link),
+    onAuxClick: (event: MouseEvent<HTMLAnchorElement>) => { if (event.button === 1) trackAffiliateClick(post, link) },
+  }
 }
 
 function parseProductPrice(price: string) {

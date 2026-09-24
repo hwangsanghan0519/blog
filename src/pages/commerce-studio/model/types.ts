@@ -1,7 +1,7 @@
 import type { Post } from '../../../entities/post/model/types'
 
 /** 관리자 작업 공간에서 전환할 수 있는 화면입니다. */
-export type ViewMode = 'editor' | 'preview'
+export type ViewMode = 'editor' | 'preview' | 'analytics'
 
 export type AdBannerSettings = {
   id: string
