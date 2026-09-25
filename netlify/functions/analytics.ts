@@ -1,4 +1,3 @@
-import { timingSafeEqual } from 'node:crypto'
 import { BetaAnalyticsDataClient, protos } from '@google-analytics/data'
 import type { AnalyticsDays, AnalyticsSnapshot } from '../../src/pages/commerce-studio/model/analyticsTypes.ts'
 
@@ -12,7 +11,6 @@ const json = (statusCode: number, body: unknown) => ({
     'cache-control': 'private, no-store',
     'access-control-allow-origin': '*',
     'access-control-allow-methods': 'GET, OPTIONS',
-    'access-control-allow-headers': 'x-blog-admin-token',
   },
   body: JSON.stringify(body),
 })
@@ -20,12 +18,6 @@ const json = (statusCode: number, body: unknown) => ({
 export async function handler(event: Event) {
   if (event.httpMethod === 'OPTIONS') return json(204, null)
   if (event.httpMethod !== 'GET') return json(405, { message: 'Method not allowed' })
-
-  const expected = process.env.BLOG_ADMIN_TOKEN || ''
-  const supplied = Object.entries(event.headers).find(([name]) => name.toLowerCase() === 'x-blog-admin-token')?.[1] || ''
-  if (!expected || Buffer.byteLength(expected) !== Buffer.byteLength(supplied) || !timingSafeEqual(Buffer.from(expected), Buffer.from(supplied))) {
-    return json(401, { message: '관리자 저장 토큰이 올바르지 않습니다. 토큰을 다시 등록해 주세요.' })
-  }
 
   const rawDays = event.queryStringParameters?.days ?? '30'
   if (!['1', '7', '30', '90'].includes(rawDays)) return json(400, { message: '조회 기간이 올바르지 않습니다.' })

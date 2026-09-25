@@ -5,6 +5,7 @@ import './styles/celeb-vote.css'
 import './styles/mobile-runtime.css'
 import './styles/product-source.css'
 import './styles/product-seo.css'
+import './styles/admin-mobile.css'
 
 export default function App() {
   return <CommerceStudioPage />

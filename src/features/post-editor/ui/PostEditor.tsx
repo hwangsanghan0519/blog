@@ -43,7 +43,7 @@ import {
 } from 'lucide-react'
 import type { ChangeEvent } from 'react'
 import type { CSSProperties, ReactNode } from 'react'
-import { useEffect, useMemo, useRef } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
 import { normalizeEditorContent } from '../../../entities/post/lib/content'
 import { slugify } from '../../../entities/post/lib/formatters'
 import { PRODUCT_SOURCE_LABELS, productSourceLink } from '../../../entities/post/lib/source'
@@ -89,6 +89,7 @@ function hasCompleteFourCut(post: Post) {
 }
 
 export function PostEditor({ categories, post, onCoverUpload, onUpdate }: PostEditorProps) {
+  const [uploadingFrame, setUploadingFrame] = useState<number | null>(null)
   const inlineImageRef = useRef<HTMLInputElement>(null)
   const editorContentRef = useRef(normalizeEditorContent(post.content))
   const selectedCategory = post.category.trim()
@@ -187,13 +188,15 @@ export function PostEditor({ categories, post, onCoverUpload, onUpdate }: PostEd
     const file = event.target.files?.[0]
     event.target.value = ''
 
-    if (!file) return
-
+    if (!file || uploadingFrame !== null) return
+    setUploadingFrame(index)
     try {
       const image = await imageFileToOptimizedDataUrl(file, 1600, 0.8)
       onUpdate({ detailImages: replaceDetailSlot(post.detailImages, index, image) })
     } catch {
-      window.alert('상세 이미지를 처리하지 못했습니다. 다른 이미지를 선택해 주세요.')
+      window.alert('상세 이미지를 처리하지 못했습니다. JPG 또는 PNG 사진으로 다시 선택해 주세요.')
+    } finally {
+      setUploadingFrame(null)
     }
   }
 
@@ -302,8 +305,13 @@ export function PostEditor({ categories, post, onCoverUpload, onUpdate }: PostEd
   }
 
   return (
-    <section className="editor-grid">
-      <div className="editor-main">
+    <section className="editor-grid" aria-label="상품 등록 편집">
+      <nav className="admin-editor-jumps" aria-label="상품 입력 단계">
+        <button type="button" onClick={() => document.getElementById('product-basics')?.scrollIntoView({ block: 'start' })}>1. 기본 정보</button>
+        <button type="button" onClick={() => document.getElementById('product-photos')?.scrollIntoView({ block: 'start' })}>2. 사진 · 설명</button>
+        <button type="button" onClick={() => document.getElementById('product-selling')?.scrollIntoView({ block: 'start' })}>3. 판매 · 발행</button>
+      </nav>
+      <div className="editor-main" id="product-basics">
         <label>
           상품명
           <input value={post.title} onChange={(event) => onUpdate({ title: event.target.value })} />
@@ -349,14 +357,14 @@ export function PostEditor({ categories, post, onCoverUpload, onUpdate }: PostEd
           )}
         </fieldset>
 
-        <section className="viole-four-cut-admin" aria-label="파워퍼프셀럽 네컷 상품 상세 등록">
+        <section className="viole-four-cut-admin" id="product-photos" aria-label="파워퍼프셀럽 네컷 상품 상세 등록">
           <header>
             <div>
               <span>PRODUCT DETAIL TEMPLATE</span>
               <h2>파워퍼프셀럽 네컷</h2>
               <p>사진 4장과 각 컷의 상품 설명을 모두 입력해 주세요.</p>
             </div>
-            <strong>{post.detailImages.filter(Boolean).length} / 4</strong>
+            <strong aria-live="polite">{uploadingFrame !== null ? '사진 처리 중…' : `${post.detailImages.filter(Boolean).length} / 4`}</strong>
           </header>
 
           <div className="viole-four-cut-admin-frames">
@@ -371,7 +379,7 @@ export function PostEditor({ categories, post, onCoverUpload, onUpdate }: PostEd
                     <strong>{String(index + 1).padStart(2, '0')}</strong>
                   </div>
                   <label className="viole-four-cut-admin-image">
-                    <input type="file" accept="image/*" onChange={(event) => uploadDetailFrameImage(index, event)} />
+                    <input type="file" accept="image/*" aria-label={`${index + 1}번째 상세 사진 선택`} disabled={uploadingFrame !== null} onChange={(event) => uploadDetailFrameImage(index, event)} />
                     {image ? (
                       <img src={image} alt={`${index + 1}번째 상세 이미지 미리보기`} />
                     ) : (
@@ -384,6 +392,7 @@ export function PostEditor({ categories, post, onCoverUpload, onUpdate }: PostEd
                   <label className="viole-four-cut-admin-copy">
                     <span>이 사진의 상품 설명</span>
                     <textarea
+                      aria-label={`${index + 1}번째 사진 설명`}
                       value={description}
                       rows={5}
                       maxLength={240}
@@ -393,7 +402,7 @@ export function PostEditor({ categories, post, onCoverUpload, onUpdate }: PostEd
                     <small>{description.length} / 240</small>
                   </label>
                   {image && (
-                    <button type="button" aria-label={`${index + 1}번째 사진 삭제`} onClick={() => clearDetailFrameImage(index)}>
+                    <button type="button" disabled={uploadingFrame !== null} aria-label={`${index + 1}번째 사진 삭제`} onClick={() => clearDetailFrameImage(index)}>
                       <Trash2 size={14} /> 사진 삭제
                     </button>
                   )}
@@ -408,6 +417,7 @@ export function PostEditor({ categories, post, onCoverUpload, onUpdate }: PostEd
           </footer>
         </section>
 
+        <details className="admin-extra-description"><summary>추가 상품 설명 · 서식 편집 (선택)</summary>
         <div className="toolbar rich-toolbar" aria-label="상품 상세 편집 도구">
           <ToolbarButton active={editor?.isActive('bold')} label="굵게" onClick={() => editor?.chain().focus().toggleBold().run()}>
             <Bold size={16} />
@@ -526,9 +536,11 @@ export function PostEditor({ categories, post, onCoverUpload, onUpdate }: PostEd
           추가 상품 설명 <small>(선택)</small>
           <EditorContent editor={editor} className="rich-editor" />
         </label>
+        </details>
       </div>
 
-      <aside className="editor-side">
+      <aside className="editor-side" id="product-selling" aria-label="판매 및 발행 설정">
+        <div className="admin-publish-heading"><h2>판매 · 발행 설정</h2><p>셀럽과 제휴 링크를 확인한 뒤 발행하세요.</p></div>
         <label>
           상태
           <select value={post.status} onChange={(event) => changePostStatus(event.target.value as PostStatus)}>
@@ -539,7 +551,7 @@ export function PostEditor({ categories, post, onCoverUpload, onUpdate }: PostEd
         </label>
         <label>
           슬러그
-          <input value={post.slug} onChange={(event) => onUpdate({ slug: slugify(event.target.value) })} />
+          <input autoCapitalize="none" autoCorrect="off" value={post.slug} onChange={(event) => onUpdate({ slug: slugify(event.target.value) })} />
         </label>
         <label>
           광고 모델 / 셀럽
@@ -583,7 +595,7 @@ export function PostEditor({ categories, post, onCoverUpload, onUpdate }: PostEd
                 </label>
                 <label>
                   가격
-                  <input value={link.price} placeholder="129,000원" onChange={(event) => updateProductLink(link.id, { price: event.target.value })} />
+                  <input inputMode="decimal" value={link.price} placeholder="129,000원" onChange={(event) => updateProductLink(link.id, { price: event.target.value })} />
                 </label>
                 <label>
                   버튼 문구
@@ -595,7 +607,7 @@ export function PostEditor({ categories, post, onCoverUpload, onUpdate }: PostEd
                 </label>
                 <label className="product-link-url">
                   제휴 URL
-                  <input value={link.href} placeholder="https://..." onChange={(event) => updateProductLink(link.id, { href: event.target.value })} />
+                  <input type="url" inputMode="url" autoCapitalize="none" autoCorrect="off" value={link.href} placeholder="https://..." onChange={(event) => updateProductLink(link.id, { href: event.target.value })} />
                 </label>
                 <button className="product-link-remove" type="button" onClick={() => removeProductLink(link.id)}>
                   <Trash2 size={14} /> 삭제
@@ -608,7 +620,7 @@ export function PostEditor({ categories, post, onCoverUpload, onUpdate }: PostEd
         </section>
         <label className="cover-uploader">
           <span>대표 이미지</span>
-          <input type="file" accept="image/*" onChange={onCoverUpload} />
+          <input type="file" accept="image/*" aria-label="대표 이미지 선택" onChange={onCoverUpload} />
           {post.coverImage ? (
             <img src={post.coverImage} alt="" />
           ) : (
@@ -619,6 +631,11 @@ export function PostEditor({ categories, post, onCoverUpload, onUpdate }: PostEd
             </span>
           )}
         </label>
+        <div className="admin-publish-action">
+          <p>{hasCompleteFourCut(post) ? '네컷 사진과 설명이 모두 준비됐어요.' : '발행하려면 네컷 사진 4장과 각 설명이 필요해요.'}</p>
+          <button className="primary-action" type="button" disabled={post.status === 'published'} onClick={() => changePostStatus('published')}>{post.status === 'published' ? '발행 중인 상품' : '상품 발행하기'}</button>
+          <small>작성 내용은 자동 저장됩니다. 상단의 서버 저장 상태를 확인하세요.</small>
+        </div>
       </aside>
     </section>
   )

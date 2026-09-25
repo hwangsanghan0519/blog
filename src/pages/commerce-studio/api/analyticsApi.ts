@@ -1,15 +1,11 @@
 import { getCloudDataEndpoint } from './commerceApi'
-import { STORAGE_KEYS } from '../model/config'
 import type { AnalyticsDays, AnalyticsSnapshot } from '../model/analyticsTypes'
 
 export async function fetchAnalytics(days: AnalyticsDays, signal: AbortSignal): Promise<AnalyticsSnapshot> {
-  const token = window.localStorage.getItem(STORAGE_KEYS.adminToken)
-  if (!token) throw new Error('통계를 보려면 관리자 저장 토큰을 등록해 주세요.')
-
   const endpoint = getCloudDataEndpoint().replace('/blog-data', '/analytics')
   const response = await fetch(`${endpoint}?days=${days}`, {
     cache: 'no-store',
-    headers: { 'x-blog-admin-token': token, accept: 'application/json' },
+    headers: { accept: 'application/json' },
     signal,
   })
   if (!response.headers.get('content-type')?.includes('application/json')) {

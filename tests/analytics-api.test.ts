@@ -29,13 +29,10 @@ beforeEach(() => {
 afterEach(() => vi.unstubAllEnvs())
 
 describe('GA4 admin API', () => {
-  it('requires the real server admin token before looking up configuration or calling Google', async () => {
-    for (const token of ['', 'wrong', 'wrongadmin']) {
-      expect((await handler({ ...event, headers: { 'x-blog-admin-token': token } })).statusCode).toBe(401)
-    }
+  it('allows URL-only access without a browser token', async () => {
     vi.stubEnv('BLOG_ADMIN_TOKEN', '')
-    expect((await handler(event)).statusCode).toBe(401)
-    expect(client).not.toHaveBeenCalled()
+    expect((await handler({ ...event, headers: {} })).statusCode).toBe(200)
+    expect(client).toHaveBeenCalledOnce()
   })
 
   it('rejects unsupported methods and arbitrary query periods', async () => {

@@ -10,8 +10,6 @@ export const STORAGE_KEYS = {
   publicPosts: 'solo-commerce-blog-public-summary-v2',
   publicSettings: 'solo-commerce-blog-public-settings-v2',
   publicCategoryImages: 'solo-commerce-blog-public-category-images-v2',
-  ownerPassword: 'solo-commerce-blog-owner-password',
-  adminToken: 'solo-commerce-blog-admin-token',
 } as const
 
 export const CLOUD_UPDATE_CHANNEL = 'solo-commerce-blog-cloud-update'

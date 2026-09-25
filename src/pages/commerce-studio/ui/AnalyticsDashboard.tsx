@@ -2,7 +2,6 @@ import { useEffect, useState } from 'react'
 import { Activity, ArrowUpRight, BarChart3, MousePointer2, RefreshCw, Users } from 'lucide-react'
 import { hasAnalyticsMeasurementId } from '../../../shared/lib/analytics'
 import { fetchAnalytics } from '../api/analyticsApi'
-import { STORAGE_KEYS } from '../model/config'
 import type { AnalyticsDays, AnalyticsSnapshot } from '../model/analyticsTypes'
 import './analytics-dashboard.css'
 
@@ -39,13 +38,6 @@ export function AnalyticsDashboard() {
     setRefresh((value) => value + 1)
   }
 
-  const updateToken = () => {
-    const token = window.prompt('Netlify의 BLOG_ADMIN_TOKEN 값을 입력하세요.')?.trim()
-    if (!token) return
-    window.localStorage.setItem(STORAGE_KEYS.adminToken, token)
-    reload()
-  }
-
   const cards = snapshot ? [
     { label: '방문 수', value: snapshot.totals.sessions, hint: 'GA4 세션', icon: Activity },
     { label: '방문자 수', value: snapshot.totals.users, hint: '기간 내 전체 사용자', icon: Users },
@@ -71,7 +63,7 @@ export function AnalyticsDashboard() {
 
       {!hasAnalyticsMeasurementId() && <p className="analytics-notice">방문 수집이 아직 연결되지 않았습니다. VITE_GA_MEASUREMENT_ID 설정 후 다시 빌드·배포해 주세요.</p>}
       {loading && <div className="analytics-placeholder" role="status">Google Analytics 통계를 불러오고 있어요…</div>}
-      {error && <div className="analytics-error" role="alert"><strong>통계를 불러올 수 없습니다</strong><p>{error}</p><button type="button" className="ghost-action" onClick={updateToken}>관리자 토큰 등록 / 변경</button></div>}
+      {error && <div className="analytics-error" role="alert"><strong>통계를 불러올 수 없습니다</strong><p>{error}</p><button type="button" className="ghost-action" onClick={() => reload()}>다시 시도</button></div>}
 
       {snapshot && <>
         <div className="analytics-cards">{cards.map(({ label, value, hint, icon: Icon }) => <article className="analytics-card" key={label}><span><Icon size={17} /> {label}</span><strong>{number.format(value)}</strong><small>{hint}</small></article>)}</div>

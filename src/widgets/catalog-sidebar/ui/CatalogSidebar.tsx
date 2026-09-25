@@ -85,6 +85,7 @@ export function CatalogSidebar({
       <label className="search-box">
         <Search size={17} />
         <input
+          aria-label="상품 검색"
           value={query}
           onChange={(event) => onQueryChange(event.target.value)}
           placeholder="상품명, 쇼핑몰, 태그 검색"

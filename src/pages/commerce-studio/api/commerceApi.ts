@@ -3,44 +3,24 @@ import {
   CLOUD_DATA_ENDPOINT,
   CLOUD_UPDATE_CHANNEL,
   PRODUCTION_CLOUD_DATA_ENDPOINT,
-  STORAGE_KEYS,
 } from '../model/config'
-import type { CloudCommerceData, CloudCommercePatch, CloudCommerceSnapshot } from '../model/types'
+import type { CloudCommercePatch, CloudCommerceSnapshot } from '../model/types'
 
-let cloudSaveWarningShown = false
 let cloudPatchQueue: Promise<boolean> = Promise.resolve(true)
 
-export function ensureAdminToken() {
-  const savedToken = window.localStorage.getItem(STORAGE_KEYS.adminToken)
-  if (savedToken) return savedToken
-
-  const nextToken = window.prompt('Netlify 환경변수 BLOG_ADMIN_TOKEN에 등록한 저장 토큰을 입력하세요.')
-  if (!nextToken?.trim()) {
-    window.alert('저장 토큰이 없으면 이 브라우저에는 저장되지만 Netlify 서버에는 저장되지 않습니다.')
-    return ''
-  }
-
-  window.localStorage.setItem(STORAGE_KEYS.adminToken, nextToken.trim())
-  return nextToken.trim()
-}
-
 export async function saveCloudData(
-  data: Required<Pick<CloudCommerceData, 'adBanners' | 'categories' | 'categoryImages' | 'heroVideo' | 'posts'>>,
+  data: CloudCommerceSnapshot,
 ) {
-  const token = window.localStorage.getItem(STORAGE_KEYS.adminToken)
-  if (!token) return false
-
   try {
     const response = await fetch(getCloudDataEndpoint(), {
       method: 'PUT',
+      signal: AbortSignal.timeout(30_000),
       headers: {
         'content-type': 'application/json',
-        'x-blog-admin-token': token,
       },
       body: JSON.stringify(data),
     })
 
-    if (response.status === 401) return handleUnauthorizedSave()
     if (response.ok) announceCloudUpdate()
     return response.ok
   } catch {
@@ -116,20 +96,16 @@ function announceCloudUpdate() {
 }
 
 async function saveCloudPatch(patch: CloudCommercePatch, fallbackData: CloudCommerceSnapshot) {
-  const token = window.localStorage.getItem(STORAGE_KEYS.adminToken)
-  if (!token) return false
-
   try {
     const response = await fetch(getCloudDataEndpoint(), {
       method: 'PATCH',
+      signal: AbortSignal.timeout(30_000),
       headers: {
         'content-type': 'application/json',
-        'x-blog-admin-token': token,
       },
       body: JSON.stringify(patch),
     })
 
-    if (response.status === 401) return handleUnauthorizedSave()
 
     // 새 PATCH 함수가 아직 배포되지 않은 환경에서는 기존 전체 저장 계약으로 대체합니다.
     if (response.status === 404 || response.status === 405) {
@@ -141,13 +117,4 @@ async function saveCloudPatch(patch: CloudCommercePatch, fallbackData: CloudComm
   } catch {
     return false
   }
-}
-
-function handleUnauthorizedSave() {
-  window.localStorage.removeItem(STORAGE_KEYS.adminToken)
-  if (!cloudSaveWarningShown) {
-    cloudSaveWarningShown = true
-    window.alert('Netlify 저장 토큰이 맞지 않아 서버 저장에 실패했습니다. 글쓰기 모드에 다시 들어가 토큰을 확인해 주세요.')
-  }
-  return false
 }

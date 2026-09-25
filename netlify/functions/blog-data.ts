@@ -49,7 +49,7 @@ const emptyData: CommerceData = {
 const json = (statusCode: number, body: unknown, cacheControl = 'no-store') => ({
   statusCode,
   headers: {
-    'access-control-allow-headers': 'content-type, x-blog-admin-token',
+    'access-control-allow-headers': 'content-type',
     'access-control-allow-methods': 'GET, PUT, PATCH, DELETE, OPTIONS',
     'access-control-allow-origin': '*',
     'cache-control': cacheControl,
@@ -91,7 +91,7 @@ export async function handler(event: NetlifyEvent) {
       const source = await readSupabaseSourceDebug()
 
       return json(200, {
-        hasBlogAdminToken: Boolean(process.env.BLOG_ADMIN_TOKEN),
+        adminAccess: 'url-only',
         hasSupabaseServiceRoleKey: Boolean(readSupabaseServiceRoleKey()),
         hasSupabaseUrl: Boolean(readSupabaseUrl()),
         ...source,
@@ -137,13 +137,6 @@ export async function handler(event: NetlifyEvent) {
 
     if (event.httpMethod !== 'PUT' && event.httpMethod !== 'PATCH' && event.httpMethod !== 'DELETE') {
       return json(405, { message: 'Method not allowed' })
-    }
-
-    const adminToken = process.env.BLOG_ADMIN_TOKEN
-    const requestToken = event.headers['x-blog-admin-token']
-
-    if (!adminToken || requestToken !== adminToken) {
-      return json(401, { message: '관리자 저장 토큰이 필요합니다.' })
     }
 
     if (event.httpMethod === 'DELETE') {
@@ -536,6 +529,7 @@ function isCommerceData(value: unknown): value is CommerceData {
 
 function isValidCommerceDataPatch(value: CommerceDataPatch) {
   return (
+    isRecord(value) &&
     (value.adBanners === undefined || Array.isArray(value.adBanners)) &&
     (value.categories === undefined || (Array.isArray(value.categories) && value.categories.every((item) => typeof item === 'string'))) &&
     (value.categoryImages === undefined || isStringRecord(value.categoryImages)) &&

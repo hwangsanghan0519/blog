@@ -1,0 +1,115 @@
+/* Admin-only overrides come after the storefront's legacy layout layers. */
+body:has(.app-shell) { min-width: 0; }
+.admin-mobile-dock,
+.admin-editor-jumps { display: none; }
+.admin-topbar-title { min-width: 0; }
+.admin-backup-menu { position: relative; font-size: 12px; }
+.admin-backup-menu > summary { display: flex; align-items: center; min-height: 44px; padding: 0 12px; cursor: pointer; font-weight: 700; }
+.admin-backup-menu > div { position: absolute; right: 0; top: 100%; z-index: 12; display: grid; gap: 8px; width: 190px; padding: 10px; background: #fff; border: 1px solid #ddd5e7; border-radius: 12px; box-shadow: 0 10px 30px #24133420; }
+.app-shell .save-pill.is-error { color: #a32642; background: #fff0f3; }
+.admin-extra-description { margin-top: 16px; min-width: 0; }
+.admin-extra-description > summary { padding: 14px 0; font-size: 13px; font-weight: 700; cursor: pointer; }
+.admin-publish-heading h2 { margin: 0; color: #241c30; font-size: 17px; }
+.admin-publish-heading p,
+.admin-publish-action p { font-size: 12px; line-height: 1.6; color: #74677f; }
+.admin-publish-action { display: grid; gap: 10px; }
+.admin-publish-action p { margin: 0; }
+.admin-publish-action small { color: #74677f; font-size: 11px; line-height: 1.6; }
+.app-shell button:disabled { cursor: not-allowed; opacity: .5; }
+.admin-catalog-overlay { position: fixed; inset: 0; z-index: 80; background: #1a112e70; }
+.admin-catalog-dialog { position: fixed; z-index: 81; inset: 0 auto 0 0; display: flex; flex-direction: column; width: min(400px, calc(100vw - 24px)); height: 100dvh; padding-top: env(safe-area-inset-top); padding-bottom: env(safe-area-inset-bottom); background: white; box-shadow: 16px 0 45px #160d3226; }
+.admin-catalog-heading { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 12px 16px 4px; }
+.admin-catalog-heading h2 { font-size: 17px; margin: 0; color: #271c37; }
+.admin-catalog-heading button { width: 44px; min-height: 44px; }
+.admin-catalog-description { margin: 0; padding: 0 16px 8px; font-size: 12px; color: #74677f; }
+.admin-catalog-dialog .sidebar { position: static; width: 100%; height: auto; min-height: 0; flex: 1; transform: none; border: 0; padding: 10px 14px 16px; overflow-y: auto; overscroll-behavior: contain; }
+.admin-catalog-dialog .brand { display: none; }
+.admin-catalog-dialog .sidebar > * { flex-shrink: 0; }
+.admin-catalog-dialog .category-manager { max-height: 32dvh; flex-shrink: 0; }
+.admin-catalog-dialog .post-list-section { min-height: 200px; overflow: visible; flex: 1 0 auto; }
+.admin-catalog-dialog .post-list { overflow: visible; }
+.admin-catalog-dialog button,
+.admin-catalog-dialog .category-actions label { min-height: 44px; }
+.admin-catalog-dialog .category-row { display: flex; flex-direction: column; align-items: stretch; }
+.admin-catalog-dialog button.category-row { flex-direction: row; align-items: center; justify-content: space-between; }
+.admin-catalog-dialog .category-row > button { width: 100%; }
+.admin-catalog-dialog .category-actions { display: flex; gap: 2px; justify-content: flex-end; opacity: 1; }
+.admin-catalog-dialog .category-actions button,
+.admin-catalog-dialog .category-actions label { width: 44px; min-width: 0; flex: 1; }
+.admin-catalog-dialog .category-drag-handle { display: none; }
+.admin-catalog-dialog .search-box input { font-size: 16px; min-width: 0; }
+.admin-catalog-dialog .sidebar-section-title button { width: 44px; }
+
+@media (max-width: 1120px) {
+  .app-shell { grid-template-columns: minmax(0, 1fr); }
+  .app-shell .workspace { min-width: 0; padding: 14px 16px calc(94px + env(safe-area-inset-bottom)); }
+  .app-shell .topbar { display: grid; grid-template-columns: 44px minmax(0, 1fr); gap: 4px 10px; margin: -14px -16px 14px; padding: calc(8px + env(safe-area-inset-top)) 16px 8px; align-items: center; }
+  .app-shell .topbar .icon-button { width: 44px; height: 44px; }
+  .app-shell .topbar h1 { max-width: 100%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-size: 16px; line-height: 1.5; }
+  .app-shell .topbar p { font-size: 10px; margin: 0; }
+  .app-shell .topbar-actions { grid-column: 1 / -1; width: 100%; justify-content: space-between; gap: 4px; }
+  .app-shell .save-pill { min-height: 30px; padding: 0 8px; font-size: 11px; border: 0; background: #f2ecfb; }
+  .app-shell .admin-backup-menu > summary { min-height: 32px; }
+  .app-shell .editor-grid { width: 100%; max-width: none; padding: 0; grid-template-columns: minmax(0, 1fr); gap: 14px; }
+  .app-shell .editor-main,
+  .app-shell .editor-side { min-width: 0; position: static; padding: 16px; border-radius: 14px; }
+  .app-shell .editor-main input:not([type='file']):not([type='color']),
+  .app-shell .editor-main textarea,
+  .app-shell .editor-main select,
+  .app-shell .editor-side input:not([type='file']):not([type='color']),
+  .app-shell .editor-side select,
+  .app-shell .admin-settings-panel input:not([type='checkbox']):not([type='color']):not([type='file']),
+  .app-shell .admin-settings-panel textarea,
+  .app-shell .admin-settings-panel select { min-width: 0; max-width: 100%; min-height: 48px; padding: 12px; border: 1px solid #ddd5e7; border-radius: 9px; background: #fff; color: #241c30; font-family: inherit; font-size: 16px; line-height: 1.5; }
+  .app-shell .editor-main label,
+  .app-shell .editor-side label { min-width: 0; font-size: 13px; gap: 8px; }
+  .app-shell .admin-command-bar { position: static; gap: 8px; border-radius: 12px; padding: 8px; }
+  .app-shell .admin-command-bar .view-tabs { display: grid; width: 100%; grid-template-columns: 1fr 1fr 1fr; }
+  .app-shell .admin-command-bar .view-tabs button { min-width: 0; min-height: 44px; padding: 8px 4px; font-size: 12px; gap: 4px; }
+  .app-shell .admin-command-actions { justify-content: flex-end; }
+  .app-shell .admin-command-actions > button:first-child { display: none; }
+  .app-shell .admin-command-actions > button { min-height: 44px; }
+  .app-shell .admin-editor-jumps { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 6px; }
+  .admin-editor-jumps button { min-height: 44px; padding: 8px 3px; border: 1px solid #dcd1ec; border-radius: 9px; background: #fff; color: #6d4599; font: inherit; font-size: 12px; font-weight: 700; }
+  #product-basics, #product-photos, #product-selling { scroll-margin-top: calc(125px + env(safe-area-inset-top)); }
+  .app-shell .admin-mobile-dock { display: grid; position: fixed; z-index: 12; bottom: 0; left: 0; right: 0; grid-template-columns: 1fr 1.35fr 1fr; gap: 8px; padding: 10px max(12px, env(safe-area-inset-right)) calc(10px + env(safe-area-inset-bottom)) max(12px, env(safe-area-inset-left)); border-top: 1px solid #ddd5e7; background: #fffffff5; backdrop-filter: blur(12px); }
+  .admin-mobile-dock button { display: flex; align-items: center; justify-content: center; gap: 6px; min-width: 0; min-height: 48px; border: 0; border-radius: 10px; background: #f2ecfa; color: #694293; font: inherit; font-size: 12px; font-weight: 700; }
+  .admin-mobile-dock .is-primary { background: #8051b8; color: white; }
+  .app-shell.is-keyboard-open .admin-mobile-dock { display: none; }
+  .app-shell input, .app-shell textarea, .app-shell select { scroll-margin-block: 125px 100px; }
+  .app-shell .toolbar { position: static; }
+  .app-shell .toolbar button { min-width: 44px; min-height: 44px; }
+  .app-shell .color-swatch-group { min-width: 0; max-width: 100%; flex-wrap: wrap; padding: 8px; }
+  .app-shell .rich-toolbar .color-swatch-group button,
+  .app-shell .rich-toolbar .color-swatch-group label { width: 44px; height: 44px; min-height: 44px; flex: 0 0 44px; }
+
+  .app-shell .rich-editor-surface { min-height: 200px; padding: 12px; font-size: 16px; }
+  .app-shell .rich-editor { min-width: 0; overflow-x: auto; }
+  .app-shell .product-link-card { padding: 12px; }
+  .app-shell .product-link-card button,
+  .app-shell .editor-side .product-link-admin button,
+  .app-shell .primary-action { min-height: 48px; }
+  .app-shell .cover-uploader { min-height: 190px; }
+  .app-shell .cover-uploader:focus-within,
+  .app-shell .viole-four-cut-admin-image:focus-within { outline: 3px solid #9b72ea; outline-offset: 3px; }
+  .app-shell .viole-four-cut-admin-frames article { grid-template-columns: 28px minmax(0, 1fr); gap: 8px; padding: 10px; }
+  .app-shell .viole-four-cut-admin-copy { grid-column: 1 / -1; }
+  .app-shell .viole-four-cut-admin-image { min-height: 180px; }
+  .app-shell .viole-four-cut-admin-frames article > button { position: static; grid-column: 1 / -1; min-height: 44px; justify-content: center; font-size: 12px; border-radius: 8px; color: #962b46; background: #fbe5eb; }
+  .app-shell .viole-four-cut-admin > header { gap: 8px; }
+  .app-shell .viole-four-cut-admin > header > div { min-width: 0; }
+  .app-shell .viole-four-cut-admin > header > strong { font-size: 14px; }
+  .app-shell .viole-four-cut-admin > footer { flex-wrap: wrap; gap: 8px; }
+  .app-shell .viole-four-cut-admin > header p { line-height: 1.7; }
+  .app-shell .admin-settings-panel { margin-top: 14px; }
+  .app-shell .admin-settings-panel summary { align-items: flex-start; flex-direction: column; gap: 6px; min-height: 48px; }
+  .app-shell .preview { width: 100%; max-width: 100%; padding: 0; }
+}
+@media (max-width: 380px) {
+  .app-shell .workspace { padding-inline: 10px; }
+  .app-shell .topbar { margin-inline: -10px; padding-inline: 10px; }
+  .app-shell .editor-main, .app-shell .editor-side { padding: 12px; }
+  .app-shell .product-link-card { grid-template-columns: minmax(0, 1fr); }
+  .admin-mobile-dock button { flex-direction: column; font-size: 10px; gap: 3px; }
+  .app-shell .ad-admin-panel { grid-template-columns: minmax(0, 1fr); }
+}

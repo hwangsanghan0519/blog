@@ -59,7 +59,7 @@
 - 파워퍼프셀럽 네컷 4장과 설명의 발행 조건 검증
 - 영상·스티커·광고 배너·외부 광고 태그 설정
 - JSON 백업 내보내기/가져오기
-- 비밀번호와 서버 저장 토큰 기반 운영 모드
+- 관리자 URL 직접 접속 운영 모드
 
 #### 배포·검색
 
@@ -92,16 +92,16 @@ flowchart LR
 
 ```mermaid
 flowchart TD
-  A[비공개 경로 진입] --> B[로컬 운영 비밀번호 확인]
-  B --> C[서버 저장 토큰 확보]
-  C --> D[상품 또는 노출 영역 편집]
+  A[관리자 경로 진입] --> D[상품 또는 노출 영역 편집]
   D --> E[로컬 상태 즉시 반영]
   E --> F[450ms 변경 묶음]
   F --> G[PATCH 순차 저장]
   G -->|성공| H[다른 탭에 갱신 방송]
   G -->|구버전 API| I[전체 PUT 폴백]
-  G -->|실패| J[로컬 캐시 유지·다음 편집 허용]
+  G -->|실패| J[실패 표시·다시 저장]
 ```
+
+모바일 관리 화면은 한 열로 표시하며 하단의 상품 목록·새 상품 등록·미리보기 버튼으로 이동합니다. 상품 편집의 단계 버튼에서 기본 정보, 사진·설명, 판매·발행 설정으로 바로 이동할 수 있습니다. 사진 4장과 각 설명을 작성한 뒤 판매 설정의 상품 발행하기를 누르고 상단의 서버 저장 완료를 확인합니다. 광고·영상 설정과 백업·복원은 접어서 관리합니다.
 
 ### 2.3 콘텐츠 상태
 
@@ -342,18 +342,9 @@ flowchart TD
 
 브라우저에서는 history API로 상세/필터 URL을 유지하고, 검색 엔진의 직접 요청에는 Netlify Function이 완성된 메타데이터를 포함한 HTML을 제공합니다.
 
-### 4.7 운영 인증 경계
+### 4.7 관리자 URL 직접 접속
 
-```mermaid
-flowchart LR
-  P[로컬 운영 비밀번호] --> UI[운영 UI 잠금 해제]
-  T[BLOG_ADMIN_TOKEN] --> Header[x-blog-admin-token]
-  Header --> API{서버 토큰 일치?}
-  API -->|예| Write[Supabase 쓰기]
-  API -->|아니오| Deny[401 + 로컬 토큰 제거]
-```
-
-로컬 비밀번호는 UI 진입 장벽일 뿐 서버 보안 수단이 아닙니다. 실제 쓰기 권한은 서버 환경변수 `BLOG_ADMIN_TOKEN` 검증으로 결정합니다. Supabase service-role 키는 브라우저 번들에 포함하지 않습니다.
+`/secret/sanghan` 또는 `/blog/secret/sanghan`에 접속하면 비밀번호·저장 토큰 없이 편집할 수 있습니다. 콘텐츠 쓰기 API와 통계 API도 토큰을 검사하지 않습니다. 따라서 주소를 아는 누구나 콘텐츠를 수정할 수 있는 운영 방식입니다. Supabase service-role 키와 GA4 서비스 계정은 계속 서버 환경변수에만 보관합니다.
 
 ## 5. 데이터 모델
 
@@ -390,7 +381,7 @@ flowchart LR
 | 초기 성능 | 양호 | editor lazy load, summary/detail 분리, 경량 캐시 |
 | 편집 안정성 | 양호 | debounce, 순차 PATCH, PUT 폴백, 탭 갱신 |
 | 검색 노출 | 강함 | 독립 경로, SSR형 메타, JSON-LD, sitemap |
-| 보안 | 보완 필요 | 서버 쓰기 토큰은 안전하나 로컬 운영 비밀번호는 인증 시스템이 아님 |
+| 보안 | 보완 필요 | URL 직접 접속 방식이며 콘텐츠 쓰기와 통계 API 인증 없음 |
 | 자동 검증 | 기반 확보 | 정규화·patch 단위 테스트와 lint/type/build 통합 명령 제공 |
 | 스타일 유지보수 | 개선 필요 | 누적된 전역 CSS cascade가 크며 시각 기준선 확보 후 단계적 분리 필요 |
 
@@ -400,7 +391,7 @@ flowchart LR
 - 1,100줄 상태 파일에서 타입, 설정, 정규화, 캐시, 원격 저장 책임을 분리했습니다.
 - 관리자 영상/배너 폼을 독립 프레젠테이션 컴포넌트로 추출했습니다.
 - 공개 미디어·광고 렌더링을 `StorefrontMedia`로 분리했습니다.
-- 저장 토큰 처리와 네트워크 폴백 중복을 하나의 API 게이트웨이로 통합했습니다.
+- 네트워크 저장과 폴백 중복을 하나의 API 게이트웨이로 통합했습니다.
 - 순수 데이터 규칙과 cloud patch 생성에 회귀 테스트를 추가했습니다.
 - 첫 방문의 샘플 데이터 깜빡임을 캐시 인식형 스켈레톤과 10초 요청 제한으로 제거했습니다.
 - import되지 않는 이전 대시보드·통계·플로팅 메뉴와 템플릿 자산을 제거했습니다.
@@ -422,7 +413,7 @@ flowchart LR
 ### 6.4 남은 기술 부채와 우선순위
 
 1. 전역 CSS에 여러 디자인 시기의 override가 누적되어 있습니다. 데스크톱/모바일 골든 스크린샷을 만든 뒤 cascade layer 또는 CSS Module로 이동해야 합니다.
-2. 운영 인증은 개인 운영에 맞춘 토큰 방식입니다. 다중 운영자가 필요하면 Supabase Auth, 역할 기반 권한, 감사 로그가 필요합니다.
+2. 현재 운영 화면과 API는 인증 없이 접근합니다. 다중 운영자가 필요하면 Supabase Auth, 역할 기반 권한, 감사 로그가 필요합니다.
 3. `StorefrontHome`과 `PostEditor`는 기능 밀도가 높습니다. DOM 구조를 고정하는 시각 회귀 테스트를 먼저 만든 뒤 섹션별 컴포넌트로 추가 분리합니다.
 4. 네트워크 오류는 현재 비차단 정책입니다. 저장 상태를 명시적으로 보여주는 retry/outbox UI가 장기적으로 필요합니다.
 5. 접근성은 기본 label과 Dialog를 사용하지만 키보드·스크린리더 E2E 검증을 추가해야 합니다.
@@ -469,7 +460,6 @@ npm run preview
 
 | 변수 | 필수 | 용도 |
 | --- | --- | --- |
-| `BLOG_ADMIN_TOKEN` | 운영 저장 시 | 데이터 API 쓰기 인증 |
 | `SUPABASE_URL` | 운영 저장 시 | Supabase 프로젝트 URL |
 | `SUPABASE_SERVICE_ROLE_KEY` | 운영 저장 시 | 서버 전용 DB/Storage 권한 |
 | `VITE_SITE_URL` | 선택 | 대표 주소 대체. 기본 `https://powerpuffceleb.co.kr`; 빌드와 함수에 동일하게 설정 |
@@ -487,21 +477,21 @@ npm run preview
 ### 7.5 Supabase 준비
 
 1. Supabase SQL Editor에서 `supabase/schema.sql`을 실행합니다.
-2. Netlify에 `SUPABASE_URL`, `SUPABASE_SERVICE_ROLE_KEY`, `BLOG_ADMIN_TOKEN`을 등록합니다.
-3. 배포 후 관리자 경로에서 동일한 `BLOG_ADMIN_TOKEN` 값을 브라우저에 입력합니다.
+2. Netlify에 `SUPABASE_URL`, `SUPABASE_SERVICE_ROLE_KEY`을 등록합니다.
+3. 배포 후 관리자 경로에 접속해 편집합니다.
 4. 첫 저장 후 공개 화면, 상품 상세, sitemap을 확인합니다.
 
 ### 7.6 GA4 방문·상품 클릭과 관리자 대시보드
 
 관리자 화면의 **통계 대시보드** 탭에서 오늘·최근 7일·30일·90일 방문, 방문자, 페이지 조회, 상품 클릭, 상세 조회, 제휴몰 이동을 확인합니다. 일별 차트와 수치 표, 상품별 상위 50개 순위를 제공합니다. 상품이 없는 초기 상태에서도 대시보드에 접근할 수 있습니다. 상품명 변경 시 GA4의 `itemId`/`itemName` 조합별로 행이 나뉘며 합계는 전체 항목을 포함합니다.
 
-집계는 Google 공식 `gtag.js`, 조회는 서버의 공식 `@google-analytics/data` SDK를 사용합니다. 자체 방문 카운터나 Supabase 통계 테이블은 추가하지 않습니다. `/.netlify/functions/analytics`는 기존 `BLOG_ADMIN_TOKEN`으로 인증하고 응답을 캐시하지 않습니다. 측정 ID만 클라이언트에 포함되며 서비스 계정 비밀키는 브라우저로 전달하지 않습니다.
+집계는 Google 공식 `gtag.js`, 조회는 서버의 공식 `@google-analytics/data` SDK를 사용합니다. 자체 방문 카운터나 Supabase 통계 테이블은 추가하지 않습니다. `/.netlify/functions/analytics`는 토큰 검사 없이 조회하며 응답을 캐시하지 않습니다. 측정 ID만 클라이언트에 포함되며 서비스 계정 비밀키는 브라우저로 전달하지 않습니다.
 
 **연결 순서**
 
 1. 이 사이트 전용 GA4 속성과 웹 데이터 스트림을 만듭니다. 속성 시간대를 `Asia/Seoul`로 설정하고 측정 ID(`G-…`)와 숫자 속성 ID를 확인합니다. 대시보드는 해당 속성의 전체 웹/앱 데이터를 조회하므로 여러 사이트를 같은 속성에 섞지 않습니다.
 2. Google Cloud에서 **Google Analytics Data API**를 활성화하고 서비스 계정을 생성합니다. GA4 → 관리자 → 속성 액세스 관리에서 서비스 계정의 `client_email`을 **뷰어**로 추가합니다.
-3. Netlify 환경변수에 `VITE_GA_MEASUREMENT_ID`(Builds), `GA_PROPERTY_ID`와 `GA_SERVICE_ACCOUNT_JSON`(Functions)을 등록합니다. JSON 변수에는 키 파일의 JSON 전체를 넣습니다. 기존 `BLOG_ADMIN_TOKEN`도 Functions 범위에 필요합니다. `.env.example`은 변수 이름만 제공하며 실제 비밀키 파일을 저장소에 커밋하지 않습니다.
+3. Netlify 환경변수에 `VITE_GA_MEASUREMENT_ID`(Builds), `GA_PROPERTY_ID`와 `GA_SERVICE_ACCOUNT_JSON`(Functions)을 등록합니다. JSON 변수에는 키 파일의 JSON 전체를 넣습니다. `.env.example`은 변수 이름만 제공하며 실제 비밀키 파일을 저장소에 커밋하지 않습니다.
 4. 웹 스트림 → **향상된 측정 → 페이지 조회 → 고급 설정**에서 페이지 로드와 **브라우저 방문 기록 변경에 따른 페이지 변경**을 켭니다. 이 앱은 History API로 상품 상세·셀럽 필터를 전환하므로 GA4 자동 페이지 측정을 사용합니다. 코드에서 `page_view`를 별도로 보내지 않습니다. 동일 측정 ID를 GTM·HTML 등에 중복 설치하지 않습니다.
 5. 빌드·배포 후 관리자 **통계 대시보드**에서 연결을 확인합니다. GitHub Pages 단독 호스팅에서는 Netlify 통계 함수가 제공되지 않습니다.
 
@@ -575,7 +565,7 @@ docs(architecture): document asset pipeline
 | 증상 | 확인 지점 | 대응 |
 | --- | --- | --- |
 | 공개 상품이 비어 있음 | Data Function 응답, Supabase 환경변수 | `?debug=env` 응답과 Netlify 로그 확인 |
-| 운영 저장이 안 됨 | 401 여부, 브라우저 저장 토큰 | 운영 모드 재진입 후 토큰 재입력 |
+| 운영 저장이 안 됨 | 상단 서버 저장 상태, 함수 응답, Supabase 설정 | 다시 저장 버튼으로 재시도 |
 | 이미지가 너무 큼 | Storage 업로드·DB Data URL 잔존 | 외부화 처리와 bucket 권한 확인 |
 | 검색 결과 메타가 오래됨 | SEO Function, CDN cache | 함수 응답과 cache-control 확인 |
 | 다른 탭 반영이 늦음 | BroadcastChannel, focus refresh | 15초 polling과 visibility 이벤트 확인 |

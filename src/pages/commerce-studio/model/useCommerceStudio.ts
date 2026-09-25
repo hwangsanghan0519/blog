@@ -7,13 +7,11 @@ import { downloadJson, imageFileToOptimizedDataUrl } from '../../../shared/lib/f
 import { loadJson, saveJson } from '../../../shared/lib/storage'
 import {
   createCloudPatch,
-  ensureAdminToken,
   getCloudDataEndpoint,
   hasCloudPatchChanges,
   isHostedRuntime,
   isSecretAdminRuntime,
   queueCloudPatch,
-  saveCloudData,
 } from '../api/commerceApi'
 import {
   createLightweightBannerCache,
@@ -74,10 +72,13 @@ export function useCommerceStudio() {
   const [darkMode] = useState(initialSettings.darkMode)
   const [adBanners, setAdBanners] = useState<AdBannerSettings[]>(initialSettings.adBanners)
   const [heroVideo, setHeroVideo] = useState<HeroVideoSettings>(initialSettings.heroVideo)
-  const [ownerMode, setOwnerMode] = useState(false)
+  const [ownerMode, setOwnerMode] = useState(isSecretAdminRuntime)
   // 재방문자는 검증된 캐시를 즉시 사용하고, 첫 방문자만 샘플 데이터 대신 스켈레톤을 봅니다.
-  const [cloudReady, setCloudReady] = useState(() => hasCompleteInitialCache(postsCacheKey, settingsCacheKey))
+  const [cloudReady, setCloudReady] = useState(() => !isSecretAdminRuntime() && hasCompleteInitialCache(postsCacheKey, settingsCacheKey))
   const [cloudSynced, setCloudSynced] = useState(false)
+  const [saveStatus, setSaveStatus] = useState('서버 연결 중')
+  const [saveRevision, setSaveRevision] = useState(0)
+  const savingRef = useRef(false)
   const importRef = useRef<HTMLInputElement>(null)
   const detailedPostsRef = useRef(new Map<string, Post>())
   const cloudSnapshotRef = useRef<CloudCommerceSnapshot | null>(null)
@@ -122,6 +123,7 @@ export function useCommerceStudio() {
     setHeroVideo(nextHeroVideo)
     setActiveId((current) => (cloudPosts.some((post) => post.id === current) ? current : cloudPosts[0]?.id ?? ''))
     setCloudSynced(true)
+    setSaveStatus('서버 저장됨')
     return true
   }, [publicSummaryMode])
 
@@ -219,7 +221,10 @@ export function useCommerceStudio() {
         }
       } finally {
         window.clearTimeout(requestTimeout)
-        if (isMounted) setCloudReady(true)
+        if (isMounted) {
+          setCloudReady(true)
+          if (!cloudSnapshotRef.current && isSecretAdminRuntime()) setSaveStatus('서버 연결 실패')
+        }
       }
     }
 
@@ -256,24 +261,41 @@ export function useCommerceStudio() {
   }, [ownerMode, syncCloudData])
 
   useEffect(() => {
-    if (!cloudReady || !cloudSynced || !ownerMode) return undefined
+    if (!cloudReady || !cloudSynced || !ownerMode || savingRef.current) return
+    const previous = cloudSnapshotRef.current
+    if (!previous) return
+    const next = { adBanners, categories, categoryImages, heroVideo, posts }
+    const patch = createCloudPatch(previous, next)
+    if (!hasCloudPatchChanges(patch)) {
+      setSaveStatus('서버 저장됨')
+      return
+    }
 
+    setSaveStatus('저장 대기 중')
     const timer = window.setTimeout(() => {
-      const previous = cloudSnapshotRef.current
-      if (!previous) return
-
-      const next = { adBanners, categories, categoryImages, heroVideo, posts }
-      const patch = createCloudPatch(previous, next)
-      if (!hasCloudPatchChanges(patch)) return
-
-      cloudSnapshotRef.current = next
+      savingRef.current = true
+      setSaveStatus('서버 저장 중…')
       void queueCloudPatch(patch, next).then((saved) => {
-        if (!saved && cloudSnapshotRef.current === next) cloudSnapshotRef.current = previous
+        if (saved) cloudSnapshotRef.current = next
+        savingRef.current = false
+        setSaveStatus(saved ? '서버 저장됨' : '저장 실패 · 다시 시도해 주세요')
+        if (saved) setSaveRevision((revision) => revision + 1)
       })
     }, 450)
-
     return () => window.clearTimeout(timer)
-  }, [adBanners, categories, categoryImages, cloudReady, cloudSynced, heroVideo, ownerMode, posts])
+  }, [adBanners, categories, categoryImages, cloudReady, cloudSynced, heroVideo, ownerMode, posts, saveRevision])
+
+  useEffect(() => {
+    if (!ownerMode) return
+    const warnUnsaved = (event: BeforeUnloadEvent) => {
+      const previous = cloudSnapshotRef.current
+      if (savingRef.current || (previous && hasCloudPatchChanges(createCloudPatch(previous, { adBanners, categories, categoryImages, heroVideo, posts })))) {
+        event.preventDefault()
+      }
+    }
+    window.addEventListener('beforeunload', warnUnsaved)
+    return () => window.removeEventListener('beforeunload', warnUnsaved)
+  }, [adBanners, categories, categoryImages, heroVideo, ownerMode, posts])
 
   const visibleCategories = useMemo(
     () => normalizeCategories([...categories, ...uniqueCategories(posts)]),
@@ -438,8 +460,13 @@ export function useCommerceStudio() {
     const file = event.target.files?.[0]
     if (!file) return
 
-    updatePost({ coverImage: await imageFileToOptimizedDataUrl(file, 1600, 0.8) })
-    event.target.value = ''
+    try {
+      updatePost({ coverImage: await imageFileToOptimizedDataUrl(file, 1600, 0.8) })
+    } catch {
+      window.alert('대표 이미지를 처리하지 못했습니다. JPG 또는 PNG 사진으로 다시 선택해 주세요.')
+    } finally {
+      event.target.value = ''
+    }
   }
 
   const handleAdBannerImageUpload = async (index: number, event: ChangeEvent<HTMLInputElement>) => {
@@ -501,31 +528,6 @@ export function useCommerceStudio() {
     }
   }
 
-  const unlockOwnerMode = () => {
-    const savedPassword = window.localStorage.getItem(STORAGE_KEYS.ownerPassword)
-
-    if (!savedPassword) {
-      const nextPassword = window.prompt('작성 모드 비밀번호를 처음 설정하세요.')
-      if (!nextPassword?.trim()) return
-
-      window.localStorage.setItem(STORAGE_KEYS.ownerPassword, nextPassword.trim())
-      ensureAdminToken()
-      setOwnerMode(true)
-      setView('editor')
-      return
-    }
-
-    const password = window.prompt('작성 모드 비밀번호를 입력하세요.')
-    if (password === savedPassword) {
-      ensureAdminToken()
-      setOwnerMode(true)
-      setView('editor')
-      return
-    }
-
-    window.alert('비밀번호가 맞지 않습니다.')
-  }
-
   const lockOwnerMode = () => {
     setOwnerMode(false)
     setSidebarOpen(false)
@@ -575,13 +577,6 @@ export function useCommerceStudio() {
     }
     setActiveId(imported[0].id)
     setView('editor')
-    void saveCloudData({
-      adBanners: nextAdBanners,
-      categories: nextCategories,
-      categoryImages: Array.isArray(parsed) ? categoryImages : normalizeCategoryImages(parsed.categoryImages),
-      heroVideo: nextHeroVideo,
-      posts: imported,
-    })
     event.target.value = ''
   }
 
@@ -593,6 +588,9 @@ export function useCommerceStudio() {
     categoryImages,
     categories: visibleCategories,
     cloudReady,
+    cloudSynced,
+    saveStatus,
+    retrySave: () => setSaveRevision((revision) => revision + 1),
     createPost,
     createCategory,
     deletePost,
@@ -625,7 +623,6 @@ export function useCommerceStudio() {
     updatePost,
     updateAdBanner,
     updateHeroVideo,
-    unlockOwnerMode,
     view,
     renameCategory,
     clearCategoryImage,
