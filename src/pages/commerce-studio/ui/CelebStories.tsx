@@ -103,8 +103,8 @@ export function CelebStories({ categoryImages, accounts = DEFAULT_CELEB_ACCOUNTS
   return (
     <section ref={sectionRef} className={`celeb-stories${hasEntered ? ' is-entered' : ''}`} aria-labelledby="instagram-live-title" style={{ '--celeb-columns': Math.min(accounts.length, 8) } as CSSProperties}>
       <header className="celeb-stories-heading">
-        <InstagramSourceIcon size={18} />
-        <h2 id="instagram-live-title">인스타라이브</h2>
+        <span className="celeb-stories-brand-mark" aria-hidden="true"><InstagramSourceIcon size={18} /></span>
+        <h2 id="instagram-live-title"><span>인스타</span><em>라이브</em></h2>
       </header>
       <div className="celeb-stories-nav-wrap">
         <div className="celeb-stories-nav" ref={navRef} aria-busy={busy} aria-label="셀럽 Instagram 프로필">
