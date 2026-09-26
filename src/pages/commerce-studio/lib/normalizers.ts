@@ -1,3 +1,4 @@
+import { normalizeCelebAccounts } from '../model/celebAccounts'
 import { normalizeProductSource } from '../../../entities/post/lib/source'
 import type { Post, PostStatus, ProductLink } from '../../../entities/post/model/types'
 import { loadJson } from '../../../shared/lib/storage'
@@ -86,6 +87,7 @@ export function readSettings(storageKey: string = STORAGE_KEYS.settings): Commer
       ? normalizeAdBanners(stored.adBanners)
       : normalizeAdBanners(stored.adBanner ? [stored.adBanner] : []),
     heroVideo: normalizeHeroVideo(stored.heroVideo),
+    celebAccounts: normalizeCelebAccounts(stored.celebAccounts),
   }
 }
 

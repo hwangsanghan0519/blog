@@ -1,3 +1,4 @@
+import type { CelebAccount } from './celebStoryTypes'
 import type { Post } from '../../../entities/post/model/types'
 
 /** 관리자 작업 공간에서 전환할 수 있는 화면입니다. */
@@ -30,6 +31,7 @@ export type HeroVideoSettings = {
 export type CommerceSettings = {
   darkMode: boolean
   adBanners: AdBannerSettings[]
+  celebAccounts?: CelebAccount[]
   heroVideo: HeroVideoSettings
 }
 
@@ -38,6 +40,7 @@ export type CloudCommerceData = {
   adBanners?: AdBannerSettings[]
   categories?: string[]
   categoryImages?: Record<string, string>
+  celebAccounts?: CelebAccount[]
   heroVideo?: Partial<HeroVideoSettings>
   posts?: Post[]
   savedAt?: string
@@ -47,6 +50,7 @@ export type CloudCommerceSnapshot = {
   adBanners: AdBannerSettings[]
   categories: string[]
   categoryImages: Record<string, string>
+  celebAccounts?: CelebAccount[]
   heroVideo: HeroVideoSettings
   posts: Post[]
 }

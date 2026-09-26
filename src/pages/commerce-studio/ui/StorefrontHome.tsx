@@ -1,3 +1,4 @@
+import type { CelebAccount } from '../model/celebStoryTypes'
 import { ProductSourceBadge } from '../../../entities/post/ui/ProductSourceBadge'
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import type { CSSProperties, KeyboardEvent, MouseEvent, PointerEvent, Ref, UIEvent } from 'react'
@@ -17,6 +18,8 @@ import { keenSliderRecovery, refreshKeenSlider } from '../lib/keenSliderRecovery
 import type { AdBannerSettings, HeroVideoSettings } from '../model/types'
 import { AdStripBanners, CategoryVisual, TrendVideo } from './StorefrontMedia'
 import { MobileProductSearch } from './MobileProductSearch'
+import { MobileCelebRanking } from './MobileCelebRanking'
+import { CelebStories } from './CelebStories'
 import { FourCutImage, FourCutLoading } from './FourCutImage'
 import { getProductSeo, getProductTags } from '../../../shared/lib/product-seo'
 import { trackAffiliateClick, trackProductClick, trackProductView } from '../../../shared/lib/analytics'
@@ -24,6 +27,7 @@ import { trackAffiliateClick, trackProductClick, trackProductView } from '../../
 type StorefrontHomeProps = {
   posts: Post[]
   categories: string[]
+  celebAccounts?: CelebAccount[]
   categoryImages: Record<string, string>
   categoryFilter: string
   heroVideo: HeroVideoSettings
@@ -61,6 +65,7 @@ export function StorefrontHome({
   posts,
   categories,
   categoryImages,
+  celebAccounts,
   categoryFilter,
   heroVideo,
   adBanners,
@@ -335,7 +340,7 @@ export function StorefrontHome({
 
       headerRef.current?.style.setProperty('--mobile-viewport-offset', `${visualViewportOffset}px`)
 
-      const voteTriggerTop = voteTriggerRef.current?.getBoundingClientRect().top
+      const voteTriggerTop = voteTriggerRef.current?.getClientRects().length ? voteTriggerRef.current.getBoundingClientRect().top : undefined
       const dockedHeaderBottom = headerRef.current?.getBoundingClientRect().bottom ?? 0
       const pageScrollRange = Math.max(1, document.documentElement.scrollHeight - window.innerHeight)
       const pageScrollProgress = Math.min(1, Math.max(0, currentScrollY / pageScrollRange))
@@ -844,6 +849,8 @@ export function StorefrontHome({
           )}
         </section>
 
+        <CelebStories categoryImages={categoryImages} accounts={celebAccounts} />
+
         {rankedCelebs.length > 0 && (
           <div className="celeb-vote-stage">
           <section className="celeb-vote" aria-labelledby="celeb-vote-title">
@@ -1130,6 +1137,7 @@ export function StorefrontHome({
         </div>
       </footer>
 
+      {!selectedPost && rankedCelebs.length > 0 && <MobileCelebRanking ranking={rankedCelebs} categoryImages={categoryImages} votedCategory={votedCategory} pendingCategory={votePendingCategory} feedback={voteFeedback} onVote={voteForCeleb} />}
       {!selectedPost && <MobileProductSearch posts={publishedPosts} onSelect={(postId) => selectPost(postId, 'search')} />}
       <div className="public-quick-actions" aria-label="빠른 기능">
         <a href="mailto:nmc2711@naver.com" aria-label="제휴 문의 이메일 보내기">

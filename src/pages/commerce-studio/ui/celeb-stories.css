@@ -1,0 +1,101 @@
+.celeb-stories { min-width: 0; margin: 0 0 24px; padding: 16px 20px 13px; overflow: hidden; color: #57376f; border: 1px solid #e8d6f3; border-radius: 18px; background: radial-gradient(ellipse at 95% 0, #ead9fa, transparent 55%), linear-gradient(110deg, #fff7fb, #fff 48%, #f6eeff); box-shadow: 0 7px 24px #63368d10, inset 0 1px 0 #fff; }
+.celeb-stories * { box-sizing: border-box; }
+.celeb-stories a { color: inherit; text-decoration: none; }
+.celeb-stories :is(button, a):focus-visible { outline: 2px solid #9c6bbb; outline-offset: 3px; }
+.celeb-stories-heading { position: relative; z-index: 1; display: flex; align-items: center; gap: 7px; margin: -16px -20px 12px; padding: 12px 20px 11px; border-bottom: 1px solid #c9abdd; background: linear-gradient(115deg, #f1e4fa 0%, #e7d2f3 52%, #ddc3ed 100%); box-shadow: inset 0 1px 0 #ffffffd9, inset 0 -1px 0 #ffffff70, 0 3px 0 #8d62ab14, 0 8px 14px -9px #6f428952; }
+.celeb-stories-heading h2 { margin: 0; color: #57376f; font-size: 16px; font-weight: 800; line-height: 1.3; letter-spacing: -.6px; text-shadow: 0 1px 0 #ffffffb3; }
+.celeb-stories-nav-wrap { position: relative; }
+.celeb-stories-nav { display: flex; justify-content: space-evenly; gap: 24px; overflow-x: auto; scrollbar-width: none; padding: 4px; scroll-snap-type: x proximity; }
+.celeb-stories-nav::-webkit-scrollbar { display: none; }
+.celeb-stories-person { display: flex; flex-direction: column; align-items: center; flex: 0 0 78px; min-width: 0; scroll-snap-align: start; -webkit-tap-highlight-color: transparent; }
+.celeb-stories-avatar { display: block; width: 68px; height: 68px; padding: 3px; border-radius: 50%; background: conic-gradient(from 215deg, #feda75, #fa7e1e, #d62976, #962fbf, #4f5bd5, #d62976, #fa7e1e, #feda75); box-shadow: 0 3px 10px #b7699820; transition: transform .18s ease; }
+.celeb-stories-avatar > span { display: block; width: 100%; height: 100%; padding: 3px; border-radius: 50%; background: #fff; }
+.celeb-stories-avatar img, .celeb-stories-image-fallback { display: block; width: 100%; height: 100%; object-fit: cover; border-radius: 50%; }
+.celeb-stories-image-fallback { display: grid; place-items: center; color: #9c78b4; background: #f1e7f8; font-size: 20px; }
+.celeb-stories-person:hover .celeb-stories-avatar { transform: translateY(-2px) scale(1.035); }
+.celeb-stories-person:active .celeb-stories-avatar { transform: scale(.96); }
+.celeb-stories-name { max-width: 100%; margin-top: 7px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; color: #594263; font-size: 12px; font-weight: 650; line-height: 17px; }
+.celeb-stories-followers { display: inline-flex; align-items: baseline; justify-content: center; gap: 1px; margin-top: 2px; color: #7e42a8; font-size: 14px; font-weight: 850; line-height: 18px; letter-spacing: -.4px; white-space: nowrap; font-variant-numeric: tabular-nums; }
+.celeb-stories-followers-number { background: linear-gradient(120deg, #8d489a, #6740ae); background-clip: text; -webkit-background-clip: text; color: transparent; }
+.celeb-stories-followers-unit { font-size: .72em; font-weight: 700; color: #95739f; letter-spacing: 0; }
+.celeb-stories-followers i { display: inline-block; margin-left: 3px; width: 3px; height: 3px; border-radius: 50%; background: #ad8fbf; vertical-align: middle; }
+.celeb-stories-nav-controls { position: absolute; inset: 21px -12px auto; display: flex; justify-content: space-between; pointer-events: none; }
+.celeb-stories-nav-controls button { display: grid; place-items: center; width: 28px; height: 28px; padding: 0; pointer-events: auto; border: 1px solid #e4d1ef; border-radius: 50%; color: #7f5a98; background: #fff; box-shadow: 0 2px 9px #57376f18; cursor: pointer; }
+@media (min-width: 900px) {
+  .celeb-stories { padding: 15px 24px 10px; }
+  .celeb-stories-heading { gap: 8px; margin: -15px -24px 8px; padding: 13px 24px 12px; }
+  .celeb-stories-heading h2 { font-size: 19px; letter-spacing: -.8px; }
+  .celeb-stories-nav { display: grid; grid-template-columns: repeat(var(--celeb-columns, 5), minmax(108px, 1fr)); grid-auto-flow: column; grid-auto-columns: minmax(108px, 1fr); justify-content: normal; gap: 8px; padding: 4px; }
+  .celeb-stories-person { position: relative; padding: 8px 12px; border-radius: 12px; transition: background .18s ease; }
+  .celeb-stories-person + .celeb-stories-person::before { content: ''; position: absolute; left: -5px; top: 22px; bottom: 22px; width: 1px; background: #e5d4ef; }
+  .celeb-stories-person:hover { background: #e8d5f64d; }
+  .celeb-stories-avatar { width: 78px; height: 78px; }
+  .celeb-stories-name { margin-top: 8px; font-size: 13px; line-height: 18px; }
+  .celeb-stories-followers { font-size: 18px; line-height: 21px; }
+  .celeb-stories-nav-controls { inset: 34px -14px auto; }
+}
+@media (max-width: 899px) {
+  .celeb-stories { padding: 12px 14px 10px; margin-bottom: 22px; border-radius: 16px; }
+  .celeb-stories-heading { margin: -12px -14px 9px; padding: 9px 14px 8px; }
+  .celeb-stories-heading h2 { font-size: 14px; }
+  .celeb-stories-heading > svg { width: 15px; height: 15px; }
+  .celeb-stories-nav { justify-content: flex-start; gap: 16px; }
+  .celeb-stories-person { flex-basis: 58px; }
+  .celeb-stories-avatar { width: 58px; height: 58px; padding: 2.5px; }
+  .celeb-stories-avatar > span { padding: 2.5px; }
+  .celeb-stories-name { margin-top: 5px; font-size: 11px; line-height: 15px; }
+  .celeb-stories-followers { font-size: 13px; line-height: 17px; }
+  .celeb-stories-nav-controls { display: none; }
+}
+/* One entrance per mount, without hiding content before the observer runs. */
+.celeb-stories-avatar { position: relative; }
+.celeb-stories-avatar::after { content: ''; position: absolute; inset: 0; padding: 3px; border-radius: inherit; pointer-events: none; opacity: 0; background: conic-gradient(from 0deg, transparent 0deg 220deg, #fff6 255deg, #fff 280deg, transparent 320deg); -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0); -webkit-mask-composite: xor; mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0); mask-composite: exclude; }
+.celeb-stories.is-entered { animation: celeb-section-glow 1.25s ease-out; }
+.celeb-stories.is-entered .celeb-stories-heading { animation: celeb-heading-enter .55s ease-out both; }
+.celeb-stories.is-entered .celeb-stories-person { animation: celeb-profile-enter .65s cubic-bezier(.22, 1, .36, 1) var(--celeb-enter-delay, 0ms) backwards; }
+.celeb-stories.is-entered .celeb-stories-avatar::after { animation: celeb-ring-shine 1.05s ease-in-out calc(var(--celeb-enter-delay, 0ms) + 120ms) both; }
+@keyframes celeb-profile-enter {
+  from { opacity: .3; transform: translateY(12px) scale(.94); }
+  to { opacity: 1; transform: translateY(0) scale(1); }
+}
+@keyframes celeb-heading-enter {
+  from { opacity: .5; transform: translateY(4px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+@keyframes celeb-ring-shine {
+  0% { opacity: 0; transform: rotate(-110deg); }
+  25% { opacity: .9; }
+  70% { opacity: .7; }
+  100% { opacity: 0; transform: rotate(250deg); }
+}
+@keyframes celeb-section-glow {
+  0%, 100% { box-shadow: 0 7px 24px #63368d10, inset 0 1px 0 #fff; }
+  40% { box-shadow: 0 0 0 1px #cc9de255, 0 7px 24px #ac75cd26, inset 0 1px 0 #fff; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .celeb-stories-avatar, .celeb-stories-person { transition: none; }
+  .celeb-stories.is-entered, .celeb-stories.is-entered .celeb-stories-heading, .celeb-stories.is-entered .celeb-stories-person, .celeb-stories.is-entered .celeb-stories-avatar::after { animation: none; }
+}
+
+/* Keep the story rail close to the adjacent storefront sections. */
+.public-blog .public-main:has(> .celeb-stories) { row-gap: 8px; }
+.public-blog .public-main > .celeb-stories { margin-block: 0; }
+.public-blog .celeb-stories + .celeb-vote-stage { margin-top: 0; margin-bottom: 0; }
+.public-blog .celeb-stories + .public-browser { margin-top: 0; }
+@media (max-width: 899px) {
+  .public-blog .celeb-stories ~ .public-browser { margin-top: 0; }
+}
+
+.celeb-admin-body { padding: 18px; }
+.celeb-admin-body > p { font-size: 12px; line-height: 1.6; }
+.celeb-admin-hint { opacity: .65; }
+.celeb-admin-rows { display: grid; gap: 10px; margin: 18px 0; }
+.celeb-admin-row { display: grid; grid-template-columns: 24px minmax(85px, 1fr) minmax(130px, 2fr) auto; align-items: end; gap: 10px; padding: 12px; border: 1px solid #ad8abb35; border-radius: 12px; }
+.celeb-admin-index { align-self: center; color: #9970b3; font-size: 12px; }
+.celeb-admin-row label { display: grid; gap: 6px; font-size: 11px; min-width: 0; }
+.celeb-admin-row input { width: 100%; min-width: 0; box-sizing: border-box; padding: 10px; border: 1px solid #ad8abb55; border-radius: 8px; font: inherit; font-size: 14px; color: inherit; background: transparent; }
+.celeb-admin-row-actions, .celeb-admin-actions { display: flex; gap: 6px; align-items: center; }
+.celeb-admin-row-actions button { display: grid; place-items: center; width: 36px; height: 38px; border: 1px solid #ad8abb35; border-radius: 8px; color: inherit; background: transparent; cursor: pointer; }
+.celeb-admin-row-actions button:disabled { opacity: .3; cursor: default; }
+.celeb-admin-actions { justify-content: space-between; }
+@media (max-width: 650px) { .celeb-admin-body { padding: 12px; } .celeb-admin-row { grid-template-columns: 20px minmax(0, 1fr); gap: 10px; } .celeb-admin-row label { grid-column: 2; } .celeb-admin-row-actions { grid-column: 2; justify-content: flex-end; } .celeb-admin-row input { font-size: 16px; } }

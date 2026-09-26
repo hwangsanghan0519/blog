@@ -1,3 +1,5 @@
+import { parseCelebAccounts } from '../../src/pages/commerce-studio/model/celebAccounts.ts'
+import type { CelebAccount } from '../../src/pages/commerce-studio/model/celebStoryTypes.ts'
 import { siteOrigin } from './lib/site-origin.ts'
 import { getProductImages } from '../../src/shared/lib/product-seo.ts'
 import { createHash } from 'node:crypto'
@@ -10,6 +12,7 @@ type CommerceData = {
   adBanners: unknown[]
   categories: string[]
   categoryImages: Record<string, string>
+  celebAccounts?: CelebAccount[]
   heroVideo: Record<string, unknown> | null
   posts: unknown[]
   savedAt?: string | null
@@ -26,6 +29,7 @@ type CommerceDataPatch = {
   categories?: string[]
   categoryImages?: Record<string, string>
   deletedPostIds?: string[]
+  celebAccounts?: CelebAccount[]
   heroVideo?: Record<string, unknown> | null
   postChanges?: Array<{ id: string; patch: Record<string, unknown> }>
 }
@@ -168,6 +172,7 @@ export async function handler(event: NetlifyEvent) {
         adBanners: patch.adBanners ?? current.adBanners,
         categories: patch.categories ?? current.categories,
         categoryImages: patch.categoryImages ?? current.categoryImages,
+        celebAccounts: patch.celebAccounts ?? current.celebAccounts,
         heroVideo: patch.heroVideo === undefined ? current.heroVideo : patch.heroVideo,
         posts: Array.from(posts.values()),
         savedAt: new Date().toISOString(),
@@ -184,6 +189,7 @@ export async function handler(event: NetlifyEvent) {
       !Array.isArray(payload.categories) ||
       !Array.isArray(payload.adBanners) ||
       !isStringRecord(payload.categoryImages) ||
+      !isOptionalCelebAccounts(payload.celebAccounts) ||
       !isOptionalRecord(payload.heroVideo)
     ) {
       return json(400, { message: '저장 데이터 형식이 올바르지 않습니다.' })
@@ -193,6 +199,7 @@ export async function handler(event: NetlifyEvent) {
       adBanners: payload.adBanners,
       categories: payload.categories,
       categoryImages: payload.categoryImages,
+      celebAccounts: payload.celebAccounts === undefined ? (await readSupabaseData()).celebAccounts : parseCelebAccounts(payload.celebAccounts),
       heroVideo: payload.heroVideo ?? null,
       posts: payload.posts,
       savedAt: new Date().toISOString(),
@@ -327,6 +334,7 @@ function mergeCommerceRows(rows: CommerceContentRow[]): CommerceData {
   const categoryImages: Record<string, string> = {}
   const posts = new Map<string, unknown>()
   let adBanners: unknown[] = []
+  let celebAccounts: CelebAccount[] | undefined
   let heroVideo: Record<string, unknown> | null = null
   let savedAt: string | null = null
 
@@ -337,6 +345,8 @@ function mergeCommerceRows(rows: CommerceContentRow[]): CommerceData {
     if (!adBanners.length && Array.isArray(data.adBanners) && data.adBanners.length) {
       adBanners = data.adBanners
     }
+
+    if (celebAccounts === undefined && data.celebAccounts !== undefined && isOptionalCelebAccounts(data.celebAccounts)) celebAccounts = parseCelebAccounts(data.celebAccounts)
 
     if (!heroVideo && isOptionalRecord(data.heroVideo) && data.heroVideo) {
       heroVideo = data.heroVideo
@@ -384,6 +394,7 @@ function mergeCommerceRows(rows: CommerceContentRow[]): CommerceData {
   return {
     adBanners,
     categories: Array.from(categories),
+    celebAccounts,
     categoryImages,
     heroVideo,
     posts: Array.from(posts.values()),
@@ -522,6 +533,7 @@ function isCommerceData(value: unknown): value is CommerceData {
     Array.isArray(value.adBanners) &&
     Array.isArray(value.categories) &&
     isStringRecord(value.categoryImages) &&
+    isOptionalCelebAccounts(value.celebAccounts) &&
     isOptionalRecord(value.heroVideo) &&
     Array.isArray(value.posts)
   )
@@ -534,6 +546,7 @@ function isValidCommerceDataPatch(value: CommerceDataPatch) {
     (value.categories === undefined || (Array.isArray(value.categories) && value.categories.every((item) => typeof item === 'string'))) &&
     (value.categoryImages === undefined || isStringRecord(value.categoryImages)) &&
     (value.deletedPostIds === undefined || (Array.isArray(value.deletedPostIds) && value.deletedPostIds.every((item) => typeof item === 'string'))) &&
+    isOptionalCelebAccounts(value.celebAccounts) &&
     isOptionalRecord(value.heroVideo) &&
     (value.postChanges === undefined || (
       Array.isArray(value.postChanges) &&
@@ -781,4 +794,18 @@ function readSupabaseProjectRef() {
 
 function readSupabaseServiceRoleKey() {
   return process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.SUPABASE_SERVICE_KEY || process.env.SERVICE_ROLE_KEY || ''
+}
+
+function isOptionalCelebAccounts(value: unknown) {
+  if (value === undefined) return true
+  try { parseCelebAccounts(value); return true } catch { return false }
+}
+
+export async function readStoredCelebAccounts(): Promise<CelebAccount[] | undefined> {
+  if (!readSupabaseUrl() || !readSupabaseServiceRoleKey()) return undefined
+  const response = await supabaseFetch('/rest/v1/blog_content?id=neq.main-summary&select=data->celebAccounts&order=updated_at.desc')
+  if (!response.ok) throw new Error('Unable to load Instagram roster')
+  const rows = await response.json() as Array<{ celebAccounts?: unknown }>
+  const row = rows.find(row => row.celebAccounts != null)
+  return row ? parseCelebAccounts(row.celebAccounts) : undefined
 }

@@ -1,3 +1,4 @@
+import { CelebStoriesAdminPanel } from './CelebStoriesAdminPanel'
 import * as Dialog from '@radix-ui/react-dialog'
 import { BarChart3, Eye, Lock, PenLine, Play, Plus, Settings2, X, Menu } from 'lucide-react'
 import { lazy, Suspense, useEffect, useState } from 'react'
@@ -60,6 +61,7 @@ export function CommerceStudioPage() {
   if (!studio.ownerMode) {
     return (
       <StorefrontHome
+        celebAccounts={studio.celebAccounts}
         adBanners={studio.adBanners}
         categories={studio.categories}
         categoryImages={studio.categoryImages}
@@ -175,6 +177,7 @@ export function CommerceStudioPage() {
         {activePost && studio.view === 'preview' && <PostPreview post={activePost} />}
 
         {studio.view !== 'analytics' && <>
+        <CelebStoriesAdminPanel key={JSON.stringify(studio.celebAccounts)} accounts={studio.celebAccounts} onSave={studio.setCelebAccounts} />
         <details className="admin-settings-panel">
           <summary>
             <span>

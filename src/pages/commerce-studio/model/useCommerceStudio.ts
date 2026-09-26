@@ -1,3 +1,5 @@
+import { normalizeCelebAccounts } from './celebAccounts'
+import type { CelebAccount } from './celebStoryTypes'
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import type { ChangeEvent } from 'react'
 import { createEmptyPost } from '../../../entities/post/model/factory'
@@ -71,6 +73,7 @@ export function useCommerceStudio() {
   const [sidebarOpen, setSidebarOpen] = useState(false)
   const [darkMode] = useState(initialSettings.darkMode)
   const [adBanners, setAdBanners] = useState<AdBannerSettings[]>(initialSettings.adBanners)
+  const [celebAccounts, setCelebAccounts] = useState(() => normalizeCelebAccounts(initialSettings.celebAccounts))
   const [heroVideo, setHeroVideo] = useState<HeroVideoSettings>(initialSettings.heroVideo)
   const [ownerMode, setOwnerMode] = useState(isSecretAdminRuntime)
   // 재방문자는 검증된 캐시를 즉시 사용하고, 첫 방문자만 샘플 데이터 대신 스켈레톤을 봅니다.
@@ -104,6 +107,7 @@ export function useCommerceStudio() {
     const nextCategories = normalizeCategories([...cloudCategories, ...uniqueCategories(cloudPosts)])
     const nextCategoryImages = normalizeCategoryImages(data.categoryImages)
     const nextAdBanners = data.adBanners?.length ? normalizeAdBanners(data.adBanners) : DEFAULT_AD_BANNERS
+    const nextCelebAccounts = normalizeCelebAccounts(data.celebAccounts)
     const nextHeroVideo = normalizeHeroVideo(data.heroVideo)
 
     if (!publicSummaryMode) {
@@ -112,6 +116,7 @@ export function useCommerceStudio() {
         categories: nextCategories,
         categoryImages: nextCategoryImages,
         heroVideo: nextHeroVideo,
+        celebAccounts: nextCelebAccounts,
         posts: cloudPosts,
       }
     }
@@ -121,6 +126,7 @@ export function useCommerceStudio() {
     setCategoryImages(nextCategoryImages)
     setAdBanners(nextAdBanners)
     setHeroVideo(nextHeroVideo)
+    setCelebAccounts(nextCelebAccounts)
     setActiveId((current) => (cloudPosts.some((post) => post.id === current) ? current : cloudPosts[0]?.id ?? ''))
     setCloudSynced(true)
     setSaveStatus('서버 저장됨')
@@ -185,13 +191,14 @@ export function useCommerceStudio() {
     const timer = window.setTimeout(() => {
       saveJson(lightweightCacheMode ? STORAGE_KEYS.publicSettings : STORAGE_KEYS.settings, {
         darkMode,
+        celebAccounts,
         adBanners: lightweightCacheMode ? createLightweightBannerCache(adBanners) : adBanners,
         heroVideo: lightweightCacheMode ? createLightweightHeroVideoCache(heroVideo) : heroVideo,
       })
     }, 900)
 
     return () => window.clearTimeout(timer)
-  }, [adBanners, darkMode, heroVideo, lightweightCacheMode])
+  }, [celebAccounts, adBanners, darkMode, heroVideo, lightweightCacheMode])
 
   useEffect(() => {
     const controller = new AbortController()
@@ -264,7 +271,7 @@ export function useCommerceStudio() {
     if (!cloudReady || !cloudSynced || !ownerMode || savingRef.current) return
     const previous = cloudSnapshotRef.current
     if (!previous) return
-    const next = { adBanners, categories, categoryImages, heroVideo, posts }
+    const next = { adBanners, categories, categoryImages, heroVideo, posts, celebAccounts }
     const patch = createCloudPatch(previous, next)
     if (!hasCloudPatchChanges(patch)) {
       setSaveStatus('서버 저장됨')
@@ -275,27 +282,34 @@ export function useCommerceStudio() {
     const timer = window.setTimeout(() => {
       savingRef.current = true
       setSaveStatus('서버 저장 중…')
-      void queueCloudPatch(patch, next).then((saved) => {
-        if (saved) cloudSnapshotRef.current = next
+      void queueCloudPatch(patch, next).then((result) => {
+        if (result.saved) cloudSnapshotRef.current = next
         savingRef.current = false
-        setSaveStatus(saved ? '서버 저장됨' : '저장 실패 · 다시 시도해 주세요')
-        if (saved) setSaveRevision((revision) => revision + 1)
+        setSaveStatus(result.saved ? '서버 저장됨' : result.message)
+        if (result.saved) setSaveRevision((revision) => revision + 1)
       })
     }, 450)
     return () => window.clearTimeout(timer)
-  }, [adBanners, categories, categoryImages, cloudReady, cloudSynced, heroVideo, ownerMode, posts, saveRevision])
+  }, [celebAccounts, adBanners, categories, categoryImages, cloudReady, cloudSynced, heroVideo, ownerMode, posts, saveRevision])
+
+  useEffect(() => {
+    if (!ownerMode) return
+    const retryWhenOnline = () => setSaveRevision((revision) => revision + 1)
+    window.addEventListener('online', retryWhenOnline)
+    return () => window.removeEventListener('online', retryWhenOnline)
+  }, [ownerMode])
 
   useEffect(() => {
     if (!ownerMode) return
     const warnUnsaved = (event: BeforeUnloadEvent) => {
       const previous = cloudSnapshotRef.current
-      if (savingRef.current || (previous && hasCloudPatchChanges(createCloudPatch(previous, { adBanners, categories, categoryImages, heroVideo, posts })))) {
+      if (savingRef.current || (previous && hasCloudPatchChanges(createCloudPatch(previous, { adBanners, categories, categoryImages, heroVideo, posts, celebAccounts })))) {
         event.preventDefault()
       }
     }
     window.addEventListener('beforeunload', warnUnsaved)
     return () => window.removeEventListener('beforeunload', warnUnsaved)
-  }, [adBanners, categories, categoryImages, heroVideo, ownerMode, posts])
+  }, [celebAccounts, adBanners, categories, categoryImages, heroVideo, ownerMode, posts])
 
   const visibleCategories = useMemo(
     () => normalizeCategories([...categories, ...uniqueCategories(posts)]),
@@ -537,6 +551,7 @@ export function useCommerceStudio() {
     downloadJson(`powerpuffceleb-shopping-backup-${new Date().toISOString().slice(0, 10)}.json`, {
       adBanners,
       categoryImages,
+      celebAccounts,
       exportedAt: new Date().toISOString(),
       categories,
       heroVideo,
@@ -550,7 +565,7 @@ export function useCommerceStudio() {
 
     const text = await file.text()
     const parsed = JSON.parse(text) as
-      | { adBanner?: AdBannerSettings; adBanners?: AdBannerSettings[]; categories?: string[]; categoryImages?: Record<string, string>; heroVideo?: Partial<HeroVideoSettings>; posts?: Post[] }
+      | { celebAccounts?: CelebAccount[]; adBanner?: AdBannerSettings; adBanners?: AdBannerSettings[]; categories?: string[]; categoryImages?: Record<string, string>; heroVideo?: Partial<HeroVideoSettings>; posts?: Post[] }
       | Post[]
     const imported = Array.isArray(parsed) ? parsed : parsed.posts
 
@@ -572,6 +587,7 @@ export function useCommerceStudio() {
       setCategoryImages(normalizeCategoryImages(parsed.categoryImages))
     }
     if (!Array.isArray(parsed)) {
+      setCelebAccounts(normalizeCelebAccounts(parsed.celebAccounts))
       setAdBanners(nextAdBanners)
       setHeroVideo(nextHeroVideo)
     }
@@ -582,6 +598,8 @@ export function useCommerceStudio() {
 
   return {
     activePost,
+    celebAccounts,
+    setCelebAccounts,
     adBanners,
     categoryCounts,
     categoryFilter,

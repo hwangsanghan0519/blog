@@ -28,3 +28,23 @@ describe('URL-only content writes', () => {
     expect(fetchMock).not.toHaveBeenCalled()
   })
 })
+
+ it('persists the admin roster in the main and public summary rows', async () => {
+   const celebAccounts = [{ name: '수영', username: 'sooyoungchoi' }]
+   const result = await handler({ httpMethod: 'PATCH', headers: {}, body: JSON.stringify({ celebAccounts }) })
+   expect(result.statusCode).toBe(200)
+   const writes = fetchMock.mock.calls.filter(([, options]) => options?.method === 'POST')
+   const rows = JSON.parse(writes.at(-1)![1].body)
+   expect(rows[0].data.celebAccounts).toEqual(celebAccounts)
+   expect(rows[1].data.celebAccounts).toEqual(celebAccounts)
+ })
+ it('allows clearing the roster without resurrecting defaults', async () => {
+   const result = await handler({ httpMethod: 'PATCH', headers: {}, body: JSON.stringify({ celebAccounts: [] }) })
+   expect(result.statusCode).toBe(200)
+   const writes = fetchMock.mock.calls.filter(([, options]) => options?.method === 'POST')
+   expect(JSON.parse(writes.at(-1)![1].body)[0].data.celebAccounts).toEqual([])
+ })
+ it('rejects malformed usernames before writing content', async () => {
+   expect((await handler({ httpMethod: 'PATCH', headers: {}, body: JSON.stringify({ celebAccounts: [{ name: 'x', username: 'x){id}' }] }) })).statusCode).toBe(400)
+   expect(fetchMock).not.toHaveBeenCalled()
+ })
