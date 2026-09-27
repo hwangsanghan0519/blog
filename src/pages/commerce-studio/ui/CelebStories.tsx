@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from 'react'
 import type { CSSProperties } from 'react'
-import { ChevronLeft, ChevronRight } from 'lucide-react'
+import { ArrowUpRight, ChevronLeft, ChevronRight, Heart, Pause, Play, Sparkles } from 'lucide-react'
 import { InstagramSourceIcon } from '../../../entities/post/ui/ProductSourceIcons'
 import { fetchCelebStories } from '../api/celebStoryApi'
 import { DEFAULT_CELEB_ACCOUNTS, formatFollowers } from '../model/celebAccounts'
@@ -15,22 +15,30 @@ export function CelebStories({ categoryImages, accounts = DEFAULT_CELEB_ACCOUNTS
   const [busy, setBusy] = useState(true)
   const sectionRef = useRef<HTMLElement>(null)
   const [hasEntered, setHasEntered] = useState(false)
+  const [inView, setInView] = useState(true)
+  const [pageVisible, setPageVisible] = useState(true)
+  const [motionPaused, setMotionPaused] = useState(false)
   const navRef = useRef<HTMLDivElement>(null)
   const [canScroll, setCanScroll] = useState(false)
   const hasAccounts = accounts.length > 0
 
   useEffect(() => {
     const section = sectionRef.current
-    if (!section || hasEntered || !('IntersectionObserver' in window)
-      || window.matchMedia('(prefers-reduced-motion: reduce)').matches) return
+    if (!section || !('IntersectionObserver' in window)) return
     const observer = new IntersectionObserver(([entry]) => {
-      if (!entry.isIntersecting || entry.intersectionRatio < .35) return
-      setHasEntered(true)
-      observer.disconnect()
-    }, { threshold: .35, rootMargin: '0px 0px -6% 0px' })
+      setInView(entry.isIntersecting)
+      if (entry.isIntersecting) setHasEntered(true)
+    }, { threshold: 0 })
     observer.observe(section)
     return () => observer.disconnect()
-  }, [hasAccounts, hasEntered])
+  }, [hasAccounts])
+
+  useEffect(() => {
+    const update = () => setPageVisible(document.visibilityState !== 'hidden')
+    update()
+    document.addEventListener('visibilitychange', update)
+    return () => document.removeEventListener('visibilitychange', update)
+  }, [])
 
   useEffect(() => {
     const nav = navRef.current
@@ -101,10 +109,22 @@ export function CelebStories({ categoryImages, accounts = DEFAULT_CELEB_ACCOUNTS
   if (!accounts.length) return null
 
   return (
-    <section ref={sectionRef} className={`celeb-stories${hasEntered ? ' is-entered' : ''}`} aria-labelledby="instagram-live-title" style={{ '--celeb-columns': Math.min(accounts.length, 8) } as CSSProperties}>
+    <section ref={sectionRef} className={`celeb-stories${hasEntered ? ' is-entered' : ''}${inView && pageVisible && !motionPaused ? ' is-animated' : ''}`} aria-labelledby="instagram-live-title" style={{ '--celeb-columns': Math.min(accounts.length, 8) } as CSSProperties}>
+      <div className="celeb-stories-atmosphere" aria-hidden="true">
+        {Array.from({ length: 6 }, (_, index) => <span key={index} style={{ '--particle-index': index } as CSSProperties}>{index % 2 ? <Sparkles /> : <Heart />}</span>)}
+      </div>
       <header className="celeb-stories-heading">
-        <span className="celeb-stories-brand-mark" aria-hidden="true"><InstagramSourceIcon size={18} /></span>
-        <h2 id="instagram-live-title"><span>인스타</span><em>라이브</em></h2>
+        <div className="celeb-stories-title">
+          <span className="celeb-stories-eyebrow" aria-hidden="true"><InstagramSourceIcon size={12} /> instagram</span>
+          <h2 id="instagram-live-title" aria-label="인스타라이브"><span>인스타</span><em>{Array.from('라이브', (letter, index) => <span key={letter} style={{ '--letter-index': index } as CSSProperties}>{letter}</span>)}</em></h2>
+          <span className="celeb-stories-handnote" aria-hidden="true">RealTime follower, Story Live<ArrowUpRight size={17} /></span>
+        </div>
+        <div className="celeb-stories-heading-end">
+          <span className="celeb-stories-sticker" aria-hidden="true">TAP YOUR<br /><b>FAVE ↗</b></span>
+          <button type="button" className="celeb-stories-motion" aria-label={motionPaused ? '인스타라이브 모션 재생' : '인스타라이브 모션 일시정지'} aria-pressed={motionPaused} onClick={() => setMotionPaused(value => !value)}>
+            {motionPaused ? <Play size={13} /> : <Pause size={13} />}
+          </button>
+        </div>
       </header>
       <div className="celeb-stories-nav-wrap">
         <div className="celeb-stories-nav" ref={navRef} aria-busy={busy} aria-label="셀럽 Instagram 프로필">
@@ -112,19 +132,24 @@ export function CelebStories({ categoryImages, accounts = DEFAULT_CELEB_ACCOUNTS
             const profile = profiles[account.username]
             const readable = profile?.state === 'ready' || profile?.state === 'stale'
             const count = readable ? profile.followers : null
-            const followers = formatFollowers(count)
+            const loading = !profile && busy
+            const followers = count != null ? formatFollowers(count) : loading ? '불러오는 중' : '확인 불가'
             const unit = followers.match(/[만억]$/)?.[0] ?? ''
             return <a key={account.username} className="celeb-stories-person"
-              style={{ '--celeb-enter-delay': `${Math.min(index, 7) * 65}ms` } as CSSProperties}
+              style={{ '--celeb-enter-delay': `${Math.min(index, 7) * 75}ms`, '--celeb-phase': `${index * -.8}s`, '--card-tilt': `${[-5, 3, -3, 5, -2][index % 5]}deg`, '--card-offset': `${index % 2 ? 7 : 0}px` } as CSSProperties}
               href={`https://www.instagram.com/${account.username}/`} target="_blank" rel="noopener noreferrer"
-              aria-label={`${account.name}, 팔로워 ${count != null ? formatFollowers(count) : '확인 불가'}, 인스타그램 바로가기 (새 창)`}>
+              aria-label={`${account.name}, 팔로워 ${followers}, 인스타그램 바로가기 (새 창)`}>
               {/* Decorative on every profile; never represents verified active stories. */}
-              <span className="celeb-stories-avatar"><span>
-                <ProfileImage src={profile?.profileImage || categoryImages[account.name]} name={account.name} />
-              </span></span>
+              <span className="celeb-stories-tape" aria-hidden="true" />
+              <span className="celeb-stories-portrait">
+                <span className="celeb-stories-avatar"><span>
+                  <ProfileImage src={profile?.profileImage || categoryImages[account.name]} name={account.name} />
+                </span></span>
+                <span className="celeb-stories-open" aria-hidden="true"><ArrowUpRight size={12} /></span>
+              </span>
               <strong className="celeb-stories-name">{account.name}</strong>
-              <span className="celeb-stories-followers" title={count != null ? `팔로워 ${count.toLocaleString('ko-KR')}명${profile?.state === 'stale' ? ' · 최근 확인한 수치' : ''}` : '현재 팔로워 수를 확인할 수 없어요'}>
-                <span className="celeb-stories-followers-number">{unit ? followers.slice(0, -1) : followers}</span>
+              <span className={`celeb-stories-followers${count == null ? ' is-unknown' : ''}${loading ? ' is-loading' : ''}`} title={count != null ? `팔로워 ${count.toLocaleString('ko-KR')}명${profile?.state === 'stale' ? ' · 최근 확인한 수치' : ''}` : loading ? '팔로워 수를 불러오고 있어요' : '현재 팔로워 수를 확인할 수 없어요'}>
+                <span key={followers} className="celeb-stories-followers-number">{unit ? followers.slice(0, -1) : followers}</span>
                 {unit && <small className="celeb-stories-followers-unit">{unit}</small>}
                 {profile?.state === 'stale' && <i aria-label="최근 확인한 수치" />}
               </span>

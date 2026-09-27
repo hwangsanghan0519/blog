@@ -4,6 +4,7 @@ import type { CelebAccount, CelebStoryFeed } from '../../src/pages/commerce-stud
 import { readStoredCelebAccounts } from './blog-data.ts'
 
 type Event = { httpMethod: string; queryStringParameters?: Record<string, string | undefined> | null }
+type InstagramEnvironment = Partial<Record<'INSTAGRAM_ACCESS_TOKEN' | 'INSTAGRAM_USER_ID' | 'INSTAGRAM_GRAPH_VERSION' | 'INSTAGRAM_CELEB_ACCOUNTS', string>>
 const FRESH_MS = 15 * 60_000
 const STALE_MS = 60 * 60_000
 const cache = new Map<string, { feed: CelebStoryFeed; retryAt: number }>()
@@ -23,9 +24,9 @@ function json(statusCode: number, body: unknown, ttl = 0) {
   }
 }
 
-export function readCelebAccounts(): CelebAccount[] {
-  if (!process.env.INSTAGRAM_CELEB_ACCOUNTS) return DEFAULT_CELEB_ACCOUNTS
-  const parsed: unknown = JSON.parse(process.env.INSTAGRAM_CELEB_ACCOUNTS)
+export function readCelebAccounts(env: InstagramEnvironment = process.env): CelebAccount[] {
+  if (!env.INSTAGRAM_CELEB_ACCOUNTS) return DEFAULT_CELEB_ACCOUNTS
+  const parsed: unknown = JSON.parse(env.INSTAGRAM_CELEB_ACCOUNTS)
   if (!Array.isArray(parsed) || parsed.length === 0 || parsed.length > 30) throw new Error('Invalid accounts')
   const accounts = parsed.map((item) => {
     if (!record(item) || typeof item.name !== 'string' || typeof item.username !== 'string') throw new Error('Invalid account')
@@ -40,10 +41,14 @@ export function readCelebAccounts(): CelebAccount[] {
 }
 
 export async function handler(event: Event) {
+  return handleCelebStories(event, process.env)
+}
+
+export async function handleCelebStories(event: Event, env: InstagramEnvironment) {
   if (event.httpMethod === 'OPTIONS') return json(204, null)
   if (event.httpMethod !== 'GET') return json(405, { message: 'Method not allowed' })
   let accounts: CelebAccount[]
-  try { accounts = await readStoredCelebAccounts() ?? readCelebAccounts() } catch { return json(503, { message: '셀럽스토리를 준비하고 있습니다.' }) }
+  try { accounts = await readStoredCelebAccounts() ?? readCelebAccounts(env) } catch { return json(503, { message: '셀럽스토리를 준비하고 있습니다.' }) }
   if (!accounts.length) return json(200, { accounts, account: { name: '', username: '' }, profileImage: '', followers: null, fetchedAt: null, state: 'unconfigured' })
   const username = event.queryStringParameters?.username ?? accounts[0].username
   const account = accounts.find((item) => item.username === username)
@@ -51,9 +56,9 @@ export async function handler(event: Event) {
   const empty: CelebStoryFeed = {
     accounts, account, profileImage: '', followers: null, fetchedAt: null, state: 'unconfigured',
   }
-  const token = process.env.INSTAGRAM_ACCESS_TOKEN?.trim()
-  const userId = process.env.INSTAGRAM_USER_ID?.trim()
-  const version = process.env.INSTAGRAM_GRAPH_VERSION?.trim() || 'v26.0'
+  const token = env.INSTAGRAM_ACCESS_TOKEN?.trim()
+  const userId = env.INSTAGRAM_USER_ID?.trim()
+  const version = env.INSTAGRAM_GRAPH_VERSION?.trim() || 'v26.0'
   if (!token || !userId || !version || !/^\d+$/.test(userId) || !/^v\d+\.0$/.test(version)) {
     return json(200, empty, 60)
   }

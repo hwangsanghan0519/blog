@@ -1,95 +1,105 @@
-.celeb-stories { min-width: 0; margin: 0 0 24px; padding: 16px 20px 13px; overflow: hidden; color: #57376f; border: 1px solid #e8d6f3; border-radius: 18px; background: radial-gradient(ellipse at 95% 0, #ead9fa, transparent 55%), linear-gradient(110deg, #fff7fb, #fff 48%, #f6eeff); box-shadow: 0 7px 24px #63368d10, inset 0 1px 0 #fff; }
+/* An open contact sheet: paper, tape, offbeat type and floating photo cards. */
+.celeb-stories { position: relative; isolation: isolate; display: grid; grid-template-columns: 170px minmax(0, 1fr); align-items: center; gap: 20px; min-width: 0; margin: 0 0 24px; padding: 15px 26px 12px; color: #584563; background: #f8f5f7; border-block: 1px solid #fff9; }
 .celeb-stories * { box-sizing: border-box; }
 .celeb-stories a { color: inherit; text-decoration: none; }
-.celeb-stories :is(button, a):focus-visible { outline: 2px solid #9c6bbb; outline-offset: 3px; }
-.celeb-stories-heading { position: relative; z-index: 1; isolation: isolate; display: flex; align-items: center; gap: 10px; margin: -16px -20px 12px; padding: 12px 20px 11px; overflow: hidden; border-bottom: 1px solid #c9abdd; background: radial-gradient(ellipse at 8% 0, #fff2fa 0%, transparent 58%), linear-gradient(110deg, #f0e2f8, #e5ceef 58%, #d5b5e7); box-shadow: inset 0 1px 0 #ffffffd9, inset 0 -1px 0 #ffffff70, 0 3px 0 #8d62ab14, 0 8px 14px -9px #6f428952; }
-.celeb-stories-heading::after { content: ''; position: absolute; z-index: -1; inset: 0 0 0 55%; pointer-events: none; background: linear-gradient(118deg, transparent 0 35%, #ffffff45 35% 48%, transparent 48% 55%, #a676cd1a 55% 74%, #ffffff25 74% 80%, transparent 80%); }
-.celeb-stories-brand-mark { display: grid; place-items: center; flex-shrink: 0; width: 30px; height: 30px; border: 1px solid #fff; border-radius: 9px; background: linear-gradient(145deg, #fff, #f1e0f6); box-shadow: 2px 3px 0 #bb98d146, inset 0 1px 0 #fff; transform: rotate(-7deg); }
-.celeb-stories-heading h2 { display: flex; align-items: baseline; gap: 2px; margin: 0; padding: 0 4px 4px 0; color: #50305f; font-family: var(--sans, sans-serif); font-size: 23px; font-weight: 950; font-style: italic; line-height: 1.1; letter-spacing: -1.1px; text-shadow: 2px 2px 0 #cda8df66; }
-.celeb-stories-heading h2 em { position: relative; color: #9253b1; font: inherit; background: none; }
-.celeb-stories-heading h2 em::after { content: ''; position: absolute; left: 5%; right: -2%; bottom: -4px; height: 3px; border-radius: 3px; background: linear-gradient(90deg, #dfa0c0, #a274d2); transform: skewX(-14deg) rotate(-2deg); }
-.celeb-stories-nav-wrap { position: relative; }
-.celeb-stories-nav { display: flex; justify-content: space-evenly; gap: 24px; overflow-x: auto; scrollbar-width: none; padding: 4px; scroll-snap-type: x proximity; }
-.celeb-stories-nav::-webkit-scrollbar { display: none; }
-.celeb-stories-person { display: flex; flex-direction: column; align-items: center; flex: 0 0 78px; min-width: 0; scroll-snap-align: start; -webkit-tap-highlight-color: transparent; }
-.celeb-stories-avatar { display: block; width: 68px; height: 68px; padding: 3px; border-radius: 50%; background: conic-gradient(from 215deg, #feda75, #fa7e1e, #d62976, #962fbf, #4f5bd5, #d62976, #fa7e1e, #feda75); box-shadow: 0 3px 10px #b7699820; transition: transform .18s ease; }
-.celeb-stories-avatar > span { display: block; width: 100%; height: 100%; padding: 3px; border-radius: 50%; background: #fff; }
-.celeb-stories-avatar img, .celeb-stories-image-fallback { display: block; width: 100%; height: 100%; object-fit: cover; border-radius: 50%; }
-.celeb-stories-image-fallback { display: grid; place-items: center; color: #9c78b4; background: #f1e7f8; font-size: 20px; }
-.celeb-stories-person:hover .celeb-stories-avatar { transform: translateY(-2px) scale(1.035); }
-.celeb-stories-person:active .celeb-stories-avatar { transform: scale(.96); }
-.celeb-stories-name { max-width: 100%; margin-top: 7px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; color: #594263; font-size: 12px; font-weight: 650; line-height: 17px; }
-.celeb-stories-followers { display: inline-flex; align-items: baseline; justify-content: center; gap: 1px; margin-top: 2px; color: #7e42a8; font-size: 14px; font-weight: 850; line-height: 18px; letter-spacing: -.4px; white-space: nowrap; font-variant-numeric: tabular-nums; }
-.celeb-stories-followers-number { background: linear-gradient(120deg, #8d489a, #6740ae); background-clip: text; -webkit-background-clip: text; color: transparent; }
-.celeb-stories-followers-unit { font-size: .72em; font-weight: 700; color: #95739f; letter-spacing: 0; }
-.celeb-stories-followers i { display: inline-block; margin-left: 3px; width: 3px; height: 3px; border-radius: 50%; background: #ad8fbf; vertical-align: middle; }
-.celeb-stories-nav-controls { position: absolute; inset: 21px -12px auto; display: flex; justify-content: space-between; pointer-events: none; }
-.celeb-stories-nav-controls button { display: grid; place-items: center; width: 28px; height: 28px; padding: 0; pointer-events: auto; border: 1px solid #e4d1ef; border-radius: 50%; color: #7f5a98; background: #fff; box-shadow: 0 2px 9px #57376f18; cursor: pointer; }
-@media (min-width: 900px) {
-  .celeb-stories { padding: 15px 24px 10px; }
-  .celeb-stories-heading { gap: 11px; margin: -15px -24px 8px; padding: 12px 24px 11px; }
-  .celeb-stories-heading h2 { font-size: 26px; letter-spacing: -1.3px; }
-  .celeb-stories-nav { display: grid; grid-template-columns: repeat(var(--celeb-columns, 5), minmax(108px, 1fr)); grid-auto-flow: column; grid-auto-columns: minmax(108px, 1fr); justify-content: normal; gap: 8px; padding: 4px; }
-  .celeb-stories-person { position: relative; padding: 8px 12px; border-radius: 12px; transition: background .18s ease; }
-  .celeb-stories-person + .celeb-stories-person::before { content: ''; position: absolute; left: -5px; top: 22px; bottom: 22px; width: 1px; background: #e5d4ef; }
-  .celeb-stories-person:hover { background: #e8d5f64d; }
-  .celeb-stories-avatar { width: 78px; height: 78px; }
-  .celeb-stories-name { margin-top: 8px; font-size: 13px; line-height: 18px; }
-  .celeb-stories-followers { font-size: 18px; line-height: 21px; }
-  .celeb-stories-nav-controls { inset: 34px -14px auto; }
+.celeb-stories :is(button, a):focus-visible { outline: 2px solid #825797; outline-offset: 4px; }
+.celeb-stories::before { content: ''; position: absolute; z-index: -1; inset: 0; pointer-events: none; opacity: .3; background: repeating-linear-gradient(0deg, transparent 0 27px, #cabbce44 27px 28px); }
+.celeb-stories::after { content: '+'; position: absolute; right: 7px; bottom: 1px; color: #b5a3bf; font: 20px monospace; pointer-events: none; }
+.celeb-stories-atmosphere { position: absolute; z-index: -1; inset: 0; overflow: hidden; pointer-events: none; }
+.celeb-stories-atmosphere > span { position: absolute; left: calc(8% + var(--particle-index) * 17%); bottom: -26px; color: #bca1b7; animation: celeb-particle-rise 9s linear infinite; animation-delay: calc(var(--particle-index) * -1.6s); }
+.celeb-stories-atmosphere svg { width: 18px; height: 18px; stroke-width: 1.2; }
+.celeb-stories-heading { position: relative; min-width: 0; align-self: stretch; display: flex; flex-direction: column; justify-content: center; padding-block: 8px; }
+.celeb-stories-eyebrow { display: flex; align-items: center; gap: 5px; margin-bottom: 9px; color: #99869e; font: 700 8px/1.2 monospace; letter-spacing: 1.5px; white-space: nowrap; }
+.celeb-stories-heading h2 { display: flex; flex-direction: column; align-items: flex-start; gap: 0; margin: 0; color: #594163; font-family: var(--sans, sans-serif); font-size: 37px; font-weight: 950; font-style: italic; line-height: 1.04; letter-spacing: -2px; }
+.celeb-stories-heading h2 > span { display: inline-block; padding: .08em .22em .12em .1em; margin: -.08em -.22em -.12em -.1em; color: #b5589e; transform: rotate(-5deg); }
+@supports ((background-clip: text) or (-webkit-background-clip: text)) {
+  .celeb-stories-heading h2 > span { background: linear-gradient(115deg, #833ab4 5%, #c13584 32%, #e1306c 52%, #f56040 73%, #fcaf45 95%); -webkit-background-clip: text; background-clip: text; color: transparent; -webkit-text-fill-color: transparent; }
 }
+.celeb-stories-heading h2 em { position: relative; display: inline-flex; margin: 4px 0 0 16px; padding: 1px 8px 5px 3px; color: #87709c; font: inherit; background: #e7deef; box-shadow: 3px 3px 0 #fff; transform: rotate(3deg); }
+.celeb-stories-heading h2 em > span { display: inline-block; animation: celeb-letter-pop 3.8s ease-in-out infinite; animation-delay: calc(var(--letter-index) * .14s); }
+.celeb-stories-handnote { display: flex; align-items: center; gap: 4px; margin: 15px 0 0 6px; color: #9e859c; font-size: 10px; letter-spacing: -.5px; transform: rotate(-4deg); }
+.celeb-stories-handnote svg { animation: celeb-arrow-nudge 2.8s ease-in-out infinite; }
+.celeb-stories-heading-end { display: flex; align-items: center; justify-content: space-between; margin-top: 10px; }
+.celeb-stories-sticker { display: inline-block; padding: 5px 8px; color: #968479; border: 1px solid #cebeae; border-radius: 50%; font: 7px/1.2 monospace; text-align: center; transform: rotate(-12deg); }
+.celeb-stories-sticker b { font-size: 10px; letter-spacing: .5px; }
+.celeb-stories-motion { display: grid; place-items: center; width: 27px; height: 27px; padding: 0; border: 1px solid #c9b9d050; border-radius: 50%; color: #9d89ac; background: #fff9; cursor: pointer; }
+.celeb-stories-motion:hover { color: #694881; background: #fff; }
+.celeb-stories-nav-wrap { position: relative; min-width: 0; }
+.celeb-stories-nav-wrap::before { content: ''; position: absolute; inset: 48% -7px auto; border-top: 1px dashed #b9a5c34a; transform: rotate(-2deg); pointer-events: none; }
+.celeb-stories-nav { position: relative; display: flex; align-items: flex-start; justify-content: space-around; gap: 24px; overflow-x: auto; scrollbar-width: none; padding: 17px 10px 22px; scroll-snap-type: x proximity; }
+.celeb-stories-nav::-webkit-scrollbar { display: none; }
+.celeb-stories-person { position: relative; z-index: 1; display: flex; flex-direction: column; align-items: center; flex: 0 0 114px; min-width: 0; margin-top: var(--card-offset); padding: 7px 7px 9px; border: 1px solid #d7cadc66; border-radius: 2px; background: #fffdfa; box-shadow: 3px 5px 0 #c9b9cc25, 0 6px 14px #57466313; rotate: var(--card-tilt); scroll-snap-align: center; -webkit-tap-highlight-color: transparent; transition: rotate .3s ease, box-shadow .3s ease, background .3s ease; }
+.celeb-stories-person:nth-child(even) { background: #f5f0f8; }
+.celeb-stories-tape { position: absolute; z-index: 3; top: -7px; left: 26%; width: 48%; height: 14px; border-inline: 2px dotted #ffffff7a; background: #d8cbe9b0; transform: rotate(-5deg); pointer-events: none; }
+.celeb-stories-person:nth-child(even) .celeb-stories-tape { background: #e8d9d4b5; transform: rotate(7deg); }
+.celeb-stories-portrait { position: relative; display: block; width: 100%; }
+.celeb-stories-avatar { position: relative; display: block; width: 100%; height: 111px; padding: 2.5px; overflow: hidden; border-radius: 2px; background: linear-gradient(135deg, #9966cd, #ce5aab 25%, #e57d8c 45%, #efb66b 60%, #ce5aab 80%, #9966cd); background-size: 250% 250%; animation: celeb-story-border 6s ease-in-out infinite; animation-delay: var(--celeb-phase); }
+.celeb-stories-avatar > span { display: block; width: 100%; height: 100%; overflow: hidden; border: 2px solid #fffdfa; border-radius: 1px; background: #eee4f0; }
+.celeb-stories-avatar img, .celeb-stories-image-fallback { display: block; width: 100%; height: 100%; object-fit: cover; }
+.celeb-stories-avatar img { transition: transform .4s ease; }
+.celeb-stories-avatar::after { content: ''; position: absolute; inset: 0; pointer-events: none; background: linear-gradient(110deg, transparent 20%, #fff6 45%, transparent 65%); transform: translateX(-150%); animation: celeb-photo-shine 8s ease-in-out infinite; animation-delay: var(--celeb-phase); }
+.celeb-stories-image-fallback { display: grid; place-items: center; color: #aa91b6; background: #f0e8f4; font-size: 24px; }
+.celeb-stories-open { position: absolute; right: -4px; bottom: -4px; display: grid; place-items: center; width: 21px; height: 21px; border: 2px solid #fffdfa; border-radius: 50%; color: #80618e; background: #e9deef; transition: transform .25s ease; }
+.celeb-stories-name { max-width: 100%; margin-top: 7px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; color: #67556f; font-size: 12px; font-weight: 750; line-height: 17px; }
+.celeb-stories-followers { display: inline-flex; align-items: baseline; justify-content: center; gap: 1px; min-height: 20px; margin-top: 1px; color: #896d99; font-size: 16px; font-weight: 850; line-height: 20px; letter-spacing: -.5px; white-space: nowrap; font-variant-numeric: tabular-nums; }
+.celeb-stories-followers-number { color: #896d99; animation: celeb-count-enter .4s ease-out; }
+.celeb-stories-followers-unit { font-size: .72em; font-weight: 700; color: #a18eac; letter-spacing: 0; }
+.celeb-stories-followers i { display: inline-block; margin-left: 3px; width: 3px; height: 3px; border-radius: 50%; background: #ad8fbf; }
+.celeb-stories-followers.is-unknown { font-size: 10px; font-weight: 500; letter-spacing: -.2px; }
+.celeb-stories-followers.is-unknown .celeb-stories-followers-number { color: #a297a9; }
+.celeb-stories-followers.is-loading { animation: celeb-loading 1.5s ease-in-out infinite; }
+.celeb-stories-person:is(:hover, :focus-visible) { z-index: 4; rotate: 0deg; background: #fff; box-shadow: 0 10px 20px #67457325; }
+.celeb-stories-person:is(:hover, :focus-visible) img { transform: scale(1.08); }
+.celeb-stories-person:is(:hover, :focus-visible) .celeb-stories-open { transform: translate(2px, -2px) rotate(-5deg); }
+.celeb-stories-person:active { scale: .97; }
+.celeb-stories-nav-controls { position: absolute; z-index: 5; inset: 48% -18px auto; display: flex; justify-content: space-between; pointer-events: none; }
+.celeb-stories-nav-controls button { display: grid; place-items: center; width: 28px; height: 28px; padding: 0; pointer-events: auto; border: 1px solid #e4d1ef; border-radius: 50%; color: #8c729b; background: #fff; box-shadow: 0 2px 9px #57376f18; cursor: pointer; }
+.celeb-stories.is-entered .celeb-stories-person { animation: celeb-profile-enter .65s cubic-bezier(.22, 1, .36, 1) var(--celeb-enter-delay, 0ms) backwards, celeb-paper-float 4.8s ease-in-out calc(var(--celeb-phase) - 1s) infinite; }
+@media (max-width: 1100px) and (min-width: 900px) { .celeb-stories { grid-template-columns: 132px minmax(0, 1fr); gap: 8px; padding-inline: 18px; } .celeb-stories-heading h2 { font-size: 32px; } .celeb-stories-nav { justify-content: flex-start; gap: 20px; } }
 @media (max-width: 899px) {
-  .celeb-stories { padding: 12px 14px 10px; margin-bottom: 22px; border-radius: 16px; }
-  .celeb-stories-heading { gap: 8px; margin: -12px -14px 9px; padding: 9px 14px 8px; }
-  .celeb-stories-heading h2 { font-size: 19px; letter-spacing: -.9px; }
-  .celeb-stories-brand-mark { width: 24px; height: 24px; border-radius: 7px; }
-  .celeb-stories-brand-mark > svg { width: 15px; height: 15px; }
-  .celeb-stories-nav { justify-content: flex-start; gap: 16px; }
-  .celeb-stories-person { flex-basis: 58px; }
-  .celeb-stories-avatar { width: 58px; height: 58px; padding: 2.5px; }
-  .celeb-stories-avatar > span { padding: 2.5px; }
-  .celeb-stories-name { margin-top: 5px; font-size: 11px; line-height: 15px; }
-  .celeb-stories-followers { font-size: 13px; line-height: 17px; }
+  .celeb-stories { display: block; padding: 8px 10px 2px; }
+  .celeb-stories-heading { flex-direction: row; align-items: center; justify-content: space-between; padding: 0 3px; }
+  .celeb-stories-eyebrow { margin-bottom: 5px; font-size: 6px; letter-spacing: 1.3px; }
+  .celeb-stories-eyebrow svg { width: 9px; height: 9px; }
+  .celeb-stories-heading h2 { flex-direction: row; align-items: baseline; gap: 3px; font-size: 25px; letter-spacing: -1.3px; }
+  .celeb-stories-heading h2 em { margin: 0 0 0 2px; padding: 0 5px 2px 2px; }
+  .celeb-stories-handnote { position: absolute; right: 36px; bottom: 5px; margin: 0; font-size: 8px; }
+  .celeb-stories-handnote svg { width: 13px; }
+  .celeb-stories-heading-end { margin: 0; align-self: flex-end; padding-bottom: 3px; }
+  .celeb-stories-sticker { display: none; }
+  .celeb-stories-motion { width: 25px; height: 25px; }
+  .celeb-stories-nav { justify-content: flex-start; gap: 16px; padding: 13px 8px 17px; }
+  .celeb-stories-person { flex-basis: 78px; padding: 5px 5px 6px; }
+  .celeb-stories-avatar { height: 75px; }
+  .celeb-stories-tape { top: -6px; height: 11px; }
+  .celeb-stories-open { width: 17px; height: 17px; right: -3px; bottom: -3px; }
+  .celeb-stories-open svg { width: 10px; }
+  .celeb-stories-name { margin-top: 5px; font-size: 10px; line-height: 14px; }
+  .celeb-stories-followers { min-height: 16px; font-size: 12px; line-height: 16px; }
+  .celeb-stories-followers.is-unknown { font-size: 9px; }
   .celeb-stories-nav-controls { display: none; }
 }
-/* One entrance per mount, without hiding content before the observer runs. */
-.celeb-stories-avatar { position: relative; }
-.celeb-stories-avatar::after { content: ''; position: absolute; inset: 0; padding: 3px; border-radius: inherit; pointer-events: none; opacity: 0; background: conic-gradient(from 0deg, transparent 0deg 220deg, #fff6 255deg, #fff 280deg, transparent 320deg); -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0); -webkit-mask-composite: xor; mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0); mask-composite: exclude; }
-.celeb-stories.is-entered { animation: celeb-section-glow 1.25s ease-out; }
-.celeb-stories.is-entered .celeb-stories-heading { animation: celeb-heading-enter .55s ease-out both; }
-.celeb-stories.is-entered .celeb-stories-person { animation: celeb-profile-enter .65s cubic-bezier(.22, 1, .36, 1) var(--celeb-enter-delay, 0ms) backwards; }
-.celeb-stories.is-entered .celeb-stories-avatar::after { animation: celeb-ring-shine 1.05s ease-in-out calc(var(--celeb-enter-delay, 0ms) + 120ms) both; }
-@keyframes celeb-profile-enter {
-  from { opacity: .3; transform: translateY(12px) scale(.94); }
-  to { opacity: 1; transform: translateY(0) scale(1); }
-}
-@keyframes celeb-heading-enter {
-  from { opacity: .5; transform: translateY(4px); }
-  to { opacity: 1; transform: translateY(0); }
-}
-@keyframes celeb-ring-shine {
-  0% { opacity: 0; transform: rotate(-110deg); }
-  25% { opacity: .9; }
-  70% { opacity: .7; }
-  100% { opacity: 0; transform: rotate(250deg); }
-}
-@keyframes celeb-section-glow {
-  0%, 100% { box-shadow: 0 7px 24px #63368d10, inset 0 1px 0 #fff; }
-  40% { box-shadow: 0 0 0 1px #cc9de255, 0 7px 24px #ac75cd26, inset 0 1px 0 #fff; }
-}
+@media (max-width: 350px) { .celeb-stories-handnote { display: none; } }
+@keyframes celeb-profile-enter { from { opacity: .3; translate: 0 12px; } to { opacity: 1; translate: 0 0; } }
+@keyframes celeb-paper-float { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-4px); } }
+@keyframes celeb-letter-pop { 0%, 24%, 100% { translate: 0 0; rotate: 0deg; } 10% { translate: 0 -4px; rotate: -6deg; } 18% { translate: 0 1px; rotate: 3deg; } }
+@keyframes celeb-arrow-nudge { 0%, 75%, 100% { transform: translate(0, 0); } 85% { transform: translate(3px, -3px); } }
+@keyframes celeb-photo-shine { 0%, 60% { transform: translateX(-150%); } 85%, 100% { transform: translateX(150%); } }
+@keyframes celeb-story-border { 0%, 100% { background-position: 0% 50%; } 50% { background-position: 100% 50%; } }
+@keyframes celeb-particle-rise { 0% { opacity: 0; transform: translate(0, 0) rotate(-15deg) scale(.6); } 20% { opacity: .45; } 75% { opacity: .3; } 100% { opacity: 0; transform: translate(20px, -260px) rotate(25deg) scale(1.1); } }
+@keyframes celeb-count-enter { from { opacity: .4; transform: translateY(4px); } to { opacity: 1; transform: translateY(0); } }
+@keyframes celeb-loading { 50% { opacity: .45; } }
+.celeb-stories:not(.is-animated) *, .celeb-stories:not(.is-animated) *::before, .celeb-stories:not(.is-animated) *::after { animation-play-state: paused !important; }
 @media (prefers-reduced-motion: reduce) {
-  .celeb-stories-avatar, .celeb-stories-person { transition: none; }
-  .celeb-stories.is-entered, .celeb-stories.is-entered .celeb-stories-heading, .celeb-stories.is-entered .celeb-stories-person, .celeb-stories.is-entered .celeb-stories-avatar::after { animation: none; }
+  .celeb-stories *, .celeb-stories *::before, .celeb-stories *::after { animation: none !important; transition: none !important; }
+  .celeb-stories-atmosphere, .celeb-stories-motion { display: none; }
+  .celeb-stories-person:is(:hover, :focus-visible) img { transform: none; }
 }
-
-/* Keep the story rail close to the adjacent storefront sections. */
 .public-blog .public-main:has(> .celeb-stories) { row-gap: 8px; }
 .public-blog .public-main > .celeb-stories { margin-block: 0; }
 .public-blog .celeb-stories + .celeb-vote-stage { margin-top: 0; margin-bottom: 0; }
 .public-blog .celeb-stories + .public-browser { margin-top: 0; }
-@media (max-width: 899px) {
-  .public-blog .celeb-stories ~ .public-browser { margin-top: 0; }
-}
+@media (max-width: 899px) { .public-blog .celeb-stories ~ .public-browser { margin-top: 0; } }
 
 .celeb-admin-body { padding: 18px; }
 .celeb-admin-body > p { font-size: 12px; line-height: 1.6; }

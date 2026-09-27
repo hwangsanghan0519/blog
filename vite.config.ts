@@ -15,13 +15,13 @@ export default defineConfig({
       name: 'celeb-stories-local-api',
       configureServer(server) {
         // Instagram 비밀값은 개발 서버에서만 읽으며 VITE_ 환경변수로 노출하지 않습니다.
+        // process.env에 복사하면 .env.local 변경으로 재시작해도 이전 토큰이 우선됩니다.
         const env = loadEnv(server.config.mode, server.config.root, 'INSTAGRAM_')
-        for (const [key, value] of Object.entries(env)) process.env[key] ??= value
         server.middlewares.use('/.netlify/functions/celeb-stories', async (request, response) => {
           try {
-            const { handler } = await server.ssrLoadModule('/netlify/functions/celeb-stories.ts')
+            const { handleCelebStories } = await server.ssrLoadModule('/netlify/functions/celeb-stories.ts')
             const url = new URL(request.url ?? '/', 'http://localhost')
-            const result = await handler({ httpMethod: request.method ?? 'GET', queryStringParameters: Object.fromEntries(url.searchParams) })
+            const result = await handleCelebStories({ httpMethod: request.method ?? 'GET', queryStringParameters: Object.fromEntries(url.searchParams) }, env)
             response.writeHead(result.statusCode, result.headers)
             response.end(result.body)
           } catch {

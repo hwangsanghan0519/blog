@@ -96,6 +96,16 @@ describe('Instagram Business Discovery profiles', () => {
     expect(fetchMock).toHaveBeenCalledTimes(2)
   })
 
+  it('uses refreshed development credentials without retaining or mutating process credentials', async () => {
+    const { handleCelebStories } = await import('../netlify/functions/celeb-stories')
+    const env = { INSTAGRAM_ACCESS_TOKEN: 'dev-first', INSTAGRAM_USER_ID: '123456', INSTAGRAM_GRAPH_VERSION: 'v26.0' }
+    const event = { httpMethod: 'GET' }
+    expect(JSON.parse((await handleCelebStories(event, env)).body).state).toBe('ready')
+    expect(JSON.parse((await handleCelebStories(event, { ...env, INSTAGRAM_ACCESS_TOKEN: 'dev-refreshed' })).body).state).toBe('ready')
+    expect(fetchMock.mock.calls.map(([, init]) => init.headers.authorization)).toEqual(['Bearer dev-first', 'Bearer dev-refreshed'])
+    expect(process.env.INSTAGRAM_ACCESS_TOKEN).toBe('private-test-token')
+  })
+
   it('supports a configured roster and rejects malformed configuration', async () => {
     vi.stubEnv('INSTAGRAM_CELEB_ACCOUNTS', JSON.stringify([{ name: '테스트', username: '@example' }]))
     const { readCelebAccounts } = await import('../netlify/functions/celeb-stories')
