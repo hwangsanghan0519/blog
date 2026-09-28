@@ -1,0 +1,53 @@
+.public-blog .storefront-footer-contact {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  min-height: 44px;
+  padding: 0 16px;
+  border: 1px solid #ffffff45;
+  border-radius: 24px;
+  color: #fff;
+  background: #ffffff0d;
+  font-size: 12px;
+  font-weight: 600;
+  text-decoration: none;
+  white-space: nowrap;
+  transition: background .2s ease, border-color .2s ease;
+}
+
+.public-blog .storefront-footer-contact:hover {
+  border-color: #ffffff9c;
+  background: #ffffff1f;
+}
+
+.public-blog .storefront-top-trigger {
+  position: fixed;
+  z-index: 90;
+  right: calc(max(16px, env(safe-area-inset-right)) + 10px);
+  bottom: calc(32px + env(safe-area-inset-bottom));
+  display: grid;
+  place-items: center;
+  box-sizing: border-box;
+  width: 36px;
+  height: 36px;
+  padding: 0;
+  border: 1px solid #d8c9e480;
+  border-radius: 50%;
+  color: #9277a4;
+  background: #fffcfff0;
+  box-shadow: 0 2px 8px #68448412;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+  transition: transform .2s ease, box-shadow .2s ease;
+}
+
+.public-blog .storefront-top-trigger:active { transform: scale(.93); }
+.public-blog .storefront-top-trigger:hover { box-shadow: 0 3px 10px #68448424; }
+.public-blog .storefront-top-trigger:focus-visible,
+.public-blog .storefront-footer-contact:focus-visible { outline: 3px solid #d3b5ee; outline-offset: 4px; }
+
+@media (prefers-reduced-motion: reduce) {
+  .public-blog .storefront-top-trigger,
+  .public-blog .storefront-footer-contact { transition: none; }
+}

@@ -19,8 +19,6 @@
   .public-blog .mobile-search-trigger:focus-visible { box-shadow: 0 8px 28px #8353ae55, 0 0 0 5px #e7d4fa55; }
   .public-blog .mobile-search-trigger:active { transform: scale(.92); }
   .public-blog .mobile-search-trigger:active svg { transform: rotate(-12deg) scale(1.08); }
-  .public-blog .public-quick-actions { right: max(16px, env(safe-area-inset-right)); bottom: calc(28px + env(safe-area-inset-bottom)); }
-  .public-blog .public-quick-actions a { box-sizing: border-box; height: 48px; min-height: 48px; border-radius: 14px; }
 }
 
 .mobile-search-overlay { position: fixed; inset: 0; z-index: 310; background: #20112b85; backdrop-filter: blur(7px); animation: search-fade-in 180ms ease; }

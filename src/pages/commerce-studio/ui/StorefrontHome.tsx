@@ -19,12 +19,14 @@ import type { AdBannerSettings, HeroVideoSettings } from '../model/types'
 import { AdStripBanners, CategoryVisual, TrendVideo } from './StorefrontMedia'
 import { MobileProductSearch } from './MobileProductSearch'
 import { MobileCelebRanking } from './MobileCelebRanking'
+import { MobilePocaAlbum } from './MobilePocaAlbum'
 import { CelebStories } from './CelebStories'
 import { FourCutImage, FourCutLoading } from './FourCutImage'
 import { getProductSeo, getProductTags } from '../../../shared/lib/product-seo'
 import { trackAffiliateClick, trackProductClick, trackProductView } from '../../../shared/lib/analytics'
 import { normalizeCelebAccounts } from '../../../shared/lib/celeb-seo'
 import './storefront-entry.css'
+import './storefront-floating-actions.css'
 
 type StorefrontHomeProps = {
   posts: Post[]
@@ -648,10 +650,10 @@ export function StorefrontHome({
           <img src={powerpuffcelebLogoImage} alt="" />
         </span>
         <div>
-          <span>POWER PUFF CURATED</span>
+          <span><em>CELEB</em> CURATED</span>
           <strong><em>찾아줄게요</em><b>최애의 아이템</b></strong>
         </div>
-        <small>팔로워 맞춤형 셀럽 큐레이션</small>
+        <small>Who's your bias?</small>
         <span className="public-mobile-banner-signal" aria-hidden="true"><i /></span>
       </section>
 
@@ -672,12 +674,12 @@ export function StorefrontHome({
             <img src={powerpuffcelebLogoImage} alt="" />
           </span>
           <span className="public-brand-message" aria-hidden="true">
-            <span className="public-brand-kicker"> POWER PUFF CELEB CURATED </span>
+            <span className="public-brand-kicker">CELEB CURATED </span>
             <span className="public-brand-title">
               <em>찾아줄게요</em>
               <b>최애의 아이템</b>
             </span>
-            <span className="public-brand-caption">팔로워 맞춤형 셀럽 큐레이션</span>
+            <span className="public-brand-caption">Who's your bias?</span>
           </span>
         </button>
 
@@ -1146,9 +1148,10 @@ export function StorefrontHome({
           </div>
 
           <div className="public-footer-v3-actions">
-            <button type="button" aria-label="페이지 맨 위로 이동" onClick={() => window.scrollTo({ left: 0, top: 0, behavior: 'smooth' })}>
-              <ArrowUp size={19} aria-hidden="true" />
-            </button>
+            <a className="storefront-footer-contact" href="mailto:nmc2711@naver.com" aria-label="제휴 문의 이메일 보내기">
+              <Mail size={16} aria-hidden="true" />
+              <span>제휴 문의</span>
+            </a>
           </div>
         </div>
 
@@ -1160,12 +1163,15 @@ export function StorefrontHome({
 
       {!selectedPost && allCelebrities.length > 0 && <MobileCelebRanking ranking={rankedCelebs} categoryImages={categoryImages} celebrities={allCelebrities} onSelectCategory={selectCategory} votedCategory={votedCategory} pendingCategory={votePendingCategory} feedback={voteFeedback} onVote={voteForCeleb} />}
       {!selectedPost && <MobileProductSearch posts={publishedPosts} onSelect={(postId) => selectPost(postId, 'search')} />}
-      <div className="public-quick-actions" aria-label="빠른 기능">
-        <a href="mailto:nmc2711@naver.com" aria-label="제휴 문의 이메일 보내기">
-          <Mail size={21} />
-          <span>제휴 문의</span>
-        </a>
-      </div>
+      {!selectedPost && <MobilePocaAlbum posts={publishedPosts} onSelect={(postId) => selectPost(postId, 'poca')} />}
+      {!selectedPost && <button
+        className="storefront-top-trigger"
+        type="button"
+        aria-label="셀럽 전체 보기 및 맨 위로 이동"
+        onClick={() => selectCategory('all')}
+      >
+        <ArrowUp size={16} strokeWidth={1.7} aria-hidden="true" />
+      </button>}
     </div>
   )
 }

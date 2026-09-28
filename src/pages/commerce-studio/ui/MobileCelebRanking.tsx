@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from 'react'
 import type { CSSProperties } from 'react'
 import * as Dialog from '@radix-ui/react-dialog'
-import { Check, Crown, Heart, LoaderCircle, UsersRound, X } from 'lucide-react'
+import { Check, Crown, Heart, LoaderCircle, Sparkles, Star, UsersRound, X } from 'lucide-react'
 import type { CelebVoteRank } from '../api/celebVoteApi'
 import { getInfluenceGauge } from '../lib/influenceGauge'
 import { getCategoryPath } from '../../../shared/lib/seo'
@@ -27,17 +27,37 @@ export function MobileCelebRanking({ ranking, categoryImages, celebrities, onSel
   const [view, setView] = useState<View>('ranking')
   const [viewport, setViewport] = useState({ height: 0, bottom: 0 })
   const pressedFace = useRef<View | null>(null)
+  const releasePress = useRef<ReturnType<typeof setTimeout> | undefined>(undefined)
   const selectingCategory = useRef(false)
 
   useEffect(() => {
     if (open) return
+    const mobile = window.matchMedia('(max-width: 899px)')
     const timer = window.setInterval(() => {
-      if (document.visibilityState === 'hidden' || window.innerWidth >= 900 || pressedFace.current) return
+      if (document.visibilityState === 'hidden' || !mobile.matches || pressedFace.current) return
       setFace(previous => previous === 'ranking' ? 'directory' : 'ranking')
       setBurst(previous => previous + 1)
     }, 3333)
     return () => window.clearInterval(timer)
   }, [open])
+  useEffect(() => {
+    const release = () => {
+      if (!pressedFace.current) return
+      clearTimeout(releasePress.current)
+      // Keep the touched face until the synthetic click arrives, then always release it.
+      releasePress.current = setTimeout(() => { pressedFace.current = null }, 400)
+    }
+    const cancel = () => { clearTimeout(releasePress.current); pressedFace.current = null }
+    window.addEventListener('pointerup', release)
+    window.addEventListener('pointercancel', cancel)
+    window.addEventListener('blur', cancel)
+    return () => {
+      clearTimeout(releasePress.current)
+      window.removeEventListener('pointerup', release)
+      window.removeEventListener('pointercancel', cancel)
+      window.removeEventListener('blur', cancel)
+    }
+  }, [])
   useEffect(() => {
     if (!open) return
     const update = () => {
@@ -58,12 +78,13 @@ export function MobileCelebRanking({ ranking, categoryImages, celebrities, onSel
 
   return <Dialog.Root open={open} onOpenChange={next => { selectingCategory.current = false; setOpen(next) }}>
     <Dialog.Trigger className="mobile-ranking-trigger" aria-label={face === 'ranking' ? '셀럽 랭킹 및 투표 열기' : '전체 셀럽 모아보기 열기'}
-      onPointerDown={() => { pressedFace.current = face }} onPointerCancel={() => { pressedFace.current = null }}
+      onPointerDown={() => { clearTimeout(releasePress.current); pressedFace.current = face }} onPointerCancel={() => { pressedFace.current = null }}
       onClick={() => { setView(pressedFace.current ?? face); pressedFace.current = null }}>
-      <span className="mobile-celeb-coin" data-side={face} aria-hidden="true">
-        <span className="mobile-celeb-coin-face is-front"><Crown size={21} strokeWidth={1.8} /><span>랭킹</span></span>
-        <span className="mobile-celeb-coin-face is-back"><UsersRound size={21} strokeWidth={1.8} /><span>셀럽</span></span>
+      <span key={`coin-${burst}`} className={`mobile-celeb-coin${burst ? ' is-turning' : ''}`} data-side={face} aria-hidden="true">
+        <span className="mobile-celeb-coin-face is-front"><Crown className="mobile-celeb-coin-symbol" size={22} strokeWidth={1.5} /><span className="mobile-celeb-coin-label">랭킹</span><span className="mobile-celeb-coin-shine" /></span>
+        <span className="mobile-celeb-coin-face is-back"><Heart className="mobile-celeb-coin-symbol" size={22} strokeWidth={1.7} /><span className="mobile-celeb-coin-label">셀럽</span><span className="mobile-celeb-coin-shine" /></span>
       </span>
+      <span className="mobile-celeb-jewels" aria-hidden="true"><Sparkles size={15} /><Star size={8} fill="currentColor" /><span /></span>
       {burst > 0 && <span key={burst} className="mobile-celeb-coin-burst" data-side={face} aria-hidden="true">
         {[[-28, -23, -22], [-12, -42, 14], [12, -34, -12], [30, -18, 24]].map(([x, y, tilt], index) => <Heart key={index} fill="currentColor" strokeWidth={1.3}
           style={{ '--heart-x': `${x}px`, '--heart-y': `${y}px`, '--heart-tilt': `${tilt}deg`, '--heart-delay': `${index * 54}ms` } as CSSProperties} />)}
