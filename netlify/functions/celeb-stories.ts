@@ -2,16 +2,17 @@ import { createHash } from 'node:crypto'
 import { DEFAULT_CELEB_ACCOUNTS } from '../../src/pages/commerce-studio/model/celebAccounts.ts'
 import type { CelebAccount, CelebStoryFeed } from '../../src/pages/commerce-studio/model/celebStoryTypes.ts'
 import { readStoredCelebAccounts } from './blog-data.ts'
+import { fetchInstagramProfile, InstagramError, record } from './lib/instagram-graph.ts'
+import type { InstagramIssue } from './lib/instagram-graph.ts'
+import { readProfileSnapshot, saveProfileSnapshot } from './lib/instagram-cache.ts'
+import type { StorageEnvironment } from './lib/instagram-cache.ts'
 
 type Event = { httpMethod: string; queryStringParameters?: Record<string, string | undefined> | null }
-type InstagramEnvironment = Partial<Record<'INSTAGRAM_ACCESS_TOKEN' | 'INSTAGRAM_USER_ID' | 'INSTAGRAM_GRAPH_VERSION' | 'INSTAGRAM_CELEB_ACCOUNTS', string>>
+type InstagramEnvironment = Partial<Record<'INSTAGRAM_ACCESS_TOKEN' | 'INSTAGRAM_USER_ID' | 'INSTAGRAM_GRAPH_VERSION' | 'INSTAGRAM_CELEB_ACCOUNTS', string>> & StorageEnvironment
 const FRESH_MS = 15 * 60_000
-const STALE_MS = 60 * 60_000
 const cache = new Map<string, { feed: CelebStoryFeed; retryAt: number }>()
 const requests = new Map<string, Promise<CelebStoryFeed>>()
-const authenticationRetryAt = new Map<string, number>()
-
-class InstagramAuthenticationError extends Error {}
+const credentialBackoff = new Map<string, { retryAt: number; issue: InstagramIssue }>()
 
 function json(statusCode: number, body: unknown, ttl = 0) {
   return {
@@ -20,7 +21,7 @@ function json(statusCode: number, body: unknown, ttl = 0) {
       'content-type': 'application/json; charset=utf-8',
       'access-control-allow-origin': '*',
       'access-control-allow-methods': 'GET, OPTIONS',
-      'cache-control': ttl ? `public, max-age=0, s-maxage=${ttl}` : 'no-store',
+      'cache-control': ttl && statusCode === 200 ? `public, max-age=0, s-maxage=${ttl}` : 'no-store',
       ...(statusCode === 503 ? { 'retry-after': '60' } : {}),
     },
     body: JSON.stringify(body),
@@ -63,88 +64,62 @@ export async function handleCelebStories(event: Event, env: InstagramEnvironment
   const userId = env.INSTAGRAM_USER_ID?.trim()
   const version = env.INSTAGRAM_GRAPH_VERSION?.trim() || 'v26.0'
   if (!token || !userId || !version || !/^\d+$/.test(userId) || !/^v\d+\.0$/.test(version)) {
+    const snapshot = await readProfileSnapshot(username, env)
+    if (snapshot) return json(200, { ...empty, followers: snapshot.followers, profileImage: snapshot.profileImage, fetchedAt: snapshot.fetchedAt, state: 'stale' })
     return json(200, empty, 60)
   }
 
   // 인증 변경 시 이전 계정의 캐시를 재사용하지 않고, 토큰은 응답과 URL에 넣지 않습니다.
   const key = createHash('sha256').update(JSON.stringify([token, userId, version, accounts, username])).digest('hex')
   const credentialKey = createHash('sha256').update(JSON.stringify([token, userId, version])).digest('hex')
-  const cached = cache.get(key)
+  let cached = cache.get(key)
   const age = cached?.feed.fetchedAt ? Date.now() - Date.parse(cached.feed.fetchedAt) : Infinity
   if (cached && age < FRESH_MS && cached.feed.state === 'ready') {
     return json(200, cached.feed, Math.max(1, Math.floor((FRESH_MS - age) / 1000)))
   }
-  if (cached && cached.retryAt > Date.now()) return json(cached.feed.state === 'unavailable' ? 503 : 200, cached.feed, 60)
-  // One expired credential affects every account. Stop repeating the same
-  // rejected request across the roster; a replacement token gets a new key.
-  const unavailableFeed = (issue: 'authentication' | 'upstream'): CelebStoryFeed => cached && age < STALE_MS && cached.feed.fetchedAt
-    ? { ...cached.feed, state: 'stale', issue }
-    : { ...empty, state: 'unavailable', issue }
-  if ((authenticationRetryAt.get(credentialKey) ?? 0) > Date.now()) {
-    const feed = unavailableFeed('authentication')
-    return json(feed.state === 'stale' ? 200 : 503, feed, 60)
+  if (cached && cached.retryAt > Date.now()) {
+    return json(cached.feed.state === 'unavailable' ? 503 : 200, cached.feed, 0)
   }
   let request = requests.get(key)
   if (!request) {
-    request = loadFeed(account, accounts, userId, token, version).then((feed) => {
-      if (cache.size >= 60) cache.delete(cache.keys().next().value!)
-      cache.set(key, { feed, retryAt: 0 })
-      return feed
-    }).catch((error: unknown) => {
-      const authenticationFailed = error instanceof InstagramAuthenticationError
-      if (authenticationFailed) {
-        if (authenticationRetryAt.size >= 10) authenticationRetryAt.delete(authenticationRetryAt.keys().next().value!)
-        authenticationRetryAt.set(credentialKey, Date.now() + 5 * 60_000)
+    request = (async () => {
+      // 마지막 정상 값은 재시작·배포·토큰 교체 후에도 복원하며 실패 응답으로 덮어쓰지 않습니다.
+      if (!cached?.feed.fetchedAt) {
+        const snapshot = await readProfileSnapshot(username, env)
+        if (snapshot) cached = { feed: { accounts, account, followers: snapshot.followers, profileImage: snapshot.profileImage, fetchedAt: snapshot.fetchedAt, state: 'stale' }, retryAt: 0 }
       }
-      const feed = unavailableFeed(authenticationFailed ? 'authentication' : 'upstream')
-      cache.set(key, { feed, retryAt: Date.now() + 60_000 })
-      return feed
-    }).finally(() => requests.delete(key))
+      const fallback = (issue: InstagramIssue): CelebStoryFeed => cached?.feed.fetchedAt
+        ? { ...cached.feed, accounts, account, state: 'stale', issue }
+        : { ...empty, state: 'unavailable', issue }
+      const blocked = credentialBackoff.get(credentialKey)
+      if (blocked && blocked.retryAt > Date.now()) {
+        const feed = fallback(blocked.issue)
+        if (cache.size >= 60) cache.delete(cache.keys().next().value!)
+        cache.set(key, { feed, retryAt: blocked.retryAt })
+        return feed
+      }
+      try {
+        const snapshot = await fetchInstagramProfile(account.username, userId, token, version)
+        const feed: CelebStoryFeed = { accounts, account, profileImage: snapshot.profileImage, followers: snapshot.followers, fetchedAt: snapshot.fetchedAt, state: 'ready' }
+        await saveProfileSnapshot(snapshot, env)
+        credentialBackoff.delete(credentialKey)
+        if (cache.size >= 60) cache.delete(cache.keys().next().value!)
+        cache.set(key, { feed, retryAt: 0 })
+        return feed
+      } catch (error: unknown) {
+        const failure = error instanceof InstagramError ? error : new InstagramError('upstream')
+        if (['authentication', 'permission', 'rate_limit'].includes(failure.issue)) {
+          if (credentialBackoff.size >= 10) credentialBackoff.delete(credentialBackoff.keys().next().value!)
+          credentialBackoff.set(credentialKey, { retryAt: Date.now() + failure.retryAfter * 1000, issue: failure.issue })
+        }
+        const feed = fallback(failure.issue)
+        if (cache.size >= 60) cache.delete(cache.keys().next().value!)
+        cache.set(key, { feed, retryAt: Date.now() + failure.retryAfter * 1000 })
+        return feed
+      }
+    })().finally(() => requests.delete(key))
     requests.set(key, request)
   }
   const feed = await request
-  return json(feed.state === 'unavailable' ? 503 : 200, feed, feed.state === 'ready' ? FRESH_MS / 1000 : 60)
-}
-
-async function loadFeed(account: CelebAccount, accounts: CelebAccount[], userId: string, token: string, version: string): Promise<CelebStoryFeed> {
-  const url = new URL(`https://graph.facebook.com/${version}/${userId}`)
-  url.searchParams.set('fields', `business_discovery.username(${account.username}){username,profile_picture_url,followers_count}`)
-  // Retry transient transport/server failures once, but not revoked credentials or invalid accounts.
-  let response: Response | undefined
-  for (let attempt = 0; attempt < 2; attempt++) {
-    try {
-      response = await fetch(url, { headers: { authorization: `Bearer ${token}` }, signal: AbortSignal.timeout(5_000) })
-      if (attempt === 0 && [502, 503, 504].includes(response.status)) continue
-      break
-    } catch (error) { if (attempt === 1) throw error }
-  }
-  if (!response) throw new Error('Instagram unavailable')
-  const payload: unknown = await response.json()
-  if (!response.ok) {
-    if (response.status === 401 || (record(payload) && record(payload.error) && payload.error.code === 190)) {
-      throw new InstagramAuthenticationError('Instagram authentication unavailable')
-    }
-    throw new Error('Instagram request failed')
-  }
-  if (!record(payload) || !record(payload.business_discovery)) throw new Error('Missing profile')
-  const profile = payload.business_discovery
-  if (typeof profile.username !== 'string' || profile.username.toLowerCase() !== account.username) throw new Error('Account mismatch')
-  return {
-    accounts, account, profileImage: mediaUrl(profile.profile_picture_url),
-    followers: typeof profile.followers_count === 'number' && Number.isFinite(profile.followers_count) && profile.followers_count >= 0 ? profile.followers_count : null,
-    fetchedAt: new Date().toISOString(), state: 'ready',
-  }
-}
-
-function record(value: unknown): value is Record<string, unknown> {
-  return typeof value === 'object' && value !== null && !Array.isArray(value)
-}
-
-function mediaUrl(value: unknown) {
-  if (typeof value !== 'string') return ''
-  try {
-    const url = new URL(value)
-    return url.protocol === 'https:' && !url.username && !url.password
-      && ['cdninstagram.com', 'fbcdn.net', 'instagram.com'].some((host) => url.hostname === host || url.hostname.endsWith(`.${host}`)) ? url.href : ''
-  } catch { return '' }
+  return json(feed.state === 'unavailable' ? 503 : 200, feed, feed.state === 'ready' ? FRESH_MS / 1000 : 0)
 }

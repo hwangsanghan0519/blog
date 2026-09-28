@@ -12,6 +12,7 @@
     "lint": "oxlint",
     "test": "vitest run",
     "check:instagram": "node scripts/check-instagram.mjs",
+    "extend:instagram": "node scripts/extend-instagram-token.mjs",
     "check": "npm run lint && npm run test && npm run build",
     "preview": "vite preview"
   },

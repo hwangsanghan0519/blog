@@ -1,6 +1,7 @@
 import react from '@vitejs/plugin-react'
 import { defineConfig, loadEnv } from 'vite'
 import { canonicalSiteOrigin, SEO_SITE_ORIGIN } from './src/shared/lib/seo-config.ts'
+import { resolve } from 'node:path'
 
 const isGitHubPages = process.env.GITHUB_PAGES === 'true'
 const appBase = isGitHubPages ? '/blog/' : '/'
@@ -40,7 +41,7 @@ export default defineConfig({
           try {
             const { handleCelebStories } = await server.ssrLoadModule('/netlify/functions/celeb-stories.ts')
             const url = new URL(request.url ?? '/', 'http://localhost')
-            const localEnv = { ...env, INSTAGRAM_CELEB_ACCOUNTS: env.INSTAGRAM_CELEB_ACCOUNTS || await readPublicRoster() }
+            const localEnv = { ...env, INSTAGRAM_CELEB_ACCOUNTS: env.INSTAGRAM_CELEB_ACCOUNTS || await readPublicRoster(), INSTAGRAM_PROFILE_CACHE_DIR: resolve(server.config.root, '.cache/instagram-profiles') }
             const result = await handleCelebStories({ httpMethod: request.method ?? 'GET', queryStringParameters: Object.fromEntries(url.searchParams) }, localEnv)
             response.writeHead(result.statusCode, result.headers)
             response.end(result.body)

@@ -1,10 +1,10 @@
-import { useEffect, useRef, useState } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
 import type { CSSProperties } from 'react'
 import { ArrowUpRight, ChevronLeft, ChevronRight, Heart, Pause, Play, Sparkles } from 'lucide-react'
 import { InstagramSourceIcon } from '../../../entities/post/ui/ProductSourceIcons'
 import { fetchCelebStories } from '../api/celebStoryApi'
 import { DEFAULT_CELEB_ACCOUNTS, formatFollowers } from '../model/celebAccounts'
-import { retainProfile } from '../model/celebProfileCache'
+import { readSavedProfiles, retainProfile, saveProfileLocally } from '../model/celebProfileCache'
 import type { CelebAccount, CelebStoryFeed } from '../model/celebStoryTypes'
 import { getCategoryPath } from '../../../shared/lib/seo'
 import './celeb-stories.css'
@@ -12,7 +12,7 @@ import './celeb-stories.css'
 type Props = { categoryImages: Record<string, string>; accounts?: CelebAccount[] }
 
 export function CelebStories({ categoryImages, accounts = DEFAULT_CELEB_ACCOUNTS }: Props) {
-  const [profiles, setProfiles] = useState<Record<string, CelebStoryFeed>>({})
+  const [profiles, setProfiles] = useState<Record<string, CelebStoryFeed>>(() => readSavedProfiles(accounts))
   const [busy, setBusy] = useState(true)
   const sectionRef = useRef<HTMLElement>(null)
   const [hasEntered, setHasEntered] = useState(false)
@@ -23,6 +23,7 @@ export function CelebStories({ categoryImages, accounts = DEFAULT_CELEB_ACCOUNTS
   const [canScroll, setCanScroll] = useState(false)
   const hasAccounts = accounts.length > 0
   const rosterKey = JSON.stringify(accounts)
+  const savedProfiles = useMemo(() => readSavedProfiles(JSON.parse(rosterKey) as CelebAccount[]), [rosterKey])
 
   useEffect(() => {
     const section = sectionRef.current
@@ -67,6 +68,7 @@ export function CelebStories({ categoryImages, accounts = DEFAULT_CELEB_ACCOUNTS
     let mounted = true
     let pending = false
     const roster = JSON.parse(rosterKey) as CelebAccount[]
+    const restoredProfiles = readSavedProfiles(roster)
     const controllers = new Set<AbortController>()
     const getProfile = async (username: string) => {
       const controller = new AbortController()
@@ -88,11 +90,12 @@ export function CelebStories({ categoryImages, accounts = DEFAULT_CELEB_ACCOUNTS
             try {
               profile = await getProfile(account.username)
               if (profile.account.username !== account.username) profile = undefined
-            } catch { /* Keep the last successful value until recovery or page reload. */ }
+            } catch { /* 통신 실패 시 복원한 정상 수치를 유지합니다. */ }
             if (!mounted) return
             const next = profile
+            if (next) saveProfileLocally(next)
             setProfiles(previous => {
-              const kept = retainProfile(previous[account.username], next)
+              const kept = retainProfile(previous[account.username] ?? restoredProfiles[account.username], next)
               const result = { ...previous }
               if (kept) result[account.username] = kept
               else delete result[account.username]
@@ -143,7 +146,7 @@ export function CelebStories({ categoryImages, accounts = DEFAULT_CELEB_ACCOUNTS
       <div className="celeb-stories-nav-wrap">
         <div className="celeb-stories-nav" ref={navRef} aria-busy={busy} aria-label="셀럽 Instagram 프로필">
           {accounts.map((account, index) => {
-            const profile = profiles[account.username]
+            const profile = profiles[account.username] ?? savedProfiles[account.username]
             const readable = profile?.state === 'ready' || profile?.state === 'stale'
             const count = readable ? profile.followers : null
             const loading = !profile && busy
@@ -163,7 +166,7 @@ export function CelebStories({ categoryImages, accounts = DEFAULT_CELEB_ACCOUNTS
               </span>
               <strong className="celeb-stories-name">{account.name}</strong>
               <span className="celeb-stories-username">@{account.username}</span>
-              <span className={`celeb-stories-followers${count == null ? ' is-unknown' : ''}${loading ? ' is-loading' : ''}`} title={count != null ? `팔로워 ${count.toLocaleString('ko-KR')}명${profile?.state === 'stale' ? ' · 마지막 확인 수치' : ''}` : loading ? '팔로워 수를 불러오고 있어요' : '집계 중 · Instagram에서 수치가 제공되면 표시됩니다'}>
+              <span className={`celeb-stories-followers${count == null ? ' is-unknown' : ''}${loading ? ' is-loading' : ''}`} title={count != null ? `팔로워 ${count.toLocaleString('ko-KR')}명${profile?.state === 'stale' ? ` · 마지막 확인 수치${profile.fetchedAt ? ` (${new Date(profile.fetchedAt).toLocaleString('ko-KR')})` : ''}` : ''}` : loading ? '팔로워 수를 불러오고 있어요' : '집계 중 · Instagram에서 수치가 제공되면 표시됩니다'}>
                 <span key={followers} className="celeb-stories-followers-number">{unit ? followers.slice(0, -1) : followers}</span>
                 {unit && <small className="celeb-stories-followers-unit">{unit}</small>}
                 {profile?.state === 'stale' && <i aria-label="마지막 확인 수치" />}

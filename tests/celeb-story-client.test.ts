@@ -14,22 +14,25 @@ beforeEach(() => {
 })
 afterEach(() => { vi.unstubAllGlobals(); vi.useRealTimers() })
 
-it('stops repeated requests across the roster after server authentication fails, then recovers', async () => {
+it('loads each account snapshot once during authentication failure, then recovers', async () => {
+  fetchMock.mockImplementation(async (url) => String(url).includes('jennierubyjane')
+    ? json({ ...failed, account: accounts[1], state: 'stale', followers: 200, fetchedAt: '2026-09-27T23:00:00Z' })
+    : json(failed, 503))
   const { fetchCelebStories } = await import('../src/pages/commerce-studio/api/celebStoryApi')
   const signal = new AbortController().signal
   await fetchCelebStories('sooyoungchoi', signal)
   for (let minute = 0; minute < 5; minute++) {
     vi.setSystemTime(new Date(`2026-09-28T00:0${minute}:00Z`))
     const result = await fetchCelebStories('jennierubyjane', signal)
-    expect(result).toMatchObject({ account: accounts[1], followers: null, issue: 'authentication' })
+    expect(result).toMatchObject({ account: accounts[1], state: 'stale', followers: 200, issue: 'authentication' })
     await fetchCelebStories('sooyoungchoi', signal)
   }
-  expect(fetchMock).toHaveBeenCalledTimes(1)
+  expect(fetchMock).toHaveBeenCalledTimes(2)
   vi.setSystemTime(new Date('2026-09-28T00:05:00Z'))
   fetchMock.mockImplementation(async () => json({ ...failed, state: 'ready', issue: undefined, followers: 100 }))
   expect(await fetchCelebStories('sooyoungchoi', signal)).toMatchObject({ state: 'ready', followers: 100 })
   await fetchCelebStories('jennierubyjane', signal)
-  expect(fetchMock).toHaveBeenCalledTimes(3)
+  expect(fetchMock).toHaveBeenCalledTimes(4)
 })
 
 it('does not spread an account-specific upstream failure to other accounts', async () => {

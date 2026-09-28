@@ -9,12 +9,13 @@ const fetchMock = vi.fn()
 
 beforeEach(() => {
   vi.resetModules()
-  vi.useFakeTimers()
+  vi.useFakeTimers({ shouldAdvanceTime: true })
   vi.setSystemTime(new Date('2026-09-26T00:00:00Z'))
   vi.stubEnv('INSTAGRAM_ACCESS_TOKEN', 'private-test-token')
   vi.stubEnv('INSTAGRAM_USER_ID', '123456')
   vi.stubEnv('INSTAGRAM_GRAPH_VERSION', 'v26.0')
   vi.stubEnv('INSTAGRAM_CELEB_ACCOUNTS', '')
+  for (const name of ['SUPABASE_URL', 'VITE_SUPABASE_URL', 'NEXT_PUBLIC_SUPABASE_URL', 'SUPABASE_SERVICE_ROLE_KEY', 'SUPABASE_SERVICE_KEY', 'SERVICE_ROLE_KEY', 'INSTAGRAM_PROFILE_CACHE_DIR']) vi.stubEnv(name, '')
   vi.stubGlobal('fetch', fetchMock)
   fetchMock.mockReset().mockImplementation(async () => response())
 })
@@ -66,7 +67,7 @@ describe('Instagram Business Discovery profiles', () => {
     expect(fetchMock).toHaveBeenCalledTimes(2)
   })
 
-  it('marks cached data stale on an outage, backs off, and expires it', async () => {
+  it('marks cached data stale on an outage, backs off, and preserves it beyond seven days', async () => {
     await request()
     fetchMock.mockRejectedValue(new Error('offline with private-test-token'))
     vi.setSystemTime(new Date('2026-09-26T00:16:00Z'))
@@ -75,10 +76,10 @@ describe('Instagram Business Discovery profiles', () => {
     expect(stale.body).not.toContain('private-test-token')
     await request()
     expect(fetchMock).toHaveBeenCalledTimes(3)
-    vi.setSystemTime(new Date('2026-09-26T01:01:00Z'))
-    const expired = await request()
-    expect(expired.statusCode).toBe(503)
-    expect(JSON.parse(expired.body)).toMatchObject({ state: 'unavailable', fetchedAt: null })
+    vi.setSystemTime(new Date('2026-10-04T01:01:00Z'))
+    const preserved = await request()
+    expect(preserved.statusCode).toBe(200)
+    expect(JSON.parse(preserved.body)).toMatchObject({ state: 'stale', followers: 100, fetchedAt: '2026-09-26T00:00:00.000Z' })
   })
 
   it('handles revoked credentials without exposing the upstream error', async () => {
@@ -87,6 +88,75 @@ describe('Instagram Business Discovery profiles', () => {
     expect(result.statusCode).toBe(503)
     expect(result.body).not.toContain('private-test-token')
     expect(JSON.parse(result.body).state).toBe('unavailable')
+  })
+
+  it('restores account snapshots after a cold start and token rotation without writing failures', async () => {
+    vi.stubEnv('SUPABASE_URL', 'https://example.supabase.co')
+    vi.stubEnv('SUPABASE_SERVICE_ROLE_KEY', 'private-storage-key')
+    const accounts = [{ name: '수영', username: 'sooyoungchoi' }, { name: '채령', username: 'chaerrry0' }]
+    const snapshots = new Map<string, unknown>()
+    let rejected = false
+    const graph = vi.fn()
+    const writes = vi.fn()
+    fetchMock.mockImplementation(async (input, init) => {
+      const url = new URL(String(input))
+      if (url.pathname.includes('/rest/')) return new Response(JSON.stringify([{ celebAccounts: accounts }]))
+      if (url.pathname.includes('/storage/')) {
+        if (init?.method === 'POST') {
+          writes()
+          snapshots.set(url.pathname, JSON.parse(init.body))
+          return new Response('{}')
+        }
+        const stored = snapshots.get(url.pathname)
+        return new Response(JSON.stringify(stored ?? {}), { status: stored ? 200 : 404 })
+      }
+      graph()
+      if (rejected) return new Response(JSON.stringify({ error: { code: 190 } }), { status: 400 })
+      const username = url.searchParams.get('fields')!.includes('sooyoungchoi') ? 'sooyoungchoi' : 'chaerrry0'
+      return new Response(JSON.stringify({ business_discovery: { username, followers_count: username === 'sooyoungchoi' ? 100 : 200 } }))
+    })
+    await request('sooyoungchoi')
+    await request('chaerrry0')
+    expect(writes).toHaveBeenCalledTimes(2)
+    vi.resetModules()
+    vi.stubEnv('INSTAGRAM_ACCESS_TOKEN', 'rotated-token')
+    rejected = true
+    const restored = await request('sooyoungchoi')
+    expect(JSON.parse(restored.body)).toMatchObject({ state: 'stale', followers: 100, issue: 'authentication' })
+    expect(restored.headers['cache-control']).toBe('no-store')
+    expect(JSON.parse((await request('chaerrry0')).body)).toMatchObject({ state: 'stale', followers: 200, issue: 'authentication' })
+    const storageReads = () => fetchMock.mock.calls.filter(([url, init]) => String(url).includes('/storage/') && init?.method !== 'POST').length
+    const calls = storageReads()
+    await request('chaerrry0')
+    expect(storageReads()).toBe(calls)
+    expect(graph).toHaveBeenCalledTimes(3)
+    expect(writes).toHaveBeenCalledTimes(2)
+    expect(restored.body).not.toMatch(/private-storage-key|rotated-token/)
+    vi.stubEnv('INSTAGRAM_ACCESS_TOKEN', '')
+    expect(JSON.parse((await request('sooyoungchoi')).body)).toMatchObject({ state: 'stale', followers: 100 })
+    expect(graph).toHaveBeenCalledTimes(3)
+  })
+
+  it.each([
+    [200, 190, 'authentication'], [403, 10, 'permission'], [429, 4, 'rate_limit'], [400, 110, 'account'],
+  ])('classifies HTTP %s / Graph %s without retrying', async (status, code, issue) => {
+    fetchMock.mockImplementation(async () => new Response(JSON.stringify({ error: { code } }), { status }))
+    const result = await request()
+    expect(JSON.parse(result.body)).toMatchObject({ state: 'unavailable', issue })
+    expect(result.headers['cache-control']).toBe('no-store')
+    expect(fetchMock).toHaveBeenCalledTimes(1)
+  })
+
+  it('respects rate-limit retry timing across accounts and recovers', async () => {
+    fetchMock.mockImplementation(async () => new Response('{}', { status: 429, headers: { 'retry-after': '120' } }))
+    await request()
+    vi.setSystemTime(new Date('2026-09-26T00:01:00Z'))
+    expect(JSON.parse((await request('chaerrry0')).body).issue).toBe('rate_limit')
+    expect(fetchMock).toHaveBeenCalledTimes(1)
+    vi.setSystemTime(new Date('2026-09-26T00:02:01Z'))
+    fetchMock.mockImplementation(async () => response())
+    expect(JSON.parse((await request()).body).state).toBe('ready')
+    expect(fetchMock).toHaveBeenCalledTimes(2)
   })
 
   it('invalidates cached data when credentials change', async () => {
@@ -147,7 +217,7 @@ describe('Instagram Business Discovery profiles', () => {
 
   it('keeps missing follower counts unknown', async () => {
     fetchMock.mockResolvedValue(new Response(JSON.stringify({ business_discovery: { username: 'sooyoungchoi', media: { data: [] } } })))
-    expect(JSON.parse((await request()).body)).toMatchObject({ state: 'ready', followers: null })
+    expect(JSON.parse((await request()).body)).toMatchObject({ state: 'unavailable', followers: null, issue: 'invalid_response' })
   })
 
   it('rejects writes', async () => {
