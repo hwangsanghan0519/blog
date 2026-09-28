@@ -9,6 +9,9 @@ const FRESH_MS = 15 * 60_000
 const STALE_MS = 60 * 60_000
 const cache = new Map<string, { feed: CelebStoryFeed; retryAt: number }>()
 const requests = new Map<string, Promise<CelebStoryFeed>>()
+const authenticationRetryAt = new Map<string, number>()
+
+class InstagramAuthenticationError extends Error {}
 
 function json(statusCode: number, body: unknown, ttl = 0) {
   return {
@@ -27,7 +30,7 @@ function json(statusCode: number, body: unknown, ttl = 0) {
 export function readCelebAccounts(env: InstagramEnvironment = process.env): CelebAccount[] {
   if (!env.INSTAGRAM_CELEB_ACCOUNTS) return DEFAULT_CELEB_ACCOUNTS
   const parsed: unknown = JSON.parse(env.INSTAGRAM_CELEB_ACCOUNTS)
-  if (!Array.isArray(parsed) || parsed.length === 0 || parsed.length > 30) throw new Error('Invalid accounts')
+  if (!Array.isArray(parsed) || parsed.length > 30) throw new Error('Invalid accounts')
   const accounts = parsed.map((item) => {
     if (!record(item) || typeof item.name !== 'string' || typeof item.username !== 'string') throw new Error('Invalid account')
     const name = item.name.trim()
@@ -65,22 +68,35 @@ export async function handleCelebStories(event: Event, env: InstagramEnvironment
 
   // 인증 변경 시 이전 계정의 캐시를 재사용하지 않고, 토큰은 응답과 URL에 넣지 않습니다.
   const key = createHash('sha256').update(JSON.stringify([token, userId, version, accounts, username])).digest('hex')
+  const credentialKey = createHash('sha256').update(JSON.stringify([token, userId, version])).digest('hex')
   const cached = cache.get(key)
   const age = cached?.feed.fetchedAt ? Date.now() - Date.parse(cached.feed.fetchedAt) : Infinity
   if (cached && age < FRESH_MS && cached.feed.state === 'ready') {
     return json(200, cached.feed, Math.max(1, Math.floor((FRESH_MS - age) / 1000)))
   }
   if (cached && cached.retryAt > Date.now()) return json(cached.feed.state === 'unavailable' ? 503 : 200, cached.feed, 60)
+  // One expired credential affects every account. Stop repeating the same
+  // rejected request across the roster; a replacement token gets a new key.
+  const unavailableFeed = (issue: 'authentication' | 'upstream'): CelebStoryFeed => cached && age < STALE_MS && cached.feed.fetchedAt
+    ? { ...cached.feed, state: 'stale', issue }
+    : { ...empty, state: 'unavailable', issue }
+  if ((authenticationRetryAt.get(credentialKey) ?? 0) > Date.now()) {
+    const feed = unavailableFeed('authentication')
+    return json(feed.state === 'stale' ? 200 : 503, feed, 60)
+  }
   let request = requests.get(key)
   if (!request) {
     request = loadFeed(account, accounts, userId, token, version).then((feed) => {
       if (cache.size >= 60) cache.delete(cache.keys().next().value!)
       cache.set(key, { feed, retryAt: 0 })
       return feed
-    }).catch(() => {
-      const feed: CelebStoryFeed = cached && age < STALE_MS && cached.feed.fetchedAt
-        ? { ...cached.feed, state: 'stale' }
-        : { ...empty, state: 'unavailable' }
+    }).catch((error: unknown) => {
+      const authenticationFailed = error instanceof InstagramAuthenticationError
+      if (authenticationFailed) {
+        if (authenticationRetryAt.size >= 10) authenticationRetryAt.delete(authenticationRetryAt.keys().next().value!)
+        authenticationRetryAt.set(credentialKey, Date.now() + 5 * 60_000)
+      }
+      const feed = unavailableFeed(authenticationFailed ? 'authentication' : 'upstream')
       cache.set(key, { feed, retryAt: Date.now() + 60_000 })
       return feed
     }).finally(() => requests.delete(key))
@@ -103,8 +119,13 @@ async function loadFeed(account: CelebAccount, accounts: CelebAccount[], userId:
     } catch (error) { if (attempt === 1) throw error }
   }
   if (!response) throw new Error('Instagram unavailable')
-  if (!response.ok) throw new Error('Instagram request failed')
   const payload: unknown = await response.json()
+  if (!response.ok) {
+    if (response.status === 401 || (record(payload) && record(payload.error) && payload.error.code === 190)) {
+      throw new InstagramAuthenticationError('Instagram authentication unavailable')
+    }
+    throw new Error('Instagram request failed')
+  }
   if (!record(payload) || !record(payload.business_discovery)) throw new Error('Missing profile')
   const profile = payload.business_discovery
   if (typeof profile.username !== 'string' || profile.username.toLowerCase() !== account.username) throw new Error('Account mismatch')

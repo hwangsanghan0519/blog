@@ -96,6 +96,31 @@ describe('Instagram Business Discovery profiles', () => {
     expect(fetchMock).toHaveBeenCalledTimes(2)
   })
 
+  it('backs off across accounts for expired authentication and retries with a new token immediately', async () => {
+    fetchMock.mockImplementation(async () => new Response(JSON.stringify({ error: { code: 190, message: 'private-test-token expired' } }), { status: 400 }))
+    expect(JSON.parse((await request()).body)).toMatchObject({ state: 'unavailable', issue: 'authentication' })
+    expect(JSON.parse((await request('chaerrry0')).body).issue).toBe('authentication')
+    expect(fetchMock).toHaveBeenCalledTimes(1)
+    vi.setSystemTime(new Date('2026-09-26T00:04:00Z'))
+    await request('yezyizhere')
+    expect(fetchMock).toHaveBeenCalledTimes(1)
+    vi.setSystemTime(new Date('2026-09-26T00:06:00Z'))
+    await request()
+    expect(fetchMock).toHaveBeenCalledTimes(2)
+    vi.stubEnv('INSTAGRAM_ACCESS_TOKEN', 'replacement')
+    fetchMock.mockImplementation(async () => response())
+    const recovered = await request()
+    expect(JSON.parse(recovered.body)).toMatchObject({ state: 'ready', followers: 100 })
+    expect(recovered.body).not.toContain('private-test-token')
+    expect(fetchMock).toHaveBeenCalledTimes(3)
+  })
+
+  it('respects an empty published roster in local development', async () => {
+    vi.stubEnv('INSTAGRAM_CELEB_ACCOUNTS', '[]')
+    expect(JSON.parse((await request()).body)).toMatchObject({ accounts: [], followers: null })
+    expect(fetchMock).not.toHaveBeenCalled()
+  })
+
   it('uses refreshed development credentials without retaining or mutating process credentials', async () => {
     const { handleCelebStories } = await import('../netlify/functions/celeb-stories')
     const env = { INSTAGRAM_ACCESS_TOKEN: 'dev-first', INSTAGRAM_USER_ID: '123456', INSTAGRAM_GRAPH_VERSION: 'v26.0' }

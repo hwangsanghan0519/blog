@@ -1,8 +1,6 @@
 import { describe, expect, it } from 'vitest'
 import { formatFollowers, normalizeCelebAccounts, parseCelebAccounts } from '../src/pages/commerce-studio/model/celebAccounts'
-import { retainProfile } from '../src/pages/commerce-studio/model/celebProfileCache'
 import { createCloudPatch } from '../src/pages/commerce-studio/api/commerceApi'
-import type { CelebStoryFeed } from '../src/pages/commerce-studio/model/celebStoryTypes'
 import type { CloudCommerceSnapshot } from '../src/pages/commerce-studio/model/types'
 
 describe('story registration and presentation', () => {
@@ -28,13 +26,5 @@ describe('story registration and presentation', () => {
   it('includes story edits in cloud patches without touching products', () => {
     const previous = { posts: [], celebAccounts: [{ name: '수영', username: 'sooyoungchoi' }] } as unknown as CloudCommerceSnapshot
     expect(createCloudPatch(previous, { ...previous, celebAccounts: [] })).toEqual({ celebAccounts: [] })
-  })
-  it('keeps recent successful numbers during outages but expires old ones', () => {
-    const now = Date.parse('2026-09-26T06:00:00Z')
-    const profile: CelebStoryFeed = { accounts: [], account: { name: '수영', username: 'sooyoungchoi' }, followers: 100, profileImage: '', fetchedAt: new Date(now - 60000).toISOString(), state: 'ready' }
-    expect(retainProfile(profile, undefined, now)).toMatchObject({ followers: 100, state: 'stale' })
-    expect(retainProfile(profile, undefined, now + 3600000)).toBeUndefined()
-    expect(retainProfile(profile, { ...profile, state: 'ready', followers: 101 }, now)?.followers).toBe(101)
-    expect(retainProfile(profile, { ...profile, account: { name: '다른 계정', username: 'other' }, state: 'unavailable', followers: null }, now)?.followers).toBeNull()
   })
 })

@@ -7,4 +7,5 @@ export type CelebStoryFeed = {
   followers: number | null
   fetchedAt: string | null
   state: 'ready' | 'stale' | 'unconfigured' | 'unavailable'
+  issue?: 'authentication' | 'upstream'
 }

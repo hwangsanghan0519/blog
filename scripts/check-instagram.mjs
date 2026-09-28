@@ -22,7 +22,8 @@ async function read(username) {
 function report(feed) {
   const valid = typeof feed.followers === 'number' && Number.isFinite(feed.followers) && feed.followers >= 0
   console.log(`${feed.account.name} (@${feed.account.username}): ${feed.state} · 팔로워 ${valid ? feed.followers.toLocaleString('ko-KR') : '확인 불가'}`)
-  if (explanations[feed.state]) console.log(`  ${explanations[feed.state]}`)
+  if (feed.issue === 'authentication') console.log('  Meta 인증이 만료되거나 무효화되었습니다. 유효한 장기 토큰으로 교체해야 합니다. 새로고침으로 복구되지 않습니다.')
+  else if (explanations[feed.state]) console.log(`  ${explanations[feed.state]}`)
   if (feed.state !== 'ready' || !valid) process.exitCode = 1
 }
 

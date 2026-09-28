@@ -1,10 +1,18 @@
 import type { CelebStoryFeed } from './celebStoryTypes'
 
-const MAX_AGE = 60 * 60_000
-export function retainProfile(previous: CelebStoryFeed | undefined, next: CelebStoryFeed | undefined, now = Date.now()): CelebStoryFeed | undefined {
-  if (next?.state === 'ready' && next.followers != null) return next
-  if (previous?.fetchedAt && (previous.state === 'ready' || previous.state === 'stale')
-    && now >= Date.parse(previous.fetchedAt) && now - Date.parse(previous.fetchedAt) < MAX_AGE
-    && (!next || previous.account.username === next.account.username)) return { ...previous, state: 'stale' }
-  return next
+function hasFollowerCount(profile: CelebStoryFeed | undefined): profile is CelebStoryFeed & { followers: number } {
+  return Boolean(profile && (profile.state === 'ready' || profile.state === 'stale')
+    && typeof profile.followers === 'number' && Number.isSafeInteger(profile.followers) && profile.followers >= 0)
+}
+
+export function retainProfile(previous: CelebStoryFeed | undefined, next: CelebStoryFeed | undefined): CelebStoryFeed | undefined {
+  if (next?.state === 'ready' && hasFollowerCount(next)) return next
+  // This is the already displayed value, held in React state until reload.
+  // Server cache expiry, missing counts and repeated failures must not erase it.
+  if (hasFollowerCount(previous) && (!next || previous.account.username === next.account.username)) {
+    return { ...previous, state: 'stale' }
+  }
+  if (hasFollowerCount(next)) return next
+  if (!next) return undefined
+  return { ...next, followers: null, state: next.state === 'ready' || next.state === 'stale' ? 'unavailable' : next.state }
 }

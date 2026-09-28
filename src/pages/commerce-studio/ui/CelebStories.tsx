@@ -86,7 +86,7 @@ export function CelebStories({ categoryImages, accounts = DEFAULT_CELEB_ACCOUNTS
             try {
               profile = await getProfile(account.username)
               if (profile.account.username !== account.username) profile = undefined
-            } catch { /* Preserve recent successful data during a transient failure. */ }
+            } catch { /* Keep the last successful value until recovery or page reload. */ }
             if (!mounted) return
             const next = profile
             setProfiles(previous => {
@@ -121,7 +121,7 @@ export function CelebStories({ categoryImages, accounts = DEFAULT_CELEB_ACCOUNTS
   if (!accounts.length) return null
 
   return (
-    <section ref={sectionRef} className={`celeb-stories${hasEntered ? ' is-entered' : ''}${inView && pageVisible && !motionPaused ? ' is-animated' : ''}`} aria-labelledby="instagram-live-title" style={{ '--celeb-columns': Math.min(accounts.length, 8) } as CSSProperties}>
+    <section ref={sectionRef} className={`celeb-stories${hasEntered ? ' is-entered' : ''}${!inView ? ' is-offscreen' : ''}${!pageVisible ? ' is-page-hidden' : ''}${motionPaused ? ' is-motion-paused' : ''}`} aria-labelledby="instagram-live-title" style={{ '--celeb-columns': Math.min(accounts.length, 8) } as CSSProperties}>
       <div className="celeb-stories-atmosphere" aria-hidden="true">
         {Array.from({ length: 6 }, (_, index) => <span key={index} style={{ '--particle-index': index } as CSSProperties}>{index % 2 ? <Sparkles /> : <Heart />}</span>)}
       </div>
@@ -161,10 +161,10 @@ export function CelebStories({ categoryImages, accounts = DEFAULT_CELEB_ACCOUNTS
               </span>
               <strong className="celeb-stories-name">{account.name}</strong>
               <span className="celeb-stories-username">@{account.username}</span>
-              <span className={`celeb-stories-followers${count == null ? ' is-unknown' : ''}${loading ? ' is-loading' : ''}`} title={count != null ? `팔로워 ${count.toLocaleString('ko-KR')}명${profile?.state === 'stale' ? ' · 최근 확인한 수치' : ''}` : loading ? '팔로워 수를 불러오고 있어요' : '집계 중 · Instagram에서 수치가 제공되면 표시됩니다'}>
+              <span className={`celeb-stories-followers${count == null ? ' is-unknown' : ''}${loading ? ' is-loading' : ''}`} title={count != null ? `팔로워 ${count.toLocaleString('ko-KR')}명${profile?.state === 'stale' ? ' · 마지막 확인 수치' : ''}` : loading ? '팔로워 수를 불러오고 있어요' : '집계 중 · Instagram에서 수치가 제공되면 표시됩니다'}>
                 <span key={followers} className="celeb-stories-followers-number">{unit ? followers.slice(0, -1) : followers}</span>
                 {unit && <small className="celeb-stories-followers-unit">{unit}</small>}
-                {profile?.state === 'stale' && <i aria-label="최근 확인한 수치" />}
+                {profile?.state === 'stale' && <i aria-label="마지막 확인 수치" />}
               </span>
             </a>
           })}
