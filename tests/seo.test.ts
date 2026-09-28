@@ -8,6 +8,7 @@ import { siteOrigin } from '../netlify/functions/lib/site-origin'
 import { getProductShareUrl } from '../src/shared/lib/seo'
 import { PRODUCTION_CLOUD_DATA_ENDPOINT } from '../src/pages/commerce-studio/model/config'
 import { createProductSeoNodes, getProductSeo } from '../src/shared/lib/product-seo'
+import { getCelebSeo } from '../src/shared/lib/celeb-seo'
 
 const shell = readFileSync(new URL('../index.html', import.meta.url), 'utf8')
 const product = {
@@ -30,6 +31,36 @@ function graph(html: string) {
 afterEach(() => { vi.unstubAllGlobals(); vi.unstubAllEnvs() })
 
 describe('SEO page responses', () => {
+  it('renders Instagram identities and internal discovery links before JavaScript runs', async () => {
+    const celebAccounts = [{ name: '수영', username: 'sooyoungchoi' }]
+    mockResponses({ posts: [], categories: [], celebAccounts })
+    const home = await handler({ ...event, path: '/', queryStringParameters: null })
+    expect(home.body).toContain('수영 인스타그램 @sooyoungchoi')
+    expect(home.body).toContain('href="/celeb/%EC%88%98%EC%98%81"')
+    const list = graph(home.body).find((node) => node['@id'] === 'https://canonical.example/#instagram-live')
+    expect(list?.itemListElement[0].item.sameAs).toEqual(['https://www.instagram.com/sooyoungchoi/'])
+    expect(home.body).not.toContain('interactionStatistic')
+
+    const page = await handler({ ...event, path: '/celeb/%EC%88%98%EC%98%81', queryStringParameters: null })
+    expect(page.statusCode).toBe(200)
+    expect(page.body).toContain(`<title>${getCelebSeo('수영', celebAccounts).title}</title>`)
+    expect(page.body).toContain('공개된 상품을 준비하고 있습니다.')
+    expect(graph(page.body).find((node) => node['@type'] === 'CollectionPage')?.about.sameAs).toEqual(['https://www.instagram.com/sooyoungchoi/'])
+    const sitemap = createSitemapXml({ posts: [], categories: [], celebAccounts, adBanners: [], categoryImages: {}, heroVideo: null }, 'https://canonical.example')
+    expect(sitemap).toContain('<loc>https://canonical.example/celeb/%EC%88%98%EC%98%81</loc>')
+  })
+
+  it('honors removed Instagram accounts without inventing indexable profile pages', async () => {
+    mockResponses({ posts: [], categories: [], celebAccounts: [] })
+    const home = await handler({ ...event, path: '/', queryStringParameters: null })
+    expect(home.body).not.toContain('sooyoungchoi')
+    expect(graph(home.body).some((node) => node['@id']?.endsWith('#instagram-live'))).toBe(false)
+    const page = await handler({ ...event, path: '/celeb/%EC%88%98%EC%98%81', queryStringParameters: null })
+    expect(page.statusCode).toBe(404)
+    const sitemap = createSitemapXml({ posts: [], categories: [], celebAccounts: [], adBanners: [], categoryImages: {}, heroVideo: null }, 'https://canonical.example')
+    expect(sitemap).not.toContain('/celeb/')
+  })
+
   it('uses the shared preview metadata and renders registered tags in crawlable product HTML', async () => {
     const taggedProduct = { ...product, title: '수영 일본여행 야상', category: '수영', tags: ['#온앤온', 'NEW6AM831_43', '온앤온'], updatedAt: '2026-01-01' }
     mockResponses(taggedProduct)

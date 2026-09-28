@@ -1,4 +1,4 @@
-import { parseCelebAccounts } from '../../src/pages/commerce-studio/model/celebAccounts.ts'
+import { normalizeCelebAccounts, parseCelebAccounts } from '../../src/pages/commerce-studio/model/celebAccounts.ts'
 import type { CelebAccount } from '../../src/pages/commerce-studio/model/celebStoryTypes.ts'
 import { siteOrigin } from './lib/site-origin.ts'
 import { getProductImages } from '../../src/shared/lib/product-seo.ts'
@@ -231,9 +231,10 @@ export function createSitemapXml(data: CommerceData, origin: string) {
   const publishedPosts = data.posts.filter((post): post is Record<string, unknown> => (
     isRecord(post) && post.status === 'published'
   ))
-  const categories = Array.from(new Set(
-    publishedPosts.map((post) => typeof post.category === 'string' ? post.category.trim() : '').filter(Boolean),
-  ))
+  const categories = Array.from(new Set([
+    ...publishedPosts.map((post) => typeof post.category === 'string' ? post.category.trim() : '').filter(Boolean),
+    ...normalizeCelebAccounts(data.celebAccounts).map((account) => account.name),
+  ]))
   const entries: Array<{ images?: string[]; lastmod?: string; loc: string }> = [
     { loc: `${origin}/`, lastmod: normalizeLastModified(data.savedAt) },
     ...categories.map((category) => ({

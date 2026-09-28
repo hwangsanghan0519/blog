@@ -1,16 +1,19 @@
 import type { Post } from '../../entities/post/model/types'
 
-import { SEO_SITE_NAME, SEO_HOME_TITLE, SEO_HOME_DESCRIPTION, canonicalSiteOrigin, seoTitle, publicHttpUrl } from './seo-config'
+import { SEO_SITE_NAME, SEO_HOME_TITLE, SEO_HOME_DESCRIPTION, canonicalSiteOrigin, publicHttpUrl } from './seo-config'
 import { createProductSeoNodes, getProductSeo } from './product-seo'
+import type { CelebAccount } from '../../pages/commerce-studio/model/celebStoryTypes'
+import { createCelebList, createCelebPerson, getCelebHomeDescription, getCelebSeo, normalizeCelebAccounts } from './celeb-seo'
 export { SEO_SITE_NAME, SEO_HOME_TITLE, SEO_HOME_DESCRIPTION } from './seo-config'
 
 type SeoState = {
   category: string
   posts: Post[]
   selectedPost?: Post
+  celebAccounts?: CelebAccount[]
 }
 
-export function applyPublicSeo({ category, posts, selectedPost }: SeoState) {
+export function applyPublicSeo({ category, posts, selectedPost, celebAccounts }: SeoState) {
   // The public storefront can also render behind the admin sign-in flow.
   if (/^\/(?:blog\/)?secret(?:\/|$)/.test(window.location.pathname)) return
   const route = readSeoRoute(window.location.pathname)
@@ -18,6 +21,8 @@ export function applyPublicSeo({ category, posts, selectedPost }: SeoState) {
   if (route.product && route.product !== selectedPost?.slug && route.product !== selectedPost?.id) return
   if (route.category && route.category !== category) return
   const origin = getPublicSiteOrigin()
+  const accounts = normalizeCelebAccounts(celebAccounts)
+  const celebSeo = getCelebSeo(category, accounts)
   const productSeo = selectedPost ? getProductSeo(selectedPost, origin) : undefined
   const isCategory = !selectedPost && category !== 'all'
   const canonicalPath = selectedPost
@@ -29,13 +34,13 @@ export function applyPublicSeo({ category, posts, selectedPost }: SeoState) {
   const title = selectedPost
     ? productSeo!.pageTitle
     : isCategory
-      ? seoTitle(`${category} 착용·광고 상품, 인스타·유튜브 핫템`)
+      ? celebSeo.title
       : SEO_HOME_TITLE
   const description = selectedPost
     ? productSeo!.description
     : isCategory
-      ? `${category}가 유튜브와 인스타그램에서 착용·소개·광고한 상품을 모았습니다. 화제의 핫템과 잇템, 등록된 제휴몰 최저가를 파워퍼프셀럽에서 확인하세요.`
-      : SEO_HOME_DESCRIPTION
+      ? celebSeo.description
+      : getCelebHomeDescription(accounts)
   const categoryImage = isCategory ? posts.find((post) => post.status === 'published' && post.category === category && publicHttpUrl(post.coverImage, origin))?.coverImage : ''
   const image = productSeo?.image || publicHttpUrl(selectedPost?.coverImage || categoryImage, origin) || `${origin}/powerpuffceleb-og.png`
   const keywords = productSeo?.keywords ?? Array.from(new Set([
@@ -84,7 +89,7 @@ export function applyPublicSeo({ category, posts, selectedPost }: SeoState) {
   setLink('canonical', canonicalUrl)
   setLink('alternate', canonicalUrl, 'ko-KR')
   setLink('alternate', canonicalUrl, 'x-default')
-  setJsonLd(createStructuredData({ canonicalUrl, category, description, origin, posts, selectedPost }))
+  setJsonLd(createStructuredData({ canonicalUrl, category, description, origin, posts, selectedPost, celebAccounts: accounts }))
 }
 
 export function getProductPath(slug: string) {
@@ -119,6 +124,7 @@ function createStructuredData({
   origin,
   posts,
   selectedPost,
+  celebAccounts,
 }: SeoState & { canonicalUrl: string; description: string; origin: string }) {
   const organization = {
     '@type': 'Organization',
@@ -149,6 +155,8 @@ function createStructuredData({
 
   const filteredPosts = posts.filter((post) => post.status === 'published' && (category === 'all' || post.category === category))
   const collectionName = category === 'all' ? SEO_HOME_TITLE : `${category} 착용·광고 상품 핫템`
+  const accounts = normalizeCelebAccounts(celebAccounts)
+  const account = accounts.find((item) => item.name === category)
   return {
     '@context': 'https://schema.org',
     '@graph': [
@@ -162,7 +170,7 @@ function createStructuredData({
         description,
         inLanguage: 'ko-KR',
         isPartOf: { '@id': `${origin}/#website` },
-        about: category === 'all' ? undefined : { '@type': 'Person', name: category },
+        about: category === 'all' ? undefined : account ? createCelebPerson(account, origin) : { '@type': 'Person', name: category },
         mainEntity: {
           '@type': 'ItemList',
           numberOfItems: filteredPosts.length,
@@ -175,6 +183,7 @@ function createStructuredData({
         },
       },
       ...(category === 'all' ? [] : [createBreadcrumb(origin, [['홈', '/'], [category, getCategoryPath(category)]])]),
+      ...(accounts.length ? [createCelebList(accounts, origin)] : []),
     ],
   }
 }

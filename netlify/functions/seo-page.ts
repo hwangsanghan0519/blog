@@ -1,6 +1,8 @@
-import { SEO_SITE_NAME, SEO_HOME_TITLE, SEO_HOME_DESCRIPTION, seoTitle, publicHttpUrl } from '../../src/shared/lib/seo-config.ts'
+import { SEO_SITE_NAME, SEO_HOME_TITLE, SEO_HOME_DESCRIPTION, publicHttpUrl } from '../../src/shared/lib/seo-config.ts'
 import { createProductSeoNodes, getProductBodyText, getProductImageUrl, getProductSeo, hasProductFourCut } from '../../src/shared/lib/product-seo.ts'
 import { requestOrigin, siteOrigin } from './lib/site-origin.ts'
+import { createCelebList, createCelebPerson, getCelebHomeDescription, getCelebSeo, normalizeCelebAccounts } from '../../src/shared/lib/celeb-seo.ts'
+import type { CelebAccount } from '../../src/pages/commerce-studio/model/celebStoryTypes.ts'
 
 type NetlifyEvent = {
   headers: Record<string, string | undefined>
@@ -33,6 +35,7 @@ type Product = Record<string, unknown> & {
 type CommerceSummary = {
   categories?: unknown
   posts?: unknown
+  celebAccounts?: unknown
 }
 
 const SITE_NAME = SEO_SITE_NAME
@@ -101,12 +104,20 @@ export function resolvePageRoute(event: NetlifyEvent) {
   }
 }
 
+function renderCelebProfiles(accounts: CelebAccount[]) {
+  if (!accounts.length) return ''
+  return `<section aria-label="인스타라이브 셀럽 프로필"><h2>인스타라이브 · 셀럽 인스타그램</h2><ul>${accounts.map((account) => `<li><a href="/celeb/${encodeURIComponent(account.name)}">${escapeHtml(account.name)} PICK</a> <a href="https://www.instagram.com/${account.username}/" rel="noopener noreferrer">${escapeHtml(account.name)} 인스타그램 @${account.username}</a></li>`).join('')}</ul></section>`
+}
+
 function renderHomePage(shell: string, origin: string, data: CommerceSummary) {
+  const accounts = normalizeCelebAccounts(data.celebAccounts)
+  const description = getCelebHomeDescription(accounts)
   const posts = (Array.isArray(data.posts) ? data.posts.filter(isRecord) : [])
     .filter((post) => post.status === 'published' && (readString(post.slug) || readString(post.id)))
   const categories = Array.from(new Set(posts.map((post) => readString(post.category)).filter(Boolean)))
   const fallback = `<main class="seo-fallback seo-fallback-category">
-    <header><h1>${escapeHtml(SEO_HOME_TITLE)}</h1><p>${escapeHtml(DEFAULT_DESCRIPTION)}</p></header>
+    <header><h1>${escapeHtml(SEO_HOME_TITLE)}</h1><p>${escapeHtml(description)}</p></header>
+    ${renderCelebProfiles(accounts)}
     <nav aria-label="셀럽별 상품">${categories.map((category) => `<a href="/celeb/${encodeURIComponent(category)}">${escapeHtml(category)}</a>`).join(' ')}</nav>
     <ul>${posts.map((post) => {
       const title = readString(post.title)
@@ -114,17 +125,17 @@ function renderHomePage(shell: string, origin: string, data: CommerceSummary) {
       return `<li><a href="/product/${encodeURIComponent(readString(post.slug) || readString(post.id))}">${image ? `<img src="${escapeHtml(image)}" alt="${escapeHtml(title)}" loading="lazy" />` : ''}<strong>${escapeHtml(title)}</strong><span>${escapeHtml(readString(post.excerpt))}</span></a></li>`
     }).join('')}</ul></main>`
   return htmlResponse(injectSeo(shell, {
-    canonical: `${origin}/`, description: DEFAULT_DESCRIPTION, fallback,
+    canonical: `${origin}/`, description, fallback,
     image: `${origin}/powerpuffceleb-og.png`, keywords: '파워퍼프셀럽, 연예인 착용 상품, 인플루언서 추천 상품, 제휴몰 가격 비교',
     pageTitle: SEO_HOME_TITLE, type: 'website',
     structuredData: { '@context': 'https://schema.org', '@graph': [createOrganization(origin), createWebsite(origin), {
       '@type': 'CollectionPage', '@id': `${origin}/#collection`, url: `${origin}/`, name: SEO_HOME_TITLE,
-      description: DEFAULT_DESCRIPTION, inLanguage: 'ko-KR', isPartOf: { '@id': `${origin}/#website` },
+      description, inLanguage: 'ko-KR', isPartOf: { '@id': `${origin}/#website` },
       mainEntity: { '@type': 'ItemList', numberOfItems: posts.length, itemListElement: posts.map((post, index) => ({
         '@type': 'ListItem', position: index + 1, name: readString(post.title),
         url: `${origin}/product/${encodeURIComponent(readString(post.slug) || readString(post.id))}`,
       })) },
-    }] },
+    }, ...(accounts.length ? [createCelebList(accounts, origin)] : [])] },
   }))
 }
 
@@ -171,14 +182,14 @@ function renderProductPage(shell: string, origin: string, product: Product) {
 }
 
 function renderCategoryPage(shell: string, origin: string, data: CommerceSummary, category: string) {
+  const accounts = normalizeCelebAccounts(data.celebAccounts)
+  const { account, title: pageTitle, description } = getCelebSeo(category, accounts)
   const categories = Array.isArray(data.categories) ? data.categories.map(readString).filter(Boolean) : []
   const allPosts = Array.isArray(data.posts) ? data.posts.filter(isRecord) as Product[] : []
   const posts = allPosts.filter((post) => post.status === 'published' && readString(post.category) === category)
-  if (!categories.includes(category) && !posts.length) return notFoundPage(origin, 'category', category)
+  if (!account && !categories.includes(category) && !posts.length) return notFoundPage(origin, 'category', category)
 
   const canonical = `${origin}/celeb/${encodeURIComponent(category)}`
-  const pageTitle = seoTitle(`${category} 착용·광고 상품, 인스타·유튜브 핫템`)
-  const description = `${category}가 유튜브와 인스타그램에서 착용·소개·광고한 상품을 모았습니다. 화제의 핫템과 잇템, 등록된 제휴몰 최저가를 파워퍼프셀럽에서 확인하세요.`
   const firstImage = posts.map((post) => readPublicImage(post.coverImage, origin)).find(Boolean) || `${origin}/powerpuffceleb-og.png`
   const structuredData = {
     '@context': 'https://schema.org',
@@ -193,7 +204,7 @@ function renderCategoryPage(shell: string, origin: string, data: CommerceSummary
         description,
         inLanguage: 'ko-KR',
         isPartOf: { '@id': `${origin}/#website` },
-        about: { '@type': 'Person', name: category },
+        about: account ? createCelebPerson(account, origin) : { '@type': 'Person', name: category },
         mainEntity: {
           '@type': 'ItemList',
           numberOfItems: posts.length,
@@ -218,6 +229,7 @@ function renderCategoryPage(shell: string, origin: string, data: CommerceSummary
     <main class="seo-fallback seo-fallback-category">
       <nav aria-label="경로"><a href="/">파워퍼프셀럽</a><span>/</span><span>${escapeHtml(category)}</span></nav>
       <header><p class="seo-fallback-kicker">CELEB &amp; INFLUENCER PICKS</p><h1>${escapeHtml(category)} 핫템</h1><p>${escapeHtml(description)}</p></header>
+      ${renderCelebProfiles(account ? [account] : [])}
       <ul>${cards || '<li>공개된 상품을 준비하고 있습니다.</li>'}</ul>
     </main>`
 

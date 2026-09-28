@@ -6,6 +6,7 @@ import { fetchCelebStories } from '../api/celebStoryApi'
 import { DEFAULT_CELEB_ACCOUNTS, formatFollowers } from '../model/celebAccounts'
 import { retainProfile } from '../model/celebProfileCache'
 import type { CelebAccount, CelebStoryFeed } from '../model/celebStoryTypes'
+import { getCategoryPath } from '../../../shared/lib/seo'
 import './celeb-stories.css'
 
 type Props = { categoryImages: Record<string, string>; accounts?: CelebAccount[] }
@@ -24,21 +25,32 @@ export function CelebStories({ categoryImages, accounts = DEFAULT_CELEB_ACCOUNTS
 
   useEffect(() => {
     const section = sectionRef.current
-    if (!section || !('IntersectionObserver' in window)) return
-    const observer = new IntersectionObserver(([entry]) => {
-      setInView(entry.isIntersecting)
-      if (entry.isIntersecting) setHasEntered(true)
+    if (!section) return
+    const setVisible = (visible: boolean) => {
+      setInView(visible)
+      if (visible) setHasEntered(true)
+    }
+    // Mobile tab/BFCache restoration can retain an old observer result.
+    const restore = () => {
+      setPageVisible(document.visibilityState !== 'hidden')
+      const bounds = section.getBoundingClientRect()
+      setVisible(bounds.bottom > 0 && bounds.top < window.innerHeight)
+    }
+    const observer = typeof IntersectionObserver === 'undefined' ? null : new IntersectionObserver(([entry]) => {
+      setVisible(entry.isIntersecting)
     }, { threshold: 0 })
-    observer.observe(section)
-    return () => observer.disconnect()
+    observer?.observe(section)
+    restore()
+    window.addEventListener('pageshow', restore)
+    document.addEventListener('visibilitychange', restore)
+    if (!observer) window.addEventListener('scroll', restore, { passive: true })
+    return () => {
+      observer?.disconnect()
+      window.removeEventListener('pageshow', restore)
+      document.removeEventListener('visibilitychange', restore)
+      window.removeEventListener('scroll', restore)
+    }
   }, [hasAccounts])
-
-  useEffect(() => {
-    const update = () => setPageVisible(document.visibilityState !== 'hidden')
-    update()
-    document.addEventListener('visibilitychange', update)
-    return () => document.removeEventListener('visibilitychange', update)
-  }, [])
 
   useEffect(() => {
     const nav = navRef.current
@@ -133,12 +145,12 @@ export function CelebStories({ categoryImages, accounts = DEFAULT_CELEB_ACCOUNTS
             const readable = profile?.state === 'ready' || profile?.state === 'stale'
             const count = readable ? profile.followers : null
             const loading = !profile && busy
-            const followers = count != null ? formatFollowers(count) : loading ? '불러오는 중' : '확인 불가'
+            const followers = count != null ? formatFollowers(count) : loading ? '불러오는 중' : '집계 중'
             const unit = followers.match(/[만억]$/)?.[0] ?? ''
             return <a key={account.username} className="celeb-stories-person"
               style={{ '--celeb-enter-delay': `${Math.min(index, 7) * 75}ms`, '--celeb-phase': `${index * -.8}s`, '--card-tilt': `${[-5, 3, -3, 5, -2][index % 5]}deg`, '--card-offset': `${index % 2 ? 7 : 0}px` } as CSSProperties}
               href={`https://www.instagram.com/${account.username}/`} target="_blank" rel="noopener noreferrer"
-              aria-label={`${account.name}, 팔로워 ${followers}, 인스타그램 바로가기 (새 창)`}>
+              aria-label={`${account.name} 인스타그램 @${account.username}, 팔로워 ${followers}, 프로필 바로가기 (새 창)`}>
               {/* Decorative on every profile; never represents verified active stories. */}
               <span className="celeb-stories-tape" aria-hidden="true" />
               <span className="celeb-stories-portrait">
@@ -148,7 +160,8 @@ export function CelebStories({ categoryImages, accounts = DEFAULT_CELEB_ACCOUNTS
                 <span className="celeb-stories-open" aria-hidden="true"><ArrowUpRight size={12} /></span>
               </span>
               <strong className="celeb-stories-name">{account.name}</strong>
-              <span className={`celeb-stories-followers${count == null ? ' is-unknown' : ''}${loading ? ' is-loading' : ''}`} title={count != null ? `팔로워 ${count.toLocaleString('ko-KR')}명${profile?.state === 'stale' ? ' · 최근 확인한 수치' : ''}` : loading ? '팔로워 수를 불러오고 있어요' : '현재 팔로워 수를 확인할 수 없어요'}>
+              <span className="celeb-stories-username">@{account.username}</span>
+              <span className={`celeb-stories-followers${count == null ? ' is-unknown' : ''}${loading ? ' is-loading' : ''}`} title={count != null ? `팔로워 ${count.toLocaleString('ko-KR')}명${profile?.state === 'stale' ? ' · 최근 확인한 수치' : ''}` : loading ? '팔로워 수를 불러오고 있어요' : '집계 중 · Instagram에서 수치가 제공되면 표시됩니다'}>
                 <span key={followers} className="celeb-stories-followers-number">{unit ? followers.slice(0, -1) : followers}</span>
                 {unit && <small className="celeb-stories-followers-unit">{unit}</small>}
                 {profile?.state === 'stale' && <i aria-label="최근 확인한 수치" />}
@@ -160,6 +173,10 @@ export function CelebStories({ categoryImages, accounts = DEFAULT_CELEB_ACCOUNTS
           <button type="button" aria-label="이전 셀럽 보기" onClick={() => navRef.current?.scrollBy({ left: -320, behavior: 'smooth' })}><ChevronLeft size={16} /></button>
           <button type="button" aria-label="다음 셀럽 보기" onClick={() => navRef.current?.scrollBy({ left: 320, behavior: 'smooth' })}><ChevronRight size={16} /></button>
         </div>}
+        <nav className="celeb-stories-picks" aria-label="인스타라이브 셀럽별 아이템">
+          <span>CELEB PICK</span>
+          {accounts.map((account) => <a key={account.username} href={getCategoryPath(account.name)}>{account.name}<ArrowUpRight size={10} aria-hidden="true" /></a>)}
+        </nav>
       </div>
     </section>
   )

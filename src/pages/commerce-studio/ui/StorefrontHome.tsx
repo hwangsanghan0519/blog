@@ -3,7 +3,7 @@ import { ProductSourceBadge } from '../../../entities/post/ui/ProductSourceBadge
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import type { CSSProperties, KeyboardEvent, MouseEvent, PointerEvent, Ref, UIEvent } from 'react'
 import * as Dialog from '@radix-ui/react-dialog'
-import { ArrowUp, Camera, Check, ChevronLeft, ChevronRight, Crown, ExternalLink, Heart, LoaderCircle, Mail, Share2, ShoppingBag, ShoppingCart, X, Zap } from 'lucide-react'
+import { ArrowUp, Camera, Check, ChevronDown, ChevronLeft, ChevronRight, Crown, ExternalLink, Heart, LoaderCircle, Mail, Share2, ShoppingBag, ShoppingCart, Sparkles, X, Zap } from 'lucide-react'
 import { useKeenSlider } from 'keen-slider/react'
 import 'keen-slider/keen-slider.min.css'
 import { countWords } from '../../../entities/post/lib/formatters'
@@ -23,6 +23,8 @@ import { CelebStories } from './CelebStories'
 import { FourCutImage, FourCutLoading } from './FourCutImage'
 import { getProductSeo, getProductTags } from '../../../shared/lib/product-seo'
 import { trackAffiliateClick, trackProductClick, trackProductView } from '../../../shared/lib/analytics'
+import { normalizeCelebAccounts } from '../../../shared/lib/celeb-seo'
+import './storefront-entry.css'
 
 type StorefrontHomeProps = {
   posts: Post[]
@@ -87,6 +89,7 @@ export function StorefrontHome({
   const [voteFeedback, setVoteFeedback] = useState('')
   const [mobileLineupImageIndex, setMobileLineupImageIndex] = useState(0)
   const headerRef = useRef<HTMLElement>(null)
+  const bestSectionRef = useRef<HTMLElement>(null)
   const headerSlotRef = useRef<HTMLDivElement>(null)
   const voteTriggerRef = useRef<HTMLHeadingElement>(null)
   const latestHeadRef = useRef<HTMLDivElement>(null)
@@ -107,6 +110,8 @@ export function StorefrontHome({
   )
 
   const topPosts = useMemo(() => getTopPosts(publishedPosts), [publishedPosts])
+  const instagramAccounts = useMemo(() => normalizeCelebAccounts(celebAccounts), [celebAccounts])
+  const selectedInstagramAccount = instagramAccounts.find((account) => account.name === categoryFilter)
   const publicCategories = useMemo(
     () => categories.filter((category) => category.trim()),
     [categories],
@@ -184,8 +189,8 @@ export function StorefrontHome({
 
   useEffect(() => {
     if (selectedPost && loadingDetailId === selectedPost.id) return
-    applyPublicSeo({ category: categoryFilter, posts: publishedPosts, selectedPost })
-  }, [categoryFilter, publishedPosts, selectedPost, loadingDetailId])
+    applyPublicSeo({ category: categoryFilter, posts: publishedPosts, selectedPost, celebAccounts })
+  }, [categoryFilter, publishedPosts, selectedPost, loadingDetailId, celebAccounts])
 
   useEffect(() => {
     if (!priceElement || !selectedId) return undefined
@@ -421,7 +426,7 @@ export function StorefrontHome({
       const postParam = route.product || searchParams.get('post')
       const categoryParam = route.category || searchParams.get('category')
       const targetPost = postParam ? publishedPosts.find((post) => post.slug === postParam || post.id === postParam) : undefined
-      const targetCategory = categoryParam && publicCategories.includes(categoryParam) ? categoryParam : 'all'
+      const targetCategory = categoryParam && (publicCategories.includes(categoryParam) || instagramAccounts.some((account) => account.name === categoryParam)) ? categoryParam : 'all'
 
       onCategoryFilterChange(targetCategory)
       setSelectedId(targetPost?.id ?? '')
@@ -433,7 +438,7 @@ export function StorefrontHome({
     window.addEventListener('popstate', syncViewFromUrl)
 
     return () => window.removeEventListener('popstate', syncViewFromUrl)
-  }, [onCategoryFilterChange, publicCategories, publishedPosts, requestPostDetail])
+  }, [onCategoryFilterChange, publicCategories, publishedPosts, requestPostDetail, instagramAccounts])
 
   useEffect(() => {
     const pendingScroll = pendingCategoryScrollRef.current
@@ -745,7 +750,17 @@ export function StorefrontHome({
       <TrendVideo settings={heroVideo} />
 
       <main className="public-main">
-        <section className="public-hero public-best-v2" aria-label="바이럴 베스트 TOP 10">
+        <button className="public-discovery-cue" type="button" aria-label="바이럴 베스트로 내려가기" onClick={() => scrollToHeaderEdge(bestSectionRef.current, headerRef.current)}>
+          <span className="public-discovery-charms" aria-hidden="true">
+            <i className="public-discovery-burst" /><i className="public-discovery-burst" /><i className="public-discovery-burst" />
+            <Heart className="public-discovery-heart" />
+            <Sparkles className="public-discovery-star" />
+            <span>FIND ME!</span>
+          </span>
+          <span className="public-discovery-copy"><small>SPOTTED ON YOUR FAVE</small><strong>스크롤 내려서 셀럽들의 최애템 구경하기</strong></span>
+          <span className="public-discovery-down" aria-hidden="true"><ChevronDown /><ChevronDown /></span>
+        </button>
+        <section ref={bestSectionRef} className="public-hero public-best-v2" aria-label="바이럴 베스트 TOP 10">
           <div className="public-hero-copy">
             <span className="public-kicker">
               인플루언서 랭킹과 구매 포인트를 합산한
@@ -948,6 +963,11 @@ export function StorefrontHome({
             </div>
           </div>
 
+          {selectedInstagramAccount && <div className="celeb-category-profile">
+            <strong>{selectedInstagramAccount.name} 인스타그램</strong>
+            <a href={`https://www.instagram.com/${selectedInstagramAccount.username}/`} target="_blank" rel="noopener noreferrer">@{selectedInstagramAccount.username}<ExternalLink size={12} aria-hidden="true" /></a>
+            <p>인스타라이브에서 프로필과 팔로워 현황을 확인하고, {selectedInstagramAccount.name}의 착용·소개 상품을 살펴보세요.</p>
+          </div>}
           {filteredPosts.length > 0 ? (
             <div className="public-post-grid">
               {filteredPosts.map((post) => (
