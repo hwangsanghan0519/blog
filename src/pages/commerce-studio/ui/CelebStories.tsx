@@ -22,6 +22,7 @@ export function CelebStories({ categoryImages, accounts = DEFAULT_CELEB_ACCOUNTS
   const navRef = useRef<HTMLDivElement>(null)
   const [canScroll, setCanScroll] = useState(false)
   const hasAccounts = accounts.length > 0
+  const rosterKey = JSON.stringify(accounts)
 
   useEffect(() => {
     const section = sectionRef.current
@@ -65,6 +66,7 @@ export function CelebStories({ categoryImages, accounts = DEFAULT_CELEB_ACCOUNTS
   useEffect(() => {
     let mounted = true
     let pending = false
+    const roster = JSON.parse(rosterKey) as CelebAccount[]
     const controllers = new Set<AbortController>()
     const getProfile = async (username: string) => {
       const controller = new AbortController()
@@ -78,7 +80,7 @@ export function CelebStories({ categoryImages, accounts = DEFAULT_CELEB_ACCOUNTS
       pending = true
       setBusy(true)
       try {
-        const queue = [...accounts]
+        const queue = [...roster]
         const worker = async () => {
           while (mounted && queue.length) {
             const account = queue.shift()!
@@ -116,7 +118,7 @@ export function CelebStories({ categoryImages, accounts = DEFAULT_CELEB_ACCOUNTS
       clearInterval(timer)
       document.removeEventListener('visibilitychange', onVisible)
     }
-  }, [accounts])
+  }, [rosterKey])
 
   if (!accounts.length) return null
 
