@@ -116,6 +116,7 @@ export function StorefrontHome({
     () => categories.filter((category) => category.trim()),
     [categories],
   )
+  const allCelebrities = useMemo(() => [...new Set([...publicCategories, ...instagramAccounts.map(account => account.name)])].sort((a, b) => a.localeCompare(b, 'ko')), [publicCategories, instagramAccounts])
   const rankedCelebs = useMemo(() => {
     const votesByCategory = new Map(voteRanking.map((item) => [item.category, item.votes]))
     return publicCategories
@@ -1157,7 +1158,7 @@ export function StorefrontHome({
         </div>
       </footer>
 
-      {!selectedPost && rankedCelebs.length > 0 && <MobileCelebRanking ranking={rankedCelebs} categoryImages={categoryImages} votedCategory={votedCategory} pendingCategory={votePendingCategory} feedback={voteFeedback} onVote={voteForCeleb} />}
+      {!selectedPost && allCelebrities.length > 0 && <MobileCelebRanking ranking={rankedCelebs} categoryImages={categoryImages} celebrities={allCelebrities} onSelectCategory={selectCategory} votedCategory={votedCategory} pendingCategory={votePendingCategory} feedback={voteFeedback} onVote={voteForCeleb} />}
       {!selectedPost && <MobileProductSearch posts={publishedPosts} onSelect={(postId) => selectPost(postId, 'search')} />}
       <div className="public-quick-actions" aria-label="빠른 기능">
         <a href="mailto:nmc2711@naver.com" aria-label="제휴 문의 이메일 보내기">

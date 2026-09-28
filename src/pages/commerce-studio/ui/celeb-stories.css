@@ -75,7 +75,11 @@
   .celeb-stories-eyebrow { margin-bottom: 5px; font-size: 6px; letter-spacing: 1.3px; }
   .celeb-stories-eyebrow svg { width: 9px; height: 9px; }
   .celeb-stories-heading h2 { flex-direction: row; align-items: baseline; gap: 3px; font-size: 25px; letter-spacing: -1.3px; }
-  .celeb-stories-heading h2 em { margin: 0 0 0 2px; padding: 0 5px 2px 2px; }
+  /* Give italic glyphs and the moving letters their own paint space on WebKit.
+     A tight line box / flex shrink can crop the top and right edge on phones. */
+  .celeb-stories-title, .celeb-stories-heading h2 { overflow: visible; }
+  .celeb-stories-heading h2 em { flex: 0 0 auto; margin: 0 0 0 2px; padding: 3px 9px 5px 5px; line-height: 1.24; white-space: nowrap; overflow: visible; }
+  .celeb-stories-heading h2 em > span { flex: 0 0 auto; min-width: 1em; padding: 5px 3px; margin: -5px -3px; overflow: visible; }
   .celeb-stories-handnote { position: absolute; right: 36px; bottom: 5px; margin: 0; font-size: 8px; }
   .celeb-stories-handnote svg { width: 13px; }
   .celeb-stories-heading-end { margin: 0; align-self: flex-end; padding-bottom: 3px; }
