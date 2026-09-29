@@ -115,7 +115,6 @@ function PocaDeck({ cards, saved, onToggleSave, onShuffle, onSelect }: DeckProps
     slideChanged(instance) {
       if (instance.container.contains(document.activeElement)) stageRef.current?.focus({ preventScroll: true })
       setActive(instance.track.details.rel)
-      setFlipped(false)
     },
     dragStarted(instance) { clearTimeout(dragEnd.current); dragging.current = false; dragOrigin.current = instance.track.details.position },
     dragged(instance) { if (Math.abs(instance.track.details.position - dragOrigin.current) > .015) dragging.current = true },
@@ -136,7 +135,7 @@ function PocaDeck({ cards, saved, onToggleSave, onShuffle, onSelect }: DeckProps
     }}>
       <div ref={sliderRef} className="keen-slider poca-slider">
         {cards.map((post, index) => <div key={post.id} className={`keen-slider__slide poca-slide${active === index ? ' is-active' : ''}`} aria-hidden={active !== index}>
-          <div className={`poca-card${active === index && flipped ? ' is-flipped' : ''}`}>
+          <div className={`poca-card${flipped ? ' is-flipped' : ''}`}>
             <div className="poca-card-rotator">
               <button type="button" className="poca-card-front" aria-label={`${post.category || '셀럽'} 포토카드 뒷면 보기`} tabIndex={active === index && !flipped ? 0 : -1} inert={active !== index || flipped} aria-hidden={active === index && flipped} onClick={flip}>
                 <span className="poca-foil" />
@@ -150,10 +149,13 @@ function PocaDeck({ cards, saved, onToggleSave, onShuffle, onSelect }: DeckProps
               <div className="poca-card-back" inert={active !== index || !flipped} aria-hidden={!(active === index && flipped)}>
                 <button type="button" className="poca-back-flip" aria-label={`${post.category || '셀럽'} 포토카드 앞면 보기`} tabIndex={active === index && flipped ? 0 : -1} onClick={flip} />
                 <span className="poca-back-top">PPC COLLECTION <Star size={14} /></span>
-                <span className="poca-back-monogram">P<Heart size={26} fill="currentColor" />C</span>
+                <span className="poca-back-monogram" aria-hidden="true">P<Heart size={18} fill="currentColor" />C</span>
                 <span className="poca-back-name">{post.category || 'CELEB PICK'}</span>
                 <span className="poca-back-rule" />
-                <span className="poca-back-title">{summarizeCardTitle(post)}</span>
+                <div className="poca-back-details">
+                  <h3 className="poca-back-title">{post.title}</h3>
+                  {post.excerpt.trim() && <p className="poca-back-summary">{post.excerpt}</p>}
+                </div>
                 <a className="poca-back-link" data-keen-slider-clickable="true" tabIndex={active === index && flipped ? 0 : -1} href={getProductPath(post.slug || post.id)} aria-label={`${post.title} 착장 보러가기`} onClick={event => {
                   if (event.button !== 0 || event.metaKey || event.ctrlKey || event.shiftKey || event.altKey) return
                   event.preventDefault(); onSelect(post.id)
@@ -175,7 +177,7 @@ function PocaDeck({ cards, saved, onToggleSave, onShuffle, onSelect }: DeckProps
       <button type="button" className={`poca-save${saved.has(current.id) ? ' is-saved' : ''}`} aria-label={saved.has(current.id) ? '포토카드 소장 해제' : '포토카드 소장하기'} aria-pressed={saved.has(current.id)} onClick={() => onToggleSave(current.id)}><Heart size={25} fill={saved.has(current.id) ? 'currentColor' : 'none'} /></button>
       <button type="button" className="poca-flip" aria-label="포토카드 뒤집기" aria-pressed={flipped} onClick={flip}><RotateCw size={20} /></button>
     </div>
-    <p className="poca-hint">{flipped ? '한 번 더 톡, 앞면으로' : '밀어서 넘기고 · 톡 눌러 뒤집기'}</p>
+    <p className="poca-hint">{flipped ? '밀어서 다음 상품 · 화면을 내려 설명 끝까지 보기' : '밀어서 넘기고 · 톡 눌러 뒤집기'}</p>
   </>
 }
 
@@ -183,16 +185,4 @@ function PocaCover({ src, title, priority }: { src: string; title: string; prior
   const [failed, setFailed] = useState(false)
   return failed ? <span className="poca-image-error"><Sparkles size={30} /><span>사진을 불러오지 못했어요<br />다음 카드를 만나 보세요</span></span>
     : <img src={src} alt={title} loading={priority ? 'eager' : 'lazy'} decoding="async" draggable={false} onError={() => setFailed(true)} />
-}
-
-function summarizeCardTitle(post: Post) {
-  const title = post.title
-    .replace(/\[정가[^\]]*\]/g, '')
-    .replace(post.category || '\0', '')
-    .replace(/사복\s*패션|공항\s*패션|화제의?|완판|난리났던|난리난|완전 예뻐서|어디꺼지\??|어디꺼\??|손민수 하고 싶은/g, '')
-    .replace(/\s+/g, ' ')
-    .replace(/^[\s?!·,:-]+|[\s?!·,:-]+$/g, '') || post.title.trim()
-  if (title.length <= 42) return title
-  const lastSpace = title.lastIndexOf(' ', 40)
-  return `${title.slice(0, lastSpace > 24 ? lastSpace : 40).trimEnd()}…`
 }

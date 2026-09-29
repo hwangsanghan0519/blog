@@ -24,7 +24,8 @@ import { CelebStories } from './CelebStories'
 import { FourCutImage, FourCutLoading } from './FourCutImage'
 import { getProductSeo, getProductTags } from '../../../shared/lib/product-seo'
 import { trackAffiliateClick, trackProductClick, trackProductView } from '../../../shared/lib/analytics'
-import { normalizeCelebAccounts } from '../../../shared/lib/celeb-seo'
+import { getCelebSeo, normalizeCelebAccounts } from '../../../shared/lib/celeb-seo'
+import { SEO_HOME_DESCRIPTION } from '../../../shared/lib/seo-config'
 import './storefront-entry.css'
 import './storefront-floating-actions.css'
 
@@ -966,6 +967,7 @@ export function StorefrontHome({
             </div>
           </div>
 
+          <p className="public-catalog-intro">{categoryFilter === 'all' ? SEO_HOME_DESCRIPTION : getCelebSeo(categoryFilter, []).description}</p>
           {selectedInstagramAccount && <div className="celeb-category-profile">
             <strong>{selectedInstagramAccount.name} 인스타그램</strong>
             <a href={`https://www.instagram.com/${selectedInstagramAccount.username}/`} target="_blank" rel="noopener noreferrer">@{selectedInstagramAccount.username}<ExternalLink size={12} aria-hidden="true" /></a>

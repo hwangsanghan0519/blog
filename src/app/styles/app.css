@@ -22993,7 +22993,7 @@ button.category-row.is-selected,
   .public-blog .public-browser .public-pouch-overlay > strong b,
   .public-blog .public-browser .public-pouch-overlay.is-category > strong b {
     color: #7145a0 !important;
-    font-size: clamp(21px, 6.2vw, 27px) !important;
+    font-size: clamp(17px, 5.2vw, 23px) !important;
     line-height: 1.08 !important;
     text-shadow: none !important;
   }
@@ -23009,8 +23009,9 @@ button.category-row.is-selected,
     font-size: 13px !important;
   }
 
-  .public-blog .public-browser .public-pouch-overlay > strong b {
-    font-size: 20px !important;
+  .public-blog .public-browser .public-pouch-overlay > strong b,
+  .public-blog .public-browser .public-pouch-overlay.is-category > strong b {
+    font-size: 17px !important;
   }
 }
 

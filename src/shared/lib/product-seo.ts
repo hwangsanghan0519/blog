@@ -21,6 +21,7 @@ const text = (value: unknown) => typeof value === 'string' ? value.trim() : ''
 const compact = (value: string) => value.replace(/\s+/g, ' ').trim()
 const comparable = (value: string) => value.normalize('NFKC').toLocaleLowerCase('ko-KR').replace(/\s+/g, '')
 const shorten = (value: string, length: number) => value.length > length ? `${value.slice(0, length - 1).trim()}…` : value
+const fashionProductPattern = /패션|착장|사복|코디|아우터|자켓|재킷|야상|코트|점퍼|가디건|니트|셔츠|블라우스|맨투맨|후드|팬츠|청바지|스커트|원피스|드레스|가방|백팩|숄더백|크로스백|토트백|신발|운동화|스니커즈|로퍼|부츠|샌들|모자|목걸이|귀걸이|팔찌|선글라스/i
 
 /** Text extraction, not an HTML sanitizer: callers must render the result as text. */
 export function productPlainText(value: unknown) {
@@ -109,21 +110,31 @@ export function getProductSeo(product: SeoProduct, origin: string) {
   if (titleTag && `${subject} · ${titleTag} | 파워퍼프셀럽`.length <= 68) subject += ` · ${titleTag}`
 
   const excerpt = compact(productPlainText(product.excerpt))
+  // Preserve product-specific terms; add outfit context only when the saved copy supports it.
+  const productCopy = [name, excerpt, ...tags].join(' ')
+  const isFashion = fashionProductPattern.test(productCopy)
+  const searchTerms = getProductTags([
+    ...tags,
+    ...(isFashion ? ['연예인 착장', '연예인 패션 정보', '셀럽 착장', '셀럽 패션 정보', ...(category ? [`${category} 착장`, `${category} 패션 정보`] : [])] : []),
+    ...(isFashion && /사복/.test(productCopy) ? ['연예인 사복 패션', '셀럽 사복 패션'] : []),
+    ...(isFashion && /아이돌/.test(productCopy) ? ['아이돌 착장', '아이돌 패션 정보', ...(/사복/.test(productCopy) ? ['아이돌 사복 패션'] : [])] : []),
+    ...(isFashion && /배우/.test(productCopy) ? ['배우 착장', '배우 패션 정보', ...(/사복/.test(productCopy) ? ['배우 사복 패션'] : [])] : []),
+  ], Infinity)
   const detail = hasProductFourCut(product)
     ? compact(productPlainText((product.detailDescriptions as unknown[])[0]))
     : compact(getProductBodyText(product))
   const lead = excerpt || name
   const detailText = detail && !comparable(lead).includes(comparable(detail)) ? detail : ''
-  const summary = [category ? `${category} PICK.` : '', /[.!?。]$/.test(lead) ? lead : `${lead}.`, detailText || '상품 사진과 등록된 제휴몰 가격을 확인하세요.'].filter(Boolean).join(' ')
+  const summary = [category ? `${category} ${isFashion ? '착장 정보' : 'PICK'}.` : '', /[.!?。]$/.test(lead) ? lead : `${lead}.`, detailText || '상품 사진과 등록된 제휴몰 가격을 확인하세요.'].filter(Boolean).join(' ')
   const images = getProductImages(product, origin)
   const offers = getProductOffers(product)
   const updatedAt = Date.parse(text(product.updatedAt))
   return {
-    name, category, tags, offers, images,
+    name, category, tags, searchTerms, offers, images,
     canonical: `${origin}/product/${encodeURIComponent(text(product.slug) || text(product.id))}`,
     pageTitle: seoTitle(subject),
     description: shorten(summary, 160),
-    keywords: Array.from(new Set([name, category, ...tags].filter(Boolean))).join(', '),
+    keywords: Array.from(new Set([name, category, ...searchTerms].filter(Boolean))).join(', '),
     image: images[0] || `${origin}/powerpuffceleb-og.png`,
     productPrice: offers.length ? Math.min(...offers.map((offer) => offer.price)) : undefined,
     dateModified: Number.isFinite(updatedAt) && updatedAt <= Date.now() ? new Date(updatedAt).toISOString() : undefined,
@@ -152,7 +163,7 @@ export function createProductSeoNodes(product: SeoProduct, origin: string) {
     {
       '@type': 'WebPage', '@id': `${canonical}#webpage`, url: canonical,
       name: seo.pageTitle, description: seo.description, inLanguage: 'ko-KR',
-      keywords: seo.tags.length ? seo.tags.join(', ') : undefined,
+      keywords: seo.searchTerms.length ? seo.searchTerms.join(', ') : undefined,
       dateModified: seo.dateModified,
       isPartOf: { '@id': `${origin}/#website` },
       mainEntity: { '@id': `${canonical}#product` },

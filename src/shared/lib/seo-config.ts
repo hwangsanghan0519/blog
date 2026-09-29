@@ -1,6 +1,23 @@
 export const SEO_SITE_NAME = '파워퍼프셀럽'
-export const SEO_HOME_TITLE = '파워퍼프셀럽 | 연예인·인플루언서 핫템, 잇템, 광고 상품 최저가'
-export const SEO_HOME_DESCRIPTION = '유튜브와 인스타그램에서 연예인·인플루언서가 착용하고 소개한 핫템, 잇템, 광고 상품을 모아 제휴몰 최저가 링크로 연결하는 파워퍼프셀럽 큐레이션입니다.'
+export const SEO_HOME_TITLE = '파워퍼프셀럽 | 연예인·아이돌·배우 착장, 사복 패션·핫템 최저가'
+export const SEO_HOME_DESCRIPTION = '아이돌·배우의 착장과 사복 패션부터 연예인·인플루언서의 핫템, 잇템, 광고 상품까지. 인스타그램·유튜브 속 셀럽 패션 정보와 착용 상품의 브랜드, 등록된 제휴몰 최저가를 파워퍼프셀럽에서 확인하세요.'
+export const SEO_FASHION_TOPICS = [
+  '연예인 착장', '연예인 사복 패션', '연예인 패션 정보',
+  '셀럽 착장', '셀럽 패션 정보', '셀럽 사복 패션',
+  '아이돌 착장', '아이돌 사복 패션', '아이돌 패션 정보',
+  '배우 착장', '배우 사복 패션', '배우 패션 정보',
+] as const
+export const SEO_SITE_KEYWORDS = [
+  SEO_SITE_NAME,
+  '연예인', '아이돌', '셀럽', '배우',
+  ...SEO_FASHION_TOPICS.flatMap((topic) => [topic, topic.replaceAll(' ', '')]),
+  '연예인 핫템', '인플루언서 핫템', '인플루언서 잇템', '인플루언서 추천 상품', '연예인 착용 상품', '인스타 광고 상품',
+  '유튜브 소개 상품', '셀럽 잇템', '광고템', '제휴몰 가격 비교', '최저가',
+].join(', ')
+
+export function getHomeSeoKeywords(names: string[]) {
+  return [...new Set(names.map((name) => name.trim()).filter(Boolean)), SEO_SITE_KEYWORDS].join(', ')
+}
 
 export function seoTitle(subject: string, maxLength = 68) {
   const suffix = ` | ${SEO_SITE_NAME}`

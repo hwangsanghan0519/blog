@@ -1,6 +1,6 @@
 import { normalizeCelebAccounts } from '../../pages/commerce-studio/model/celebAccounts.ts'
 import type { CelebAccount } from '../../pages/commerce-studio/model/celebStoryTypes.ts'
-import { SEO_HOME_DESCRIPTION, seoTitle } from './seo-config.ts'
+import { SEO_HOME_DESCRIPTION, SEO_SITE_KEYWORDS, seoTitle } from './seo-config.ts'
 
 export { normalizeCelebAccounts }
 
@@ -8,10 +8,11 @@ export function getCelebSeo(category: string, accounts: CelebAccount[]) {
   const account = accounts.find((item) => item.name === category)
   return {
     account,
-    title: seoTitle(account ? `${category} 인스타그램 @${account.username} · 착용·광고 상품` : `${category} 착용·광고 상품, 인스타·유튜브 핫템`),
+    title: seoTitle(account ? `${category} 착장·사복 패션 정보 · 인스타그램 @${account.username}` : `${category} 착장·사복 패션 정보, 착용·소개 상품`),
+    keywords: [category, `${category} 착장`, `${category} 사복 패션`, `${category} 패션 정보`, `${category} 착용`, `${category} 인스타`, `${category} 인스타그램`, `${category} 유튜브`, `${category} 광고`, SEO_SITE_KEYWORDS].join(', '),
     description: account
-      ? `${category} 인스타그램 @${account.username} 프로필 바로가기와 팔로워 현황, 착용·소개·광고 상품을 함께 확인하세요. 파워퍼프셀럽에서 ${category}의 패션·뷰티 핫템과 제휴몰 가격을 살펴보세요.`
-      : `${category}가 유튜브와 인스타그램에서 착용·소개·광고한 상품을 모았습니다. 화제의 핫템과 잇템, 등록된 제휴몰 최저가를 파워퍼프셀럽에서 확인하세요.`,
+      ? `${category} 착장과 사복 패션 정보, 착용·소개·광고 상품의 브랜드와 제휴몰 최저가를 확인하세요. ${category} 인스타그램 @${account.username} 프로필과 팔로워 현황, 패션·뷰티 핫템과 잇템을 파워퍼프셀럽에서 살펴보세요.`
+      : `${category} 착장과 사복 패션 정보, 인스타그램·유튜브에서 착용·소개·광고한 상품을 모았습니다. 상품별 브랜드와 패션·뷰티 핫템, 잇템, 등록된 제휴몰 최저가를 파워퍼프셀럽에서 확인하세요.`,
   }
 }
 

@@ -1,4 +1,4 @@
-import { SEO_SITE_NAME, SEO_HOME_TITLE, SEO_HOME_DESCRIPTION, publicHttpUrl } from '../../src/shared/lib/seo-config.ts'
+import { SEO_SITE_NAME, SEO_HOME_TITLE, SEO_HOME_DESCRIPTION, SEO_FASHION_TOPICS, getHomeSeoKeywords, publicHttpUrl } from '../../src/shared/lib/seo-config.ts'
 import { createProductSeoNodes, getProductBodyText, getProductImageUrl, getProductSeo, hasProductFourCut } from '../../src/shared/lib/product-seo.ts'
 import { requestOrigin, siteOrigin } from './lib/site-origin.ts'
 import { createCelebList, createCelebPerson, getCelebHomeDescription, getCelebSeo, normalizeCelebAccounts } from '../../src/shared/lib/celeb-seo.ts'
@@ -115,6 +115,7 @@ function renderHomePage(shell: string, origin: string, data: CommerceSummary) {
   const posts = (Array.isArray(data.posts) ? data.posts.filter(isRecord) : [])
     .filter((post) => post.status === 'published' && (readString(post.slug) || readString(post.id)))
   const categories = Array.from(new Set(posts.map((post) => readString(post.category)).filter(Boolean)))
+  const keywords = getHomeSeoKeywords([...categories, ...accounts.map((account) => account.name)])
   const fallback = `<main class="seo-fallback seo-fallback-category">
     <header><h1>${escapeHtml(SEO_HOME_TITLE)}</h1><p>${escapeHtml(description)}</p></header>
     ${renderCelebProfiles(accounts)}
@@ -126,11 +127,11 @@ function renderHomePage(shell: string, origin: string, data: CommerceSummary) {
     }).join('')}</ul></main>`
   return htmlResponse(injectSeo(shell, {
     canonical: `${origin}/`, description, fallback,
-    image: `${origin}/powerpuffceleb-og.png`, keywords: '파워퍼프셀럽, 연예인 착용 상품, 인플루언서 추천 상품, 제휴몰 가격 비교',
+    image: `${origin}/powerpuffceleb-og.png`, keywords,
     pageTitle: SEO_HOME_TITLE, type: 'website',
     structuredData: { '@context': 'https://schema.org', '@graph': [createOrganization(origin), createWebsite(origin), {
       '@type': 'CollectionPage', '@id': `${origin}/#collection`, url: `${origin}/`, name: SEO_HOME_TITLE,
-      description, inLanguage: 'ko-KR', isPartOf: { '@id': `${origin}/#website` },
+      description, keywords, inLanguage: 'ko-KR', isPartOf: { '@id': `${origin}/#website` },
       mainEntity: { '@type': 'ItemList', numberOfItems: posts.length, itemListElement: posts.map((post, index) => ({
         '@type': 'ListItem', position: index + 1, name: readString(post.title),
         url: `${origin}/product/${encodeURIComponent(readString(post.slug) || readString(post.id))}`,
@@ -183,7 +184,7 @@ function renderProductPage(shell: string, origin: string, product: Product) {
 
 function renderCategoryPage(shell: string, origin: string, data: CommerceSummary, category: string) {
   const accounts = normalizeCelebAccounts(data.celebAccounts)
-  const { account, title: pageTitle, description } = getCelebSeo(category, accounts)
+  const { account, title: pageTitle, description, keywords } = getCelebSeo(category, accounts)
   const categories = Array.isArray(data.categories) ? data.categories.map(readString).filter(Boolean) : []
   const allPosts = Array.isArray(data.posts) ? data.posts.filter(isRecord) as Product[] : []
   const posts = allPosts.filter((post) => post.status === 'published' && readString(post.category) === category)
@@ -200,8 +201,9 @@ function renderCategoryPage(shell: string, origin: string, data: CommerceSummary
         '@type': 'CollectionPage',
         '@id': `${canonical}#collection`,
         url: canonical,
-        name: `${category} 착용·광고 상품 핫템`,
+        name: pageTitle,
         description,
+        keywords,
         inLanguage: 'ko-KR',
         isPartOf: { '@id': `${origin}/#website` },
         about: account ? createCelebPerson(account, origin) : { '@type': 'Person', name: category },
@@ -228,7 +230,7 @@ function renderCategoryPage(shell: string, origin: string, data: CommerceSummary
   const fallback = `
     <main class="seo-fallback seo-fallback-category">
       <nav aria-label="경로"><a href="/">파워퍼프셀럽</a><span>/</span><span>${escapeHtml(category)}</span></nav>
-      <header><p class="seo-fallback-kicker">CELEB &amp; INFLUENCER PICKS</p><h1>${escapeHtml(category)} 핫템</h1><p>${escapeHtml(description)}</p></header>
+      <header><p class="seo-fallback-kicker">CELEB &amp; INFLUENCER PICKS</p><h1>${escapeHtml(category)} 착장·사복 패션 정보</h1><p>${escapeHtml(description)}</p></header>
       ${renderCelebProfiles(account ? [account] : [])}
       <ul>${cards || '<li>공개된 상품을 준비하고 있습니다.</li>'}</ul>
     </main>`
@@ -237,7 +239,7 @@ function renderCategoryPage(shell: string, origin: string, data: CommerceSummary
     canonical,
     description,
     image: firstImage,
-    keywords: `${category}, ${category} 착용, ${category} 인스타, ${category} 유튜브, ${category} 광고, 연예인 핫템, 인플루언서 잇템, 최저가`,
+    keywords,
     pageTitle,
     structuredData,
     type: 'website',
@@ -328,6 +330,7 @@ function createWebsite(origin: string) {
     url: `${origin}/`,
     inLanguage: 'ko-KR',
     description: DEFAULT_DESCRIPTION,
+    keywords: SEO_FASHION_TOPICS.join(', '),
     publisher: { '@id': `${origin}/#organization` },
   }
 }

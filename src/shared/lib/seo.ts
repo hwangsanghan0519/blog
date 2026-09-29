@@ -1,6 +1,6 @@
 import type { Post } from '../../entities/post/model/types'
 
-import { SEO_SITE_NAME, SEO_HOME_TITLE, SEO_HOME_DESCRIPTION, canonicalSiteOrigin, publicHttpUrl } from './seo-config'
+import { SEO_SITE_NAME, SEO_HOME_TITLE, SEO_HOME_DESCRIPTION, SEO_FASHION_TOPICS, getHomeSeoKeywords, canonicalSiteOrigin, publicHttpUrl } from './seo-config'
 import { createProductSeoNodes, getProductSeo } from './product-seo'
 import type { CelebAccount } from '../../pages/commerce-studio/model/celebStoryTypes'
 import { createCelebList, createCelebPerson, getCelebHomeDescription, getCelebSeo, normalizeCelebAccounts } from './celeb-seo'
@@ -43,17 +43,9 @@ export function applyPublicSeo({ category, posts, selectedPost, celebAccounts }:
       : getCelebHomeDescription(accounts)
   const categoryImage = isCategory ? posts.find((post) => post.status === 'published' && post.category === category && publicHttpUrl(post.coverImage, origin))?.coverImage : ''
   const image = productSeo?.image || publicHttpUrl(selectedPost?.coverImage || categoryImage, origin) || `${origin}/powerpuffceleb-og.png`
-  const keywords = productSeo?.keywords ?? Array.from(new Set([
-    ...(selectedPost ? [selectedPost.title, selectedPost.category, ...selectedPost.tags] : []),
-    ...(isCategory ? [category] : posts.slice(0, 12).map((post) => post.category)),
-    '연예인 핫템',
-    '인플루언서 핫템',
-    '연예인 착용 상품',
-    '인스타 광고 상품',
-    '유튜브 소개 상품',
-    '셀럽 잇템',
-    '최저가',
-  ])).join(', ')
+  const keywords = productSeo?.keywords ?? (isCategory ? celebSeo.keywords : getHomeSeoKeywords([
+    ...posts.filter((post) => post.status === 'published').map((post) => post.category), ...accounts.map((account) => account.name),
+  ]))
 
   document.title = title
   setMeta('name', 'description', description)
@@ -142,6 +134,7 @@ function createStructuredData({
     name: SEO_SITE_NAME,
     alternateName: 'POWER PUFF CELEB',
     description: SEO_HOME_DESCRIPTION,
+    keywords: SEO_FASHION_TOPICS.join(', '),
     inLanguage: 'ko-KR',
     publisher: { '@id': `${origin}/#organization` },
   }
@@ -154,8 +147,8 @@ function createStructuredData({
   }
 
   const filteredPosts = posts.filter((post) => post.status === 'published' && (category === 'all' || post.category === category))
-  const collectionName = category === 'all' ? SEO_HOME_TITLE : `${category} 착용·광고 상품 핫템`
   const accounts = normalizeCelebAccounts(celebAccounts)
+  const collectionName = category === 'all' ? SEO_HOME_TITLE : getCelebSeo(category, accounts).title
   const account = accounts.find((item) => item.name === category)
   return {
     '@context': 'https://schema.org',
@@ -168,6 +161,7 @@ function createStructuredData({
         url: canonicalUrl,
         name: collectionName,
         description,
+        keywords: category === 'all' ? getHomeSeoKeywords([...filteredPosts.map((post) => post.category), ...accounts.map((item) => item.name)]) : getCelebSeo(category, accounts).keywords,
         inLanguage: 'ko-KR',
         isPartOf: { '@id': `${origin}/#website` },
         about: category === 'all' ? undefined : account ? createCelebPerson(account, origin) : { '@type': 'Person', name: category },

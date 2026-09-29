@@ -12,6 +12,22 @@ const product = {
 }
 
 describe('shared product SEO', () => {
+  it('adds fashion context to existing and newly published products while preserving their own tags', () => {
+    for (const status of ['published', 'draft']) {
+      const seo = getProductSeo({ ...product, ...{ status }, title: '배우 수영 사복 패션 야상' }, origin)
+      expect(seo.keywords).toContain('NEW6AM831_43')
+      expect(seo.keywords).toContain('배우 사복 패션')
+      expect(seo.keywords).toContain('수영 착장')
+      expect(seo.keywords).not.toContain('아이돌')
+      expect(seo.description).toContain('수영 착장 정보')
+    }
+    const idol = getProductSeo({ ...product, title: '아이돌 사복 패션 자켓' }, origin)
+    expect(idol.keywords).toContain('아이돌 사복 패션')
+    const beauty = getProductSeo({ title: '수분 크림', category: '수영', excerpt: '보습용 크림', tags: ['뷰티'] }, origin)
+    expect(beauty.keywords).toBe('수분 크림, 수영, 뷰티')
+    expect(beauty.description).not.toContain('착장')
+  })
+
   it('uses a single distinctive tag in a concise title without repeating the celebrity', () => {
     const seo = getProductSeo(product, origin)
     expect(seo.pageTitle).toBe('수영 일본여행 야상 · 온앤온 | 파워퍼프셀럽')
@@ -52,7 +68,9 @@ describe('shared product SEO', () => {
     const page = nodes[1]
     expect(item.image).toHaveLength(5)
     expect(item.offers).toMatchObject({ '@type': 'Offer', price: 285050, priceCurrency: 'KRW' })
-    expect(page.keywords).toBe('온앤온, NEW6AM831_43, 가을 아우터')
+    expect(page.keywords).toContain('온앤온, NEW6AM831_43, 가을 아우터')
+    expect(page.keywords).toContain('수영 착장')
+    expect(page.keywords).toContain('셀럽 패션 정보')
     expect(page.dateModified).toBe('2026-01-01T09:00:00.000Z')
     expect(page.mainEntity).toEqual({ '@id': item['@id'] })
     expect(page.breadcrumb).toEqual({ '@id': nodes[2]['@id'] })

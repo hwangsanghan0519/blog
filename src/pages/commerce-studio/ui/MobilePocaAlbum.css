@@ -10,7 +10,7 @@
   .poca-trigger-label { font-family: inherit; font-size: 10px; font-weight: 800; line-height: 1.3; letter-spacing: .6px; }
 }
 .poca-overlay { position: fixed; inset: 0; z-index: 330; background: #2e1f4380; backdrop-filter: blur(8px); animation: poca-fade .22s ease; }
-.poca-album { --poca-card-width: min(72vw, 300px, calc((100dvh - 355px - env(safe-area-inset-top) - env(safe-area-inset-bottom)) * .68)); position: fixed; z-index: 331; inset: 0; display: flex; flex-direction: column; width: min(100%, 540px); height: 100dvh; margin: 0 auto; padding: max(12px, env(safe-area-inset-top)) 0 max(9px, env(safe-area-inset-bottom)); box-sizing: border-box; overflow: auto; overscroll-behavior: contain; color: #584066; background: radial-gradient(ellipse at 50% 42%, #fff9fd 8%, transparent 65%), linear-gradient(155deg, #efe6fa, #faf3f8 55%, #eae0f5); font-family: inherit; outline: none; animation: poca-open .3s cubic-bezier(.2,.8,.2,1); }
+.poca-album { --poca-card-width: min(72vw, 300px, max(220px, calc((100dvh - 355px - env(safe-area-inset-top) - env(safe-area-inset-bottom)) * .68))); position: fixed; z-index: 331; inset: 0; display: flex; flex-direction: column; width: min(100%, 540px); height: 100dvh; margin: 0 auto; padding: max(12px, env(safe-area-inset-top)) 0 max(9px, env(safe-area-inset-bottom)); box-sizing: border-box; overflow: auto; overscroll-behavior: contain; color: #584066; background: radial-gradient(ellipse at 50% 42%, #fff9fd 8%, transparent 65%), linear-gradient(155deg, #efe6fa, #faf3f8 55%, #eae0f5); font-family: inherit; outline: none; animation: poca-open .3s cubic-bezier(.2,.8,.2,1); }
 .poca-album *, .poca-album *::before, .poca-album *::after { box-sizing: border-box; }
 .poca-album button { font: inherit; cursor: pointer; -webkit-tap-highlight-color: transparent; }
 .poca-album button:focus-visible, .poca-album a:focus-visible, .mobile-poca-trigger:focus-visible { outline: 3px solid #986bb7; outline-offset: 4px; }
@@ -33,6 +33,10 @@
 .poca-slide.is-active .poca-card { opacity: 1; transform: rotate(-2deg) scale(1); }
 .poca-card-rotator { position: absolute; inset: 0; display: block; transform-style: preserve-3d; -webkit-transform-style: preserve-3d; transition: transform .65s cubic-bezier(.2,.7,.2,1); }
 .poca-card.is-flipped .poca-card-rotator { transform: rotateY(180deg); }
+/* Let the active back grow with its copy; the album owns vertical scrolling. */
+.poca-slide.is-active .poca-card.is-flipped { aspect-ratio: auto; transform: none; }
+.poca-slide.is-active .poca-card.is-flipped .poca-card-rotator { position: relative; }
+.poca-slide.is-active .poca-card.is-flipped .poca-card-back { position: relative; min-height: calc(var(--poca-card-width) / .68); overflow: visible; }
 .poca-card-front, .poca-card-back { position: absolute; inset: 0; display: block; overflow: hidden; border: 1px solid #fffd; border-radius: 16px; backface-visibility: hidden; -webkit-backface-visibility: hidden; box-shadow: 0 9px 15px #69496924, 0 2px 4px #44275d1a; }
 .poca-card-front { width: 100%; height: 100%; padding: 0; text-align: left; color: inherit; background: #fffaf4; transform: translateZ(1px); }
 .poca-foil { position: absolute; inset: 0; border: 1px solid #fff9; border-radius: inherit; background: linear-gradient(135deg, #e7d0f6 0%, #dbe3fb 14%, #fff4d1 32%, #f1cbe0 48%, #ddd2fa 65%, #d8efe3 82%, #fff1d3); }
@@ -53,11 +57,13 @@
 .poca-card-back { display: flex; flex-direction: column; align-items: center; padding: 21px; transform: rotateY(180deg) translateZ(1px); color: #846096; background: radial-gradient(#ac88b730 .8px, transparent .8px), linear-gradient(140deg, #fff6ef, #f0e5f8 65%, #f9e5ee); background-size: 8px 8px, auto; }
 .poca-card-back::before { content: ''; position: absolute; inset: 8px; border: 1px solid #b99bc66b; border-radius: 10px; pointer-events: none; }
 .poca-back-top { display: flex; justify-content: space-between; align-items: center; width: 100%; font: 650 6px/1.3 system-ui, sans-serif; letter-spacing: .7px; }
-.poca-back-monogram { display: flex; align-items: center; gap: 3px; margin: 14px 0 8px; color: #a778b5; font: italic 900 38px/.9 Georgia, serif; }
+.poca-back-monogram { display: flex; align-items: center; gap: 3px; margin: 10px 0 6px; color: #a778b5; font: italic 900 26px/.9 Georgia, serif; }
 .poca-back-monogram svg { color: #ce9aba; }
-.poca-back-name { font-size: 16px; font-weight: 800; letter-spacing: -.6px; }
+.poca-back-name { max-width: 100%; overflow-wrap: anywhere; text-align: center; font-size: 14px; font-weight: 800; letter-spacing: -.6px; }
 .poca-back-rule { width: 28px; height: 1px; background: #b697c3; margin: 10px auto; }
-.poca-back-title { display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden; color: #83658e; font-size: 12px; line-height: 1.6; text-align: center; word-break: keep-all; }
+.poca-back-details { position: relative; flex: 1 0 auto; width: 100%; padding-bottom: 12px; pointer-events: none; text-align: left; word-break: keep-all; overflow-wrap: anywhere; }
+.poca-back-title { margin: 0; color: #60436f; font-size: 14px; font-weight: 800; letter-spacing: -.4px; line-height: 1.5; }
+.poca-back-summary { margin: 9px 0 0; color: #83658e; font-size: 10px; line-height: 1.8; white-space: pre-line; }
 .poca-back-foot { text-align: center; font: 700 6px/1.5 system-ui, sans-serif; letter-spacing: 1.2px; }
 .poca-slide-navigation { position: relative; display: flex; align-items: center; justify-content: center; gap: 5px; flex: 0 0 32px; margin-top: 0; }
 .poca-slide-navigation button { display: grid; place-items: center; width: 40px; height: 32px; padding: 0; border: 0; color: #9e81ad; background: transparent; }
@@ -73,7 +79,7 @@
 @keyframes poca-fade { from { opacity: 0; } to { opacity: 1; } }
 @keyframes poca-twinkle { 0%, 70%, 100% { transform: scale(1); opacity: .75; } 80% { transform: scale(1.2) rotate(15deg); opacity: 1; } }
 @keyframes poca-glint { 0%, 18% { background-position: 130% 0; } 70%, 100% { background-position: -100% 0; } }
-@media (max-height: 650px) { .poca-back-monogram { margin-top: 10px; font-size: 34px; } .poca-back-rule { margin: 8px auto; } }
+@media (max-height: 650px) { .poca-back-monogram { margin-top: 10px; font-size: 24px; } .poca-back-rule { margin: 8px auto; } }
 @media (max-height: 480px) { .poca-album { --poca-card-width: 190px; } .poca-stage { flex-grow: 0; } }
 @media (prefers-reduced-motion: reduce) { .poca-album, .poca-overlay, .poca-trigger-cards > svg, .poca-slide.is-active .poca-card-glint { animation: none; } .poca-card, .poca-card-rotator, .mobile-poca-trigger { transition: none; } }
 
@@ -82,10 +88,9 @@
 .poca-stage:focus { outline: none; }
 .poca-back-flip { position: absolute; z-index: 0; inset: 0; width: 100%; height: 100%; padding: 0; border: 0; border-radius: inherit; background: transparent; }
 .poca-card-back > span { position: relative; pointer-events: none; flex-shrink: 0; }
-.poca-card-back .poca-back-title { flex-shrink: 1; }
-.poca-back-link { position: relative; z-index: 1; display: flex; align-items: center; justify-content: center; gap: 5px; flex-shrink: 0; min-height: 36px; margin-top: auto; padding: 0 13px; border: 1px solid #cdb4db; border-radius: 20px; color: #856094; background: #fff9; font-size: 11px; font-weight: 650; text-decoration: none; }
+.poca-back-link { position: relative; z-index: 1; display: flex; align-items: center; justify-content: center; gap: 5px; flex-shrink: 0; min-height: 36px; margin-top: 12px; padding: 0 13px; border: 1px solid #cdb4db; border-radius: 20px; color: #856094; background: #fff9; font-size: 11px; font-weight: 650; text-decoration: none; }
 .poca-back-link:active { background: #efdfef; }
-.poca-back-foot { margin-top: 12px; }
+.poca-back-foot { margin-top: 8px; }
 .poca-page-count { min-width: 65px; color: #866298; text-align: center; font: 650 12px/1.3 system-ui, sans-serif; letter-spacing: 1.5px; }
 .poca-page-count > span { color: #b5a0c1; font-weight: 400; font-size: 10px; }
 .poca-actions { position: relative; display: flex; align-items: center; justify-content: center; gap: 23px; flex-shrink: 0; margin: 10px 20px 0; }

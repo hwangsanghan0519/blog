@@ -3,7 +3,7 @@ import { afterEach, describe, expect, it, vi } from 'vitest'
 import { handler } from '../netlify/functions/seo-page'
 import { createSitemapXml } from '../netlify/functions/blog-data'
 import { handler as robotsHandler } from '../netlify/functions/robots'
-import { canonicalSiteOrigin, publicHttpUrl, readKrwPrice, seoTitle } from '../src/shared/lib/seo-config'
+import { canonicalSiteOrigin, publicHttpUrl, readKrwPrice, seoTitle, SEO_HOME_TITLE, SEO_HOME_DESCRIPTION, SEO_FASHION_TOPICS, SEO_SITE_KEYWORDS } from '../src/shared/lib/seo-config'
 import { siteOrigin } from '../netlify/functions/lib/site-origin'
 import { getProductShareUrl } from '../src/shared/lib/seo'
 import { PRODUCTION_CLOUD_DATA_ENDPOINT } from '../src/pages/commerce-studio/model/config'
@@ -31,6 +31,32 @@ function graph(html: string) {
 afterEach(() => { vi.unstubAllGlobals(); vi.unstubAllEnvs() })
 
 describe('SEO page responses', () => {
+  it('keeps the static shell, home and celebrity pages aligned on legacy and fashion search topics', async () => {
+    expect(shell).toContain(`<title>${SEO_HOME_TITLE}</title>`)
+    expect(shell).toContain(`name="keywords" content="${SEO_SITE_KEYWORDS}"`)
+    expect(shell).toContain(`property="og:description" content="${SEO_HOME_DESCRIPTION}"`)
+    expect(shell).toContain(`name="twitter:description" content="${SEO_HOME_DESCRIPTION}"`)
+    expect(SEO_HOME_TITLE.length).toBeLessThanOrEqual(68)
+    expect(SEO_HOME_DESCRIPTION.length).toBeLessThanOrEqual(160)
+    for (const topic of SEO_FASHION_TOPICS) {
+      expect(SEO_SITE_KEYWORDS).toContain(topic)
+      expect(SEO_SITE_KEYWORDS).toContain(topic.replaceAll(' ', ''))
+    }
+    mockResponses({ posts: [product], categories: [product.category], celebAccounts: [] })
+    for (const path of ['/', `/celeb/${encodeURIComponent(product.category)}`]) {
+      const page = await handler({ ...event, path, queryStringParameters: null })
+      expect(page.statusCode).toBe(200)
+      const keywords = page.body.match(/name="keywords" content="([^"]*)"/)![1]
+      for (const term of ['아이돌', '셀럽', '배우', '연예인착장', '셀럽사복패션', '배우패션정보', '연예인 핫템', '셀럽 잇템', '인스타 광고 상품', '유튜브 소개 상품', '최저가']) expect(keywords).toContain(term)
+      const website = graph(page.body).find((node) => node['@type'] === 'WebSite')
+      expect(website?.description).toBe(SEO_HOME_DESCRIPTION)
+      expect(website?.keywords).toContain('배우 패션 정보')
+      expect(keywords).toContain(product.category)
+      expect(page.body).toContain('사복 패션')
+      expect(page.body).toContain('등록된 제휴몰 최저가')
+    }
+  })
+
   it('renders Instagram identities and internal discovery links before JavaScript runs', async () => {
     const celebAccounts = [{ name: '수영', username: 'sooyoungchoi' }]
     mockResponses({ posts: [], categories: [], celebAccounts })
