@@ -966,7 +966,7 @@ export function StorefrontHome({
               <p className="public-pick-intro">
                 {categoryFilter === 'all'
                   ? '손민수하고 싶은 셀럽의 착장을 찾아보세요!'
-                  : `${categoryFilter}를 손민수 해볼까요?`}
+                  : `${categoryFilter} 손민수 해볼까요?`}
               </p>
             </div>
           </div>

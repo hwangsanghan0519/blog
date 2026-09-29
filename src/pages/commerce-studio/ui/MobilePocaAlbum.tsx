@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef, useState } from 'react'
+import { useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react'
 import * as Dialog from '@radix-ui/react-dialog'
 import { ArrowUpRight, ChevronLeft, ChevronRight, Heart, RotateCw, Shuffle, Sparkles, Star, X } from 'lucide-react'
 import { useKeenSlider } from 'keen-slider/react'
@@ -103,6 +103,7 @@ type DeckProps = { cards: Post[]; saved: Set<string>; onToggleSave: (id: string)
 
 function PocaDeck({ cards, saved, onToggleSave, onShuffle, onSelect }: DeckProps) {
   const [active, setActive] = useState(0)
+  const activeIndex = useRef(0)
   const [flipped, setFlipped] = useState(false)
   const stageRef = useRef<HTMLDivElement>(null)
   const dragging = useRef(false)
@@ -113,14 +114,33 @@ function PocaDeck({ cards, saved, onToggleSave, onShuffle, onSelect }: DeckProps
     slides: { origin: 'center', perView: 'auto', spacing: 18 },
     defaultAnimation: { duration: typeof window !== 'undefined' && window.matchMedia('(prefers-reduced-motion: reduce)').matches ? 0 : 480 },
     slideChanged(instance) {
+      const next = instance.track.details.rel
+      if (next === activeIndex.current) return
+      activeIndex.current = next
       if (instance.container.contains(document.activeElement)) stageRef.current?.focus({ preventScroll: true })
-      setActive(instance.track.details.rel)
+      setActive(next)
+      setFlipped(false)
     },
     dragStarted(instance) { clearTimeout(dragEnd.current); dragging.current = false; dragOrigin.current = instance.track.details.position },
     dragged(instance) { if (Math.abs(instance.track.details.position - dragOrigin.current) > .015) dragging.current = true },
     dragEnded() { if (dragging.current) dragEnd.current = setTimeout(() => { dragging.current = false }, 120) },
   })
   useEffect(() => () => clearTimeout(dragEnd.current), [])
+  useLayoutEffect(() => {
+    const stage = stageRef.current
+    if (!stage) return
+    const resize = () => {
+      // Fit the card into the actual space left after the header and controls.
+      const width = Math.min(stage.clientWidth * .72, 300, Math.max(0, stage.clientHeight - 28) * .68)
+      if (stage.style.getPropertyValue('--poca-card-width') === `${width}px`) return
+      stage.style.setProperty('--poca-card-width', `${width}px`)
+      slider.current?.update()
+    }
+    resize()
+    const observer = new ResizeObserver(resize)
+    observer.observe(stage)
+    return () => observer.disconnect()
+  }, [slider])
   const current = cards[active] ?? cards[0]
   const flip = () => {
     if (dragging.current) return
@@ -135,7 +155,7 @@ function PocaDeck({ cards, saved, onToggleSave, onShuffle, onSelect }: DeckProps
     }}>
       <div ref={sliderRef} className="keen-slider poca-slider">
         {cards.map((post, index) => <div key={post.id} className={`keen-slider__slide poca-slide${active === index ? ' is-active' : ''}`} aria-hidden={active !== index}>
-          <div className={`poca-card${flipped ? ' is-flipped' : ''}`}>
+          <div className={`poca-card${active === index && flipped ? ' is-flipped' : ''}`}>
             <div className="poca-card-rotator">
               <button type="button" className="poca-card-front" aria-label={`${post.category || '셀럽'} 포토카드 뒷면 보기`} tabIndex={active === index && !flipped ? 0 : -1} inert={active !== index || flipped} aria-hidden={active === index && flipped} onClick={flip}>
                 <span className="poca-foil" />
@@ -152,10 +172,7 @@ function PocaDeck({ cards, saved, onToggleSave, onShuffle, onSelect }: DeckProps
                 <span className="poca-back-monogram" aria-hidden="true">P<Heart size={18} fill="currentColor" />C</span>
                 <span className="poca-back-name">{post.category || 'CELEB PICK'}</span>
                 <span className="poca-back-rule" />
-                <div className="poca-back-details">
-                  <h3 className="poca-back-title">{post.title}</h3>
-                  {post.excerpt.trim() && <p className="poca-back-summary">{post.excerpt}</p>}
-                </div>
+                <PocaBackDetails post={post} active={active === index && flipped} />
                 <a className="poca-back-link" data-keen-slider-clickable="true" tabIndex={active === index && flipped ? 0 : -1} href={getProductPath(post.slug || post.id)} aria-label={`${post.title} 착장 보러가기`} onClick={event => {
                   if (event.button !== 0 || event.metaKey || event.ctrlKey || event.shiftKey || event.altKey) return
                   event.preventDefault(); onSelect(post.id)
@@ -177,8 +194,55 @@ function PocaDeck({ cards, saved, onToggleSave, onShuffle, onSelect }: DeckProps
       <button type="button" className={`poca-save${saved.has(current.id) ? ' is-saved' : ''}`} aria-label={saved.has(current.id) ? '포토카드 소장 해제' : '포토카드 소장하기'} aria-pressed={saved.has(current.id)} onClick={() => onToggleSave(current.id)}><Heart size={25} fill={saved.has(current.id) ? 'currentColor' : 'none'} /></button>
       <button type="button" className="poca-flip" aria-label="포토카드 뒤집기" aria-pressed={flipped} onClick={flip}><RotateCw size={20} /></button>
     </div>
-    <p className="poca-hint">{flipped ? '밀어서 다음 상품 · 화면을 내려 설명 끝까지 보기' : '밀어서 넘기고 · 톡 눌러 뒤집기'}</p>
+    <p className="poca-hint">{flipped ? '밀어서 다음 포카 해제' : '포카를 누르면 뒷면이 나올 거예요'}</p>
   </>
+}
+
+function PocaBackDetails({ post, active }: { post: Post; active: boolean }) {
+  const viewportRef = useRef<HTMLDivElement>(null)
+  const copyRef = useRef<HTMLDivElement>(null)
+  const [page, setPage] = useState(0)
+  const [layout, setLayout] = useState({ count: 1, step: 0 })
+
+  useLayoutEffect(() => {
+    if (!active) return
+    const viewport = viewportRef.current
+    const copy = copyRef.current
+    if (!viewport || !copy) return
+    let disposed = false
+    setPage(0)
+    const measure = () => {
+      if (disposed) return
+      const width = parseFloat(getComputedStyle(viewport).width)
+      const gap = parseFloat(getComputedStyle(copy).columnGap) || 0
+      if (width <= 0) return
+      const step = width + gap
+      const count = Math.max(1, Math.ceil((copy.scrollWidth + gap - 1) / step))
+      setLayout({ count, step })
+      setPage(current => Math.min(current, count - 1))
+    }
+    measure()
+    const observer = new ResizeObserver(measure)
+    observer.observe(viewport)
+    // Font loading can change the number of text pages without resizing the card.
+    document.fonts.addEventListener('loadingdone', measure)
+    void document.fonts.ready.then(measure)
+    return () => { disposed = true; observer.disconnect(); document.fonts.removeEventListener('loadingdone', measure) }
+  }, [active, post.title, post.excerpt])
+
+  return <div className="poca-back-details">
+    <div ref={viewportRef} className="poca-back-copy-viewport">
+      <div ref={copyRef} className="poca-back-copy" style={{ transform: `translateX(${-page * layout.step}px)` }}>
+        <h3 className="poca-back-title">{post.title}</h3>
+        {post.excerpt.trim() && <p className="poca-back-summary">{post.excerpt}</p>}
+      </div>
+    </div>
+    <div className="poca-copy-navigation" data-keen-slider-clickable="true" style={{ visibility: layout.count > 1 ? 'visible' : 'hidden' }} onKeyDown={event => event.stopPropagation()}>
+      <button type="button" aria-label="이전 상품 설명" disabled={!active || page === 0} onClick={() => setPage(current => Math.max(0, current - 1))}><ChevronLeft size={14} /></button>
+      <span aria-live={active ? 'polite' : 'off'} aria-atomic="true">설명 {page + 1} / {layout.count}</span>
+      <button type="button" aria-label="다음 상품 설명" disabled={!active || page >= layout.count - 1} onClick={() => setPage(current => Math.min(layout.count - 1, current + 1))}><ChevronRight size={14} /></button>
+    </div>
+  </div>
 }
 
 function PocaCover({ src, title, priority }: { src: string; title: string; priority: boolean }) {

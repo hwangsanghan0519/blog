@@ -3,19 +3,16 @@
   .public-blog .celeb-vote-stage { display: none; }
   .public-blog .mobile-ranking-trigger {
     position: fixed; z-index: 90; left: max(16px, env(safe-area-inset-left)); bottom: calc(86px + env(safe-area-inset-bottom));
-    display: block; perspective: 480px;
+    display: block; perspective: 480px; -webkit-perspective: 480px;
     width: 48px; height: 48px; min-width: 48px; padding: 0; border: 0;
     border-radius: 50%; background: transparent; color: #8056aa; cursor: pointer;
     transition: transform .18s ease; -webkit-tap-highlight-color: transparent;
   }
   .public-blog .mobile-ranking-trigger span { font: 600 9px/1.2 system-ui, sans-serif; }
   .public-blog .mobile-ranking-trigger:active { transform: scale(.93); }
-  .mobile-celeb-coin { position: absolute; inset: 0; display: block; }
-  .mobile-celeb-coin-face { position: absolute; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 0; border: 1px solid #e9d5a780; border-radius: 50%; color: #9a620f; background: linear-gradient(145deg, #fff9e4, #ffe6a2); box-shadow: 0 3px 10px #7851201a; transform: scaleX(0); opacity: 0; }
-  .mobile-celeb-coin-face.is-back { color: #a3447f; border-color: #e4c5d980; background: linear-gradient(145deg, #fff2fa, #f4cce5); box-shadow: 0 3px 10px #98506f1a; }
-  .mobile-celeb-coin[data-side="ranking"] .is-front, .mobile-celeb-coin[data-side="directory"] .is-back { transform: scaleX(1); opacity: 1; }
-  .mobile-celeb-coin.is-turning[data-side="ranking"] .is-front, .mobile-celeb-coin.is-turning[data-side="directory"] .is-back { animation: celeb-coin-turn-in .9s cubic-bezier(.35,0,.2,1) both; }
-  .mobile-celeb-coin.is-turning[data-side="ranking"] .is-back, .mobile-celeb-coin.is-turning[data-side="directory"] .is-front { animation: celeb-coin-turn-out .9s cubic-bezier(.35,0,.2,1) both; }
+  .mobile-celeb-coin { position: absolute; inset: 0; display: block; transform-style: preserve-3d; -webkit-transform-style: preserve-3d; transform: translateZ(0) rotateY(var(--coin-turn, 0deg)); transition: transform 900ms cubic-bezier(.4, 0, .2, 1); will-change: transform; }
+  .mobile-celeb-coin-face { position: absolute; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 0; border: 1px solid #e9d5a780; border-radius: 50%; color: #9a620f; background: linear-gradient(145deg, #fff9e4, #ffe6a2); box-shadow: 0 3px 10px #7851201a; backface-visibility: hidden; -webkit-backface-visibility: hidden; transform: rotateY(0deg) translateZ(.5px); }
+  .mobile-celeb-coin-face.is-back { transform: rotateY(180deg) translateZ(.5px); color: #a3447f; border-color: #e4c5d980; background: linear-gradient(145deg, #fff2fa, #f4cce5); box-shadow: 0 3px 10px #98506f1a; }
   .mobile-celeb-coin-symbol { position: relative; margin-top: 1px; filter: drop-shadow(0 1px 0 #fffc); }
   .is-front .mobile-celeb-coin-symbol { fill: #f3bd4955; }
   .is-back .mobile-celeb-coin-symbol { fill: #eaa3c9; }
@@ -27,19 +24,7 @@
   .mobile-celeb-jewels > svg:first-child { position: absolute; top: -1px; right: -1px; color: #fff7c5; fill: #efc35b; filter: drop-shadow(0 1px 1px #9d762640); animation: celeb-jewel-twinkle 2.4s ease-in-out infinite; }
   .mobile-celeb-jewels > svg:nth-child(2) { position: absolute; bottom: 3px; left: -2px; color: #ffe2a5; animation: celeb-jewel-twinkle 2.4s ease-in-out .8s infinite; }
   .mobile-celeb-jewels > span { position: absolute; top: 10px; left: -1px; width: 4px; height: 4px; border: 1px solid #fff8; border-radius: 50%; background: #efacd2; }
-  .mobile-celeb-coin-burst { position: absolute; z-index: 2; inset: 0; pointer-events: none; }
-  .mobile-celeb-coin-burst > svg { position: absolute; top: 42%; left: 50%; width: 11px; height: 11px; color: #eb91bc; opacity: 0; animation: celeb-coin-heart-pop .833s cubic-bezier(.2,.7,.3,1) var(--heart-delay) both; }
-  .mobile-celeb-coin-burst > svg:nth-child(even) { width: 8px; height: 8px; color: #f0c04d; }
-  .mobile-celeb-coin-burst[data-side="ranking"] > svg { color: #efbd42; }
-  .mobile-celeb-coin-burst[data-side="ranking"] > svg:nth-child(even) { color: #ed9ac1; }
 }
-@keyframes celeb-coin-heart-pop {
-  0% { opacity: 0; transform: translate3d(-50%, -50%, 0) scale(.2); }
-  18% { opacity: 1; }
-  55% { opacity: .9; }
-  100% { opacity: 0; transform: translate3d(calc(-50% + var(--heart-x)), calc(-50% + var(--heart-y)), 0) rotate(var(--heart-tilt)) scale(.65); }
-}
-@keyframes celeb-coin-heart-fade { 0%, 100% { opacity: 0; } 35% { opacity: .8; } }
 .mobile-ranking-dim { position: fixed; inset: 0; z-index: 310; background: #2413308c; backdrop-filter: blur(7px); animation: ranking-fade .18s ease; }
 .mobile-ranking-sheet {
   position: fixed; z-index: 311; inset: auto 0 var(--celeb-keyboard-offset, 0px); width: min(100%, 540px); height: min(83dvh, var(--celeb-sheet-height, 83dvh), 760px); max-height: calc(var(--celeb-sheet-height, 100dvh) - 18px);
@@ -106,13 +91,7 @@
 @media (prefers-reduced-motion: reduce) { .mobile-ranking-sheet, .mobile-ranking-dim { animation: none; } .public-blog .mobile-ranking-trigger { transition: none; } }
 @media (prefers-reduced-motion: reduce) and (max-width: 899px) {
   .mobile-celeb-jewels > svg, .mobile-celeb-coin-shine::after { animation: none; }
-  /* Keep the two available views discoverable on phones with reduced motion.
-     Use a slower squeeze without the rotation or overshoot of the regular flip. */
-  .mobile-celeb-coin.is-turning[data-side="ranking"] .is-front,
-  .mobile-celeb-coin.is-turning[data-side="directory"] .is-back { animation: celeb-coin-turn-in-calm 1.2s ease-in-out both; }
-  .mobile-celeb-coin.is-turning[data-side="ranking"] .is-back,
-  .mobile-celeb-coin.is-turning[data-side="directory"] .is-front { animation: celeb-coin-turn-out-calm 1.2s ease-in-out both; }
-  .mobile-celeb-coin-burst > svg { animation-name: celeb-coin-heart-fade; transform: translate(calc(-50% + var(--heart-x) * .65), calc(-50% + var(--heart-y) * .65)); }
+  .mobile-celeb-coin { transition-duration: 1100ms; }
 }
 
 .mobile-ranking-sheet.is-directory { height: min(92dvh, var(--celeb-sheet-height, 92dvh), 760px); padding-inline: 14px; background: radial-gradient(ellipse at 85% 0, #fce0ed, transparent 45%), #fffbfd; }
@@ -129,10 +108,5 @@
 .is-directory .mobile-celeb-directory-grid a:active { background: #fce5f0; }
 @media (max-width: 350px) { .mobile-celeb-directory-grid { grid-template-columns: repeat(4, minmax(0, 1fr)); } }
 
-/* A two-face squeeze keeps the coin flip visible without mobile 3D compositing. */
-@keyframes celeb-coin-turn-out { 0% { opacity: 1; transform: scaleX(1) rotate(-3deg); } 44% { opacity: 1; transform: scaleX(.03) rotate(5deg); } 45%, 100% { opacity: 0; transform: scaleX(0); } }
-@keyframes celeb-coin-turn-in { 0%, 44% { opacity: 0; transform: scaleX(0); } 45% { opacity: 1; transform: scaleX(.03) rotate(-5deg); } 78% { opacity: 1; transform: scaleX(1.06) rotate(3deg); } 100% { opacity: 1; transform: scaleX(1) rotate(0); } }
-@keyframes celeb-coin-turn-out-calm { 0% { opacity: 1; transform: scaleX(1); } 49% { opacity: 1; transform: scaleX(.03); } 50%, 100% { opacity: 0; transform: scaleX(0); } }
-@keyframes celeb-coin-turn-in-calm { 0%, 49% { opacity: 0; transform: scaleX(0); } 50% { opacity: 1; transform: scaleX(.03); } 100% { opacity: 1; transform: scaleX(1); } }
 @keyframes celeb-jewel-twinkle { 0%, 100% { opacity: .7; transform: scale(.8) rotate(-10deg); } 50% { opacity: 1; transform: scale(1.15) rotate(12deg); } }
 @keyframes celeb-coin-shine { 0%, 25% { transform: translateX(-120%); } 65%, 100% { transform: translateX(120%); } }

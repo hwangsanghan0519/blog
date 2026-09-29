@@ -22,8 +22,9 @@ type View = 'ranking' | 'directory'
 
 export function MobileCelebRanking({ ranking, categoryImages, celebrities, onSelectCategory, votedCategory, pendingCategory, feedback, onVote }: Props) {
   const [open, setOpen] = useState(false)
-  const [face, setFace] = useState<View>('ranking')
-  const [burst, setBurst] = useState(0)
+  const [turn, setTurn] = useState(0)
+  const face: View = turn % 2 === 0 ? 'ranking' : 'directory'
+  const coinRef = useRef<HTMLSpanElement>(null)
   const [view, setView] = useState<View>('ranking')
   const [viewport, setViewport] = useState({ height: 0, bottom: 0 })
   const pressedFace = useRef<View | null>(null)
@@ -35,9 +36,8 @@ export function MobileCelebRanking({ ranking, categoryImages, celebrities, onSel
     const mobile = window.matchMedia('(max-width: 899px)')
     const timer = window.setInterval(() => {
       if (document.visibilityState === 'hidden' || !mobile.matches || pressedFace.current) return
-      setFace(previous => previous === 'ranking' ? 'directory' : 'ranking')
-      setBurst(previous => previous + 1)
-    }, 3333)
+      setTurn(previous => previous + 1)
+    }, 4800)
     return () => window.clearInterval(timer)
   }, [open])
   useEffect(() => {
@@ -76,19 +76,22 @@ export function MobileCelebRanking({ ranking, categoryImages, celebrities, onSel
     }
   }, [open])
 
+  const visibleFace = (): View => {
+    if (!coinRef.current) return face
+    // While turning, open the face actually visible at touch-down.
+    try { return new DOMMatrixReadOnly(getComputedStyle(coinRef.current).transform).m11 >= 0 ? 'ranking' : 'directory' }
+    catch { return face }
+  }
+
   return <Dialog.Root open={open} onOpenChange={next => { selectingCategory.current = false; setOpen(next) }}>
     <Dialog.Trigger className="mobile-ranking-trigger" aria-label={face === 'ranking' ? '셀럽 랭킹 및 투표 열기' : '전체 셀럽 모아보기 열기'}
-      onPointerDown={() => { clearTimeout(releasePress.current); pressedFace.current = face }} onPointerCancel={() => { pressedFace.current = null }}
-      onClick={() => { setView(pressedFace.current ?? face); pressedFace.current = null }}>
-      <span key={`coin-${burst}`} className={`mobile-celeb-coin${burst ? ' is-turning' : ''}`} data-side={face} aria-hidden="true">
+      onPointerDown={() => { clearTimeout(releasePress.current); pressedFace.current = visibleFace() }} onPointerCancel={() => { pressedFace.current = null }}
+      onClick={() => { setView(pressedFace.current ?? visibleFace()); pressedFace.current = null }}>
+      <span ref={coinRef} className="mobile-celeb-coin" style={{ '--coin-turn': `${turn * 180}deg` } as CSSProperties} data-side={face} aria-hidden="true">
         <span className="mobile-celeb-coin-face is-front"><Crown className="mobile-celeb-coin-symbol" size={22} strokeWidth={1.5} /><span className="mobile-celeb-coin-label">랭킹</span><span className="mobile-celeb-coin-shine" /></span>
         <span className="mobile-celeb-coin-face is-back"><Heart className="mobile-celeb-coin-symbol" size={22} strokeWidth={1.7} /><span className="mobile-celeb-coin-label">셀럽</span><span className="mobile-celeb-coin-shine" /></span>
       </span>
       <span className="mobile-celeb-jewels" aria-hidden="true"><Sparkles size={15} /><Star size={8} fill="currentColor" /><span /></span>
-      {burst > 0 && <span key={burst} className="mobile-celeb-coin-burst" data-side={face} aria-hidden="true">
-        {[[-28, -23, -22], [-12, -42, 14], [12, -34, -12], [30, -18, 24]].map(([x, y, tilt], index) => <Heart key={index} fill="currentColor" strokeWidth={1.3}
-          style={{ '--heart-x': `${x}px`, '--heart-y': `${y}px`, '--heart-tilt': `${tilt}deg`, '--heart-delay': `${index * 54}ms` } as CSSProperties} />)}
-      </span>}
     </Dialog.Trigger>
     <Dialog.Portal>
       <Dialog.Overlay className="mobile-ranking-dim" />
