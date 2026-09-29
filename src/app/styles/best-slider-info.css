@@ -1,3 +1,28 @@
+/* Keep the disclosure readable even where mobile cards hide excerpt paragraphs. */
+.public-blog .public-best-v2 .public-slide .public-best-v2-buy > p.product-affiliate-disclosure {
+  grid-column: 1 / -1;
+  display: block !important;
+  width: 100%;
+  max-width: none;
+  height: auto;
+  margin: 0;
+  padding: 0;
+  overflow: visible;
+  color: #766580 !important;
+  font-size: 9px !important;
+  font-weight: 400;
+  line-height: 1.5 !important;
+  letter-spacing: normal;
+  white-space: normal;
+  -webkit-line-clamp: unset;
+}
+
+@media (max-width: 720px) {
+  .public-blog .public-best-v2 .public-slide .public-best-v2-card {
+    grid-template-rows: minmax(0, 1fr) auto !important;
+  }
+}
+
 /* Final BEST information panel — kept separate so this pass remains predictable. */
 .public-best-v2 .public-slide .public-best-v2-card {
   background: #101011 !important;

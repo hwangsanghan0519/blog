@@ -18,6 +18,7 @@ import { getInfluenceGauge } from '../lib/influenceGauge'
 import { keenSliderRecovery, refreshKeenSlider } from '../lib/keenSliderRecovery'
 import type { AdBannerSettings, HeroVideoSettings } from '../model/types'
 import { AdStripBanners, CategoryVisual, TrendVideo } from './StorefrontMedia'
+import { AffiliateDisclosure } from './AffiliateDisclosure'
 import { MobileProductSearch } from './MobileProductSearch'
 import { MobileCelebRanking } from './MobileCelebRanking'
 import { MobilePocaAlbum } from './MobilePocaAlbum'
@@ -841,6 +842,7 @@ export function StorefrontHome({
                               상품 상세보기 <ExternalLink size={17} />
                             </button>
                           </em>
+                          {post.productLinks.some((link) => link.href.trim()) && <AffiliateDisclosure />}
                         </div>
                       </div>
                     </div>
@@ -1081,13 +1083,7 @@ export function StorefrontHome({
                         <Dialog.Description id="reader-description" className="public-reader-description">
                           {selectedPost.excerpt}
                         </Dialog.Description>
-                        {selectedTags.length > 0 && <ul className="product-detail-tags" aria-label="상품 키워드">{selectedTags.map((tag) => <li key={tag}>#{tag}</li>)}</ul>}
                         <ProductLinkPanel priceRef={setPriceElement} post={selectedPost} />
-                        <div className="product-detail-assurance" aria-label="제휴몰 이용 안내">
-                          <span>등록된 제휴몰 가격 비교</span>
-                          <span>등록된 제휴몰로 바로 이동</span>
-                          <span>보러가기를 누르면 제휴몰이 새 창으로 열립니다</span>
-                        </div>
                       </div>
                     </section>
                     <section className="product-detail-body" aria-label="상품 상세 정보">
@@ -1106,6 +1102,11 @@ export function StorefrontHome({
                         <div className="product-detail-loading"><FourCutLoading /></div>
                       ) : (
                         <ProductDetailContent key={selectedPost.id} post={selectedPost} />
+                      )}
+                      {selectedTags.length > 0 && (
+                        <ul className="product-detail-tags" aria-label="상품 키워드">
+                          {selectedTags.map((tag) => <li key={tag}>#{tag}</li>)}
+                        </ul>
                       )}
                     </section>
                   </div>
@@ -1527,6 +1528,7 @@ function ProductLinkPanel({ post, priceRef }: { post: Post; priceRef?: Ref<HTMLE
         <a href={primaryLink.href} {...affiliateTracking(post, primaryLink)} target="_blank" rel="noreferrer sponsored">
           <ShoppingBag size={18} /> 보러가기 <ExternalLink size={16} />
         </a>
+        <AffiliateDisclosure />
       </div>
       {comparisonLinks.length > 0 && (
         <div className="product-buy-compare">
@@ -1592,10 +1594,13 @@ function ProductDetailSideFooter({ post, onCategorySelect }: { post: Post; onCat
         <strong>{primaryLink?.price || '가격 확인'}</strong>
       </div>
       {primaryLink?.href.trim() && (
-        <a href={primaryLink.href} {...affiliateTracking(post, primaryLink)} target="_blank" rel="noreferrer sponsored">
-          <span>보러가기</span>
-          <ShoppingCart aria-hidden="true" />
-        </a>
+        <>
+          <a href={primaryLink.href} {...affiliateTracking(post, primaryLink)} target="_blank" rel="noreferrer sponsored">
+            <span>보러가기</span>
+            <ShoppingCart aria-hidden="true" />
+          </a>
+          <AffiliateDisclosure />
+        </>
       )}
     </aside>
   )
