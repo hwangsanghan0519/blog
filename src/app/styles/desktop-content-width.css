@@ -1,0 +1,24 @@
+/* Align only content between the existing header and footer. */
+@media (min-width: 900px) {
+  .public-blog { --desktop-content-width: min(1428px, calc(100% - 64px)); }
+
+  .public-blog > .desktop-discovery-bar,
+  .public-blog > .public-main,
+  .public-blog > .public-trend-video {
+    box-sizing: border-box;
+    width: var(--desktop-content-width) !important;
+    max-width: 1428px !important;
+    margin-inline: auto !important;
+  }
+
+  .public-blog > .public-main { padding-inline: 0 !important; }
+
+  .public-blog .celeb-vote-stage {
+    left: auto;
+    width: 100%;
+    margin-inline: 0;
+    padding-inline: 0;
+  }
+
+  .public-blog .celeb-vote { width: 100%; }
+}
