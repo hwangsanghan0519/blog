@@ -11,6 +11,7 @@ import type { Post } from '../../../entities/post/model/types'
 import { applyPublicSeo, getCategoryPath, getProductPath, getProductShareUrl, readSeoRoute } from '../../../shared/lib/seo'
 import { RenderedContent } from '../../../shared/ui/RenderedContent'
 import powerpuffcelebLogoImage from '../../../assets/powerpuffceleb-logo.svg'
+import celebEmptyPickImage from '../../../assets/celeb-empty-pick.svg'
 import { castCelebVote, fetchCelebVotes, getOrCreateCelebVoterId } from '../api/celebVoteApi'
 import type { CelebVoteRank } from '../api/celebVoteApi'
 import { getInfluenceGauge } from '../lib/influenceGauge'
@@ -24,8 +25,7 @@ import { CelebStories } from './CelebStories'
 import { FourCutImage, FourCutLoading } from './FourCutImage'
 import { getProductSeo, getProductTags } from '../../../shared/lib/product-seo'
 import { trackAffiliateClick, trackProductClick, trackProductView } from '../../../shared/lib/analytics'
-import { getCelebSeo, normalizeCelebAccounts } from '../../../shared/lib/celeb-seo'
-import { SEO_HOME_DESCRIPTION } from '../../../shared/lib/seo-config'
+import { normalizeCelebAccounts } from '../../../shared/lib/celeb-seo'
 import './storefront-entry.css'
 import './storefront-floating-actions.css'
 
@@ -114,7 +114,6 @@ export function StorefrontHome({
 
   const topPosts = useMemo(() => getTopPosts(publishedPosts), [publishedPosts])
   const instagramAccounts = useMemo(() => normalizeCelebAccounts(celebAccounts), [celebAccounts])
-  const selectedInstagramAccount = instagramAccounts.find((account) => account.name === categoryFilter)
   const publicCategories = useMemo(
     () => categories.filter((category) => category.trim()),
     [categories],
@@ -964,15 +963,14 @@ export function StorefrontHome({
                 {categoryFilter === 'all' ? 'ALL ' : `${categoryFilter} `}
                 <span className="public-pick-label">PICK</span>
               </h2>
+              <p className="public-pick-intro">
+                {categoryFilter === 'all'
+                  ? '손민수하고 싶은 셀럽의 착장을 찾아보세요!'
+                  : `${categoryFilter}를 손민수 해볼까요?`}
+              </p>
             </div>
           </div>
 
-          <p className="public-catalog-intro">{categoryFilter === 'all' ? SEO_HOME_DESCRIPTION : getCelebSeo(categoryFilter, []).description}</p>
-          {selectedInstagramAccount && <div className="celeb-category-profile">
-            <strong>{selectedInstagramAccount.name} 인스타그램</strong>
-            <a href={`https://www.instagram.com/${selectedInstagramAccount.username}/`} target="_blank" rel="noopener noreferrer">@{selectedInstagramAccount.username}<ExternalLink size={12} aria-hidden="true" /></a>
-            <p>인스타라이브에서 프로필과 팔로워 현황을 확인하고, {selectedInstagramAccount.name}의 착용·소개 상품을 살펴보세요.</p>
-          </div>}
           {filteredPosts.length > 0 ? (
             <div className="public-post-grid">
               {filteredPosts.map((post) => (
@@ -1002,9 +1000,10 @@ export function StorefrontHome({
               ))}
             </div>
           ) : (
-            <div className="public-empty">
-              <strong>조건에 맞는 상품이 없습니다.</strong>
-              <p>다른 셀럽을 선택하면 해당 인물이 광고한 상품을 볼 수 있습니다.</p>
+            <div className="public-empty public-pick-empty">
+              <img className="public-pick-empty-logo" src={celebEmptyPickImage} alt="" width="160" height="160" />
+              <p role="status">{categoryFilter === 'all' ? '아직 도착한 픽이 없어요' : <>아직 <strong>{categoryFilter}</strong>의 픽이 없어요</>}</p>
+              {categoryFilter !== 'all' && <button className="public-pick-empty-browse" type="button" onClick={() => selectCategory('all')}>다른 셀럽 둘러보기</button>}
             </div>
           )}
         </section>

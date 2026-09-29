@@ -1,0 +1,30 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="160" height="160" viewBox="0 0 160 160" fill="none">
+  <title>빈 픽 상자를 들여다보는 셀럽 캐릭터</title>
+  <g stroke="#684587" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M40 70C28 43 42 23 64 23C92 12 119 31 119 59L127 91L107 87L110 100H48L33 94Z" fill="#B794DE"/>
+    <path d="M42 52C44 32 114 32 116 53C120 79 105 96 80 96C55 96 38 79 42 52Z" fill="#FFE8DA"/>
+    <ellipse cx="63" cy="64" rx="14" ry="17" fill="#FFFEFF" stroke-width="2"/>
+    <ellipse cx="97" cy="64" rx="14" ry="17" fill="#FFFEFF" stroke-width="2"/>
+    <ellipse cx="67" cy="70" rx="8" ry="11" fill="#A575D3" stroke="none"/>
+    <ellipse cx="93" cy="70" rx="8" ry="11" fill="#A575D3" stroke="none"/>
+    <ellipse cx="68" cy="73" rx="4.5" ry="7" fill="#684587" stroke="none"/>
+    <ellipse cx="92" cy="73" rx="4.5" ry="7" fill="#684587" stroke="none"/>
+    <circle cx="65" cy="67" r="2.5" fill="white" stroke="none"/>
+    <circle cx="89" cy="67" r="2.5" fill="white" stroke="none"/>
+    <path d="M40 53C36 33 53 21 72 22C97 14 117 31 117 52C102 50 97 40 94 35L90 45C77 42 70 35 68 31C59 45 50 50 40 53Z" fill="#B794DE"/>
+    <path d="M53 34Q58 29 65 29" stroke="#E9D6FF" stroke-width="3"/>
+    <path d="M77 87Q80 84 83 87" stroke-width="2"/>
+    <ellipse cx="49" cy="83" rx="5" ry="2" fill="#F2A5C8" stroke="none"/>
+    <ellipse cx="111" cy="83" rx="5" ry="2" fill="#F2A5C8" stroke="none"/>
+    <path d="M78 24Q68 10 59 15L64 31Q74 31 81 27Z" fill="#F2A5C8" stroke-width="2"/>
+    <path d="M82 24Q92 10 101 15L96 31Q88 31 81 27Z" fill="#F2A5C8" stroke-width="2"/>
+    <circle cx="81" cy="25" r="4.5" fill="#BFEBDD" stroke-width="2"/>
+    <path d="M47 108L80 95L113 108L80 123Z" fill="#BEA0D7"/>
+    <path d="M47 108L80 120L113 108V137L80 149L47 137Z" fill="#E9C2D7"/>
+    <path d="M80 120V149" stroke="#BA87AB" stroke-width="2"/>
+    <path d="M47 108L80 120L67 130L33 116Z" fill="#F6D6E6"/>
+    <path d="M80 120L113 108L127 116L93 130Z" fill="#F6D6E6"/>
+    <path d="M48 103C42 99 42 94 47 93C51 92 54 97 54 101" fill="#FFE8DA"/>
+    <path d="M106 101C106 97 109 92 113 93C118 94 118 99 112 103" fill="#FFE8DA"/>
+  </g>
+</svg>

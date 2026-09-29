@@ -2,6 +2,54 @@
 .public-blog .public-main { padding-top: clamp(10px, 1.25vw, 18px) !important; }
 .public-discovery-cue { display: none; }
 
+.public-blog .public-pick-empty {
+  justify-items: center;
+  gap: 14px;
+  padding: clamp(36px, 7vw, 56px) 20px;
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+  box-shadow: none;
+  text-align: center;
+}
+.public-pick-empty-logo { display: block; width: 112px; height: 112px; }
+.public-blog .public-pick-empty p {
+  margin: 0;
+  color: #80658f;
+  font-size: 13px;
+  font-weight: 500;
+  line-height: 1.6;
+  word-break: keep-all;
+  overflow-wrap: anywhere;
+}
+.public-blog .public-pick-empty p strong { color: inherit; font-size: inherit; font-weight: 700; }
+.public-pick-empty-browse {
+  min-height: 44px;
+  margin-top: 4px;
+  padding: 11px 22px;
+  border: 1px solid #b494cd;
+  border-radius: 999px;
+  color: #fff;
+  background: #966bb5;
+  font: 600 12px/1.5 var(--sans);
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+}
+.public-pick-empty-browse:hover { background: #8559a4; }
+.public-pick-empty-browse:active { background: #774c95; }
+.public-pick-empty-browse:focus-visible { outline: 2px solid #684587; outline-offset: 3px; }
+
+.public-blog .public-browser .public-section-head .public-pick-intro {
+  margin: 8px 0 0;
+  color: #80658f;
+  font-size: clamp(11px, 3vw, 13px);
+  font-weight: 500;
+  line-height: 1.6;
+  letter-spacing: -.025em;
+  word-break: keep-all;
+  overflow-wrap: anywhere;
+}
+
 @media (max-width: 720px) {
   .public-blog .public-main { padding-top: 4px !important; }
   .public-discovery-cue {

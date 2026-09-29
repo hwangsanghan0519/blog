@@ -23,4 +23,3 @@
 .product-tag-editor-input > button:disabled { opacity: .45; cursor: default; }
 .product-tag-editor > p { margin: 0; color: #b93652; font-size: 11px; line-height: 1.5; }
 .product-tag-editor > p:empty { display: none; }
-.public-blog .public-catalog-intro { max-width: 760px; margin: 0; color: #725389; font-size: 12px; line-height: 1.8; word-break: keep-all; overflow-wrap: anywhere; }

@@ -106,7 +106,12 @@
 @media (prefers-reduced-motion: reduce) { .mobile-ranking-sheet, .mobile-ranking-dim { animation: none; } .public-blog .mobile-ranking-trigger { transition: none; } }
 @media (prefers-reduced-motion: reduce) and (max-width: 899px) {
   .mobile-celeb-jewels > svg, .mobile-celeb-coin-shine::after { animation: none; }
-  .mobile-celeb-coin.is-turning .mobile-celeb-coin-face { animation: none !important; }
+  /* Keep the two available views discoverable on phones with reduced motion.
+     Use a slower squeeze without the rotation or overshoot of the regular flip. */
+  .mobile-celeb-coin.is-turning[data-side="ranking"] .is-front,
+  .mobile-celeb-coin.is-turning[data-side="directory"] .is-back { animation: celeb-coin-turn-in-calm 1.2s ease-in-out both; }
+  .mobile-celeb-coin.is-turning[data-side="ranking"] .is-back,
+  .mobile-celeb-coin.is-turning[data-side="directory"] .is-front { animation: celeb-coin-turn-out-calm 1.2s ease-in-out both; }
   .mobile-celeb-coin-burst > svg { animation-name: celeb-coin-heart-fade; transform: translate(calc(-50% + var(--heart-x) * .65), calc(-50% + var(--heart-y) * .65)); }
 }
 
@@ -127,5 +132,7 @@
 /* A two-face squeeze keeps the coin flip visible without mobile 3D compositing. */
 @keyframes celeb-coin-turn-out { 0% { opacity: 1; transform: scaleX(1) rotate(-3deg); } 44% { opacity: 1; transform: scaleX(.03) rotate(5deg); } 45%, 100% { opacity: 0; transform: scaleX(0); } }
 @keyframes celeb-coin-turn-in { 0%, 44% { opacity: 0; transform: scaleX(0); } 45% { opacity: 1; transform: scaleX(.03) rotate(-5deg); } 78% { opacity: 1; transform: scaleX(1.06) rotate(3deg); } 100% { opacity: 1; transform: scaleX(1) rotate(0); } }
+@keyframes celeb-coin-turn-out-calm { 0% { opacity: 1; transform: scaleX(1); } 49% { opacity: 1; transform: scaleX(.03); } 50%, 100% { opacity: 0; transform: scaleX(0); } }
+@keyframes celeb-coin-turn-in-calm { 0%, 49% { opacity: 0; transform: scaleX(0); } 50% { opacity: 1; transform: scaleX(.03); } 100% { opacity: 1; transform: scaleX(1); } }
 @keyframes celeb-jewel-twinkle { 0%, 100% { opacity: .7; transform: scale(.8) rotate(-10deg); } 50% { opacity: 1; transform: scale(1.15) rotate(12deg); } }
 @keyframes celeb-coin-shine { 0%, 25% { transform: translateX(-120%); } 65%, 100% { transform: translateX(120%); } }
