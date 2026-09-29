@@ -14,6 +14,7 @@ export function MobileProductSearch({ posts, onSelect }: { posts: Post[]; onSele
   const [query, setQuery] = useState('')
   const [viewport, setViewport] = useState({ height: 0, bottom: 0 })
   const inputRef = useRef<HTMLInputElement>(null)
+  const dialogRef = useRef<HTMLDivElement>(null)
   const openingProduct = useRef(false)
   const results = useMemo(() => searchProductTitles(posts, query), [posts, query])
   const suggestions = useMemo(() => SUGGESTIONS.filter((term) => posts.some((post) => post.status === 'published' && normalizeProductSearch(post.title).includes(term))).slice(0, 6), [posts])
@@ -45,9 +46,9 @@ export function MobileProductSearch({ posts, onSelect }: { posts: Post[]; onSele
       </Dialog.Trigger>
       <Dialog.Portal>
         <Dialog.Overlay className="mobile-search-overlay" />
-        <Dialog.Content className="mobile-product-search" data-compact={viewport.height > 0 && viewport.height < 520 ? '' : undefined} style={viewport.height ? {
+        <Dialog.Content ref={dialogRef} className="mobile-product-search" data-compact={viewport.height > 0 && viewport.height < 520 ? '' : undefined} style={viewport.height ? {
           '--search-viewport-height': `${viewport.height}px`, '--search-keyboard-offset': `${viewport.bottom}px`,
-        } as CSSProperties : undefined} onOpenAutoFocus={(event) => { event.preventDefault(); inputRef.current?.focus() }} onCloseAutoFocus={(event) => { if (openingProduct.current) event.preventDefault() }}>
+        } as CSSProperties : undefined} onOpenAutoFocus={(event) => { event.preventDefault(); dialogRef.current?.focus() }} onCloseAutoFocus={(event) => { if (openingProduct.current) event.preventDefault() }}>
           <div className="mobile-search-handle" aria-hidden="true" />
           <header className="mobile-search-header">
             <div><span className="mobile-search-eyebrow"><Sparkles size={13} aria-hidden="true" /> PICK FINDER</span>

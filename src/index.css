@@ -23,6 +23,28 @@
 }
 
 :root {
+  --celeb-paper: #f4eafa;
+  --celeb-surface: #fffdfd;
+  --celeb-tint: #ecdef6;
+  --celeb-line: #ccb0df;
+  --celeb-ink: #41264f;
+  --celeb-muted: #644b78;
+  --celeb-accent: #8056c7;
+  --celeb-accent-soft: #b793d5;
+  --celeb-vote-bg: #f6dce9;
+  --celeb-vote-border: #dcaec8;
+  --celeb-vote-text: #793f65;
+  --celeb-vote-hover: #efcade;
+  --celeb-vote-complete: #a85885;
+  --podium-gold: linear-gradient(115deg, #f5d78b, #e7b95e);
+  --podium-gold-tint: #fff2d9;
+  --podium-gold-ink: #6d4a1e;
+  --podium-silver: linear-gradient(115deg, #dadcf1, #b6add8);
+  --podium-silver-tint: #efedf9;
+  --podium-silver-ink: #514569;
+  --podium-rose: linear-gradient(115deg, #f1c3b6, #dc9a92);
+  --podium-rose-tint: #ffe8e1;
+  --podium-rose-ink: #743f47;
   --canvas: #f8f7fc;
   --canvas-raised: #ffffff;
   --surface: #ffffff;

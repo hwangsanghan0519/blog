@@ -4,6 +4,7 @@ import { ArrowUpRight, ChevronLeft, ChevronRight, Heart, RotateCw, Shuffle, Spar
 import { useKeenSlider } from 'keen-slider/react'
 import type { Post } from '../../../entities/post/model/types'
 import { getProductPath } from '../../../shared/lib/seo'
+import { keenSliderRecovery } from '../lib/keenSliderRecovery'
 import 'keen-slider/keen-slider.min.css'
 import './MobilePocaAlbum.css'
 
@@ -44,7 +45,7 @@ export function MobilePocaAlbum({ posts, onSelect }: Props) {
       <Dialog.Content className="poca-album" onCloseAutoFocus={event => { if (openingProduct.current) event.preventDefault() }}>
         <div className="poca-paper-stars" aria-hidden="true"><Star /><Sparkles /><Star /></div>
         <header className="poca-header">
-          <Dialog.Title><Sparkles size={19} aria-hidden="true" /> 포토카드</Dialog.Title>
+          <Dialog.Title><span className="poca-header-cards" aria-hidden="true" /><span className="poca-header-title">CELEB <em>PHOTO CARD</em></span></Dialog.Title>
           <Dialog.Close className="poca-close" aria-label="포토카드 닫기"><X size={21} /></Dialog.Close>
         </header>
         <div className="poca-bias-intro">
@@ -112,7 +113,11 @@ function PocaDeck({ cards, saved, onToggleSave, onShuffle, onSelect }: DeckProps
   const [sliderRef, slider] = useKeenSlider<HTMLDivElement>({
     loop: cards.length > 1,
     slides: { origin: 'center', perView: 'auto', spacing: 18 },
-    defaultAnimation: { duration: typeof window !== 'undefined' && window.matchMedia('(prefers-reduced-motion: reduce)').matches ? 0 : 480 },
+    renderMode: 'performance',
+    defaultAnimation: { duration: 480 },
+    breakpoints: {
+      '(prefers-reduced-motion: reduce)': { defaultAnimation: { duration: 180 } },
+    },
     slideChanged(instance) {
       const next = instance.track.details.rel
       if (next === activeIndex.current) return
@@ -124,7 +129,7 @@ function PocaDeck({ cards, saved, onToggleSave, onShuffle, onSelect }: DeckProps
     dragStarted(instance) { clearTimeout(dragEnd.current); dragging.current = false; dragOrigin.current = instance.track.details.position },
     dragged(instance) { if (Math.abs(instance.track.details.position - dragOrigin.current) > .015) dragging.current = true },
     dragEnded() { if (dragging.current) dragEnd.current = setTimeout(() => { dragging.current = false }, 120) },
-  })
+  }, [keenSliderRecovery])
   useEffect(() => () => clearTimeout(dragEnd.current), [])
   useLayoutEffect(() => {
     const stage = stageRef.current
@@ -134,13 +139,14 @@ function PocaDeck({ cards, saved, onToggleSave, onShuffle, onSelect }: DeckProps
       const width = Math.min(stage.clientWidth * .72, 300, Math.max(0, stage.clientHeight - 28) * .68)
       if (stage.style.getPropertyValue('--poca-card-width') === `${width}px`) return
       stage.style.setProperty('--poca-card-width', `${width}px`)
-      slider.current?.update()
+      // The recovery plugin measures the resulting slider size on settled frames.
+      // Calling update here cancels an in-flight swipe when mobile browser chrome resizes.
     }
     resize()
     const observer = new ResizeObserver(resize)
     observer.observe(stage)
     return () => observer.disconnect()
-  }, [slider])
+  }, [])
   const current = cards[active] ?? cards[0]
   const flip = () => {
     if (dragging.current) return
@@ -194,7 +200,7 @@ function PocaDeck({ cards, saved, onToggleSave, onShuffle, onSelect }: DeckProps
       <button type="button" className={`poca-save${saved.has(current.id) ? ' is-saved' : ''}`} aria-label={saved.has(current.id) ? '포토카드 소장 해제' : '포토카드 소장하기'} aria-pressed={saved.has(current.id)} onClick={() => onToggleSave(current.id)}><Heart size={25} fill={saved.has(current.id) ? 'currentColor' : 'none'} /></button>
       <button type="button" className="poca-flip" aria-label="포토카드 뒤집기" aria-pressed={flipped} onClick={flip}><RotateCw size={20} /></button>
     </div>
-    <p className="poca-hint">{flipped ? '밀어서 다음 포카 해제' : '포카를 누르면 뒷면이 나올 거예요'}</p>
+    <p className="poca-hint">{flipped ? '밀어서 다음 포카를 만나보세요' : '포카를 누르면 뒷면이 나올 거예요'}</p>
   </>
 }
 

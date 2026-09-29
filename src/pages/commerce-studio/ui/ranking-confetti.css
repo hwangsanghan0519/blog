@@ -1,0 +1,49 @@
+/* Local to the podium: never cover the page's touch targets or enlarge its scroll area. */
+.ranking-confetti {
+  position: absolute;
+  z-index: 4;
+  inset: 0 0 auto;
+  height: 270px;
+  max-height: 100%;
+  overflow: hidden;
+  contain: layout paint;
+  pointer-events: none;
+  user-select: none;
+  -webkit-user-select: none;
+}
+.ranking-confetti > i {
+  position: absolute;
+  top: 0;
+  left: var(--confetti-left);
+  display: block;
+  width: 6px;
+  height: 10px;
+  border-radius: 2px;
+  background: #e7b95e;
+  opacity: 0;
+  pointer-events: none;
+  will-change: transform, opacity;
+  animation: ranking-confetti-fall var(--confetti-duration) cubic-bezier(.18, .55, .45, 1) var(--confetti-delay) both;
+}
+.ranking-confetti > i:nth-child(4n + 2) { background: #b49bd9; }
+.ranking-confetti > i:nth-child(4n + 3) { background: #e9aecb; }
+.ranking-confetti > i:nth-child(4n) { background: #fff9ed; }
+.ranking-confetti > i:nth-child(3n) { width: 7px; height: 7px; border-radius: 50%; }
+@keyframes ranking-confetti-fall {
+  0% { opacity: 0; transform: translate3d(0, -14px, 0) rotate(0deg); }
+  12% { opacity: .95; }
+  75% { opacity: .85; }
+  100% { opacity: 0; transform: translate3d(var(--confetti-drift), 265px, 0) rotate(var(--confetti-turn)); }
+}
+/* Retain a gentle celebration cue without falling/spinning motion. */
+@media (prefers-reduced-motion: reduce) {
+  .ranking-confetti > i {
+    top: 24px;
+    will-change: opacity;
+    animation: ranking-confetti-soft 650ms ease-out var(--confetti-delay) both;
+  }
+}
+@keyframes ranking-confetti-soft {
+  0%, 100% { opacity: 0; }
+  25%, 55% { opacity: .65; }
+}

@@ -1,0 +1,20 @@
+/* Only the background gap reveals the curve; panels conceal its ends. */
+.public-blog .section-connection {
+  position: absolute;
+  z-index: 0;
+  top: -14px;
+  left: 0;
+  right: 0;
+  display: none;
+  height: 14px;
+  overflow: hidden;
+  pointer-events: none;
+  user-select: none;
+}
+.section-connection svg { display: block; width: 100%; height: 100%; }
+.section-connection path { fill: none; stroke: #ecdaf7; stroke-width: 2.5; stroke-linecap: round; }
+.public-browser > .section-connection svg { transform: scaleX(-1); }
+
+@media (max-width: 899px) {
+  .public-blog .section-connection { display: block; }
+}

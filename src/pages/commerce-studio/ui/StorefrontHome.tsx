@@ -20,8 +20,10 @@ import type { AdBannerSettings, HeroVideoSettings } from '../model/types'
 import { AdStripBanners, CategoryVisual, TrendVideo } from './StorefrontMedia'
 import { MobileProductSearch } from './MobileProductSearch'
 import { MobileCelebRanking } from './MobileCelebRanking'
+import { RankingConfetti } from './RankingConfetti'
 import { MobilePocaAlbum } from './MobilePocaAlbum'
 import { CelebStories } from './CelebStories'
+import { SectionConnection } from './SectionConnection'
 import { FourCutImage, FourCutLoading } from './FourCutImage'
 import { getProductSeo, getProductTags } from '../../../shared/lib/product-seo'
 import { trackAffiliateClick, trackProductClick, trackProductView } from '../../../shared/lib/analytics'
@@ -872,24 +874,23 @@ export function StorefrontHome({
         {rankedCelebs.length > 0 && (
           <div className="celeb-vote-stage">
           <section className="celeb-vote" aria-labelledby="celeb-vote-title">
+            {rankedCelebs.length >= 3 && <RankingConfetti />}
             <div className="celeb-vote-heading">
               <div>
-                <span className="celeb-vote-kicker"><i /> LIVE</span>
+                <span className="celeb-vote-kicker"><Crown size={13} /> CELEB RANKING</span>
                 <h2 ref={voteTriggerRef} id="celeb-vote-title">
-                  <span>여러분의</span>
-                  <span>최애에게</span>
-                  <em>투표하세요</em>
+                  <span>오늘의 셀럽</span>
+                  <em>RANKING</em>
                 </h2>
-                <p>인플루언서 게이지가 올라가요</p>
+                <p>좋아하는 셀럽에게 응원을 전해보세요.</p>
               </div>
               <div className="celeb-vote-total" aria-label="매일 한 번 참여할 수 있는 투표">
                 <span className="celeb-vote-total-icon" aria-hidden="true">
-                  <Heart size={28} strokeWidth={2.4} />
-                  <b>1</b>
+                  <Heart size={20} strokeWidth={1.5} />
                 </span>
                 <span className="celeb-vote-total-copy">
                   <small>DAILY VOTE</small>
-                  <strong>매일매일 한 번의 투표 기회</strong>
+                  <strong>하루 한 번, 나의 원픽</strong>
                 </span>
               </div>
             </div>
@@ -920,7 +921,7 @@ export function StorefrontHome({
                         <div>
                           <strong><span>{item.category}</span></strong>
                           <span className="celeb-vote-infl" aria-label={`인플 게이지 ${influenceGauge}%`}>
-                            <b>INFL</b>
+                            <b>응원 게이지</b>
                             <em>{influenceGauge}%</em>
                           </span>
                         </div>
@@ -932,11 +933,11 @@ export function StorefrontHome({
                     <button
                       type="button"
                       disabled={Boolean(votedCategory) || Boolean(votePendingCategory)}
-                      aria-label={`${item.category}에게 투표`}
+                      aria-label={isVoted ? `${item.category} 투표 완료` : `${item.category}에게 투표`}
                       onClick={() => void voteForCeleb(item.category)}
                     >
                       {isPending ? <LoaderCircle className="is-spinning" size={17} /> : isVoted ? <Check size={17} /> : <Heart size={17} />}
-                      <span>{isVoted ? 'MY PICK' : votedCategory ? 'CLOSED' : 'PICK'}</span>
+                      <span>{isVoted ? '완료' : '투표'}</span>
                     </button>
                   </li>
                 )
@@ -944,7 +945,7 @@ export function StorefrontHome({
             </ol>
 
             <div className={`celeb-vote-notice ${votedCategory ? 'is-complete' : ''}`} aria-live="polite">
-              <span><i /> {votedCategory ? `오늘의 원픽 · ${votedCategory}` : '인플루언서 게이지는 응원이 쌓일수록 상승합니다 · RESET 00:00'}</span>
+              <span><i /> {votedCategory ? `오늘의 원픽 · ${votedCategory}` : '응원이 쌓일수록 게이지가 올라가요 · 매일 자정 다시 만나요'}</span>
               {voteFeedback && <strong>{voteFeedback}</strong>}
             </div>
           </section>
@@ -956,6 +957,7 @@ export function StorefrontHome({
           data-pouch-label={categoryFilter === 'all' ? 'ALL PICK' : `${categoryFilter} PICK`}
           aria-label="상품 탐색"
         >
+          <SectionConnection />
           <div ref={latestHeadRef} className="public-section-head">
             <div>
               <span>Super Deals</span>

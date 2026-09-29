@@ -5,6 +5,7 @@ import { Check, Crown, Heart, LoaderCircle, Sparkles, Star, UsersRound, X } from
 import type { CelebVoteRank } from '../api/celebVoteApi'
 import { getInfluenceGauge } from '../lib/influenceGauge'
 import { getCategoryPath } from '../../../shared/lib/seo'
+import { RankingConfetti } from './RankingConfetti'
 import './MobileCelebRanking.css'
 
 type Props = {
@@ -101,11 +102,11 @@ export function MobileCelebRanking({ ranking, categoryImages, celebrities, onSel
         <div className="mobile-ranking-handle" aria-hidden="true" />
         <header className="mobile-ranking-heading">
           <div><span className="mobile-ranking-eyebrow">{view === 'ranking' ? <><Crown size={12} /> CELEB RANKING</> : <><UsersRound size={12} /> ALL CELEBS</>}</span>
-            <Dialog.Title>{view === 'ranking' ? <>오늘의 최애에게<span>마음을 한 표</span></> : <>셀럽 모아보기<span>{celebrities.length}명</span></>}</Dialog.Title>
+            <Dialog.Title>{view === 'ranking' ? <>셀럽 <em>랭킹</em></> : <>셀럽 <em>모아보기</em></>}</Dialog.Title>
           </div>
           <Dialog.Close className="mobile-ranking-close" aria-label="셀럽 레이어 닫기"><X size={20} /></Dialog.Close>
         </header>
-        <Dialog.Description className="mobile-ranking-description">{view === 'ranking' ? '하루 한 번, 응원하는 셀럽을 골라주세요.' : '셀럽을 누르면 아이템을 모아 볼 수 있어요.'}</Dialog.Description>
+        <Dialog.Description className="mobile-ranking-description">{view === 'ranking' ? '하루 한 번, 응원하는 셀럽을 골라주세요.' : '최애를 고르면 셀럽의 픽을 만나러 갈 수 있어요.'}</Dialog.Description>
         <div className="mobile-celeb-view-switch" role="group" aria-label="셀럽 보기 선택">
           <button type="button" aria-pressed={view === 'ranking'} onClick={() => setView('ranking')}><Crown size={14} />랭킹</button>
           <button type="button" aria-pressed={view === 'directory'} onClick={() => setView('directory')}><UsersRound size={14} />전체 셀럽 <span>{celebrities.length}</span></button>
@@ -123,17 +124,19 @@ export function MobileCelebRanking({ ranking, categoryImages, celebrities, onSel
           </div>
          : <>
         <div className="mobile-ranking-scroll" key="ranking">
-          <ol className="mobile-ranking-list">
+          <div className="mobile-ranking-stage">
+          {ranking.length >= 3 && <RankingConfetti />}
+          <ol className={`mobile-ranking-list${ranking.length >= 3 ? ' has-podium' : ''}`}>
             {ranking.map((item, index) => {
               const picked = votedCategory === item.category
               const pending = pendingCategory === item.category
               const gauge = getInfluenceGauge(item.votes)
-              return <li key={item.category} className={`${index < 3 ? 'is-top' : ''} ${picked ? 'is-picked' : ''}`}>
+              return <li key={item.category} className={`${index < 3 ? `is-top is-place-${index + 1}` : ''} ${picked ? 'is-picked' : ''}`}>
                 <span className="mobile-ranking-place">{String(index + 1).padStart(2, '0')}</span>
                 <div className="mobile-ranking-avatar">{categoryImages[item.category]
                   ? <img src={categoryImages[item.category]} alt="" loading="lazy" decoding="async" />
                   : <span aria-hidden="true">{item.category.slice(0, 1)}</span>}{index === 0 && <Crown size={13} aria-hidden="true" />}</div>
-                <div className="mobile-ranking-person"><strong>{item.category}</strong><span>응원 게이지 {gauge}%</span>
+                <div className="mobile-ranking-person"><strong>{item.category}</strong><span>응원 <span className="mobile-ranking-gauge-label">게이지 </span>{gauge}%</span>
                   <span className="mobile-ranking-meter" role="meter" aria-label={`${item.category} 응원 게이지`} aria-valuemin={0} aria-valuemax={99} aria-valuenow={gauge}><i style={{ width: `${Math.max(2, gauge)}%` }} /></span>
                 </div>
                 <button className="mobile-ranking-pick" type="button" disabled={Boolean(votedCategory || pendingCategory)}
@@ -144,9 +147,10 @@ export function MobileCelebRanking({ ranking, categoryImages, celebrities, onSel
               </li>
             })}
           </ol>
+          </div>
         </div>
         <footer className={`mobile-ranking-notice ${votedCategory ? 'is-complete' : ''}`} aria-live="polite">
-          <span>{votedCategory ? `오늘의 원픽 · ${votedCategory}` : '매일 자정, 새로운 마음을 전할 수 있어요'}</span>
+          <span>{votedCategory ? `오늘의 원픽 · ${votedCategory}` : '매일 자정, 국민 프로듀서의 한 표가 생겨요 !'}</span>
           {feedback && <strong>{feedback}</strong>}
         </footer>
         </>}

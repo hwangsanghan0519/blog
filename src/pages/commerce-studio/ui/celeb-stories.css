@@ -1,9 +1,9 @@
 /* An open contact sheet: paper, tape, offbeat type and floating photo cards. */
-.celeb-stories { position: relative; isolation: isolate; display: grid; grid-template-columns: 170px minmax(0, 1fr); align-items: center; gap: 20px; min-width: 0; margin: 0 0 24px; padding: 15px 26px 12px; color: #584563; background: #f8f5f7; border-block: 1px solid #fff9; }
+.celeb-stories { position: relative; isolation: isolate; display: grid; grid-template-columns: 170px minmax(0, 1fr); align-items: center; gap: 20px; min-width: 0; margin: 0 0 24px; padding: 15px 26px 12px; color: #584563; background: #f8f5f7; border: 1px solid #ffffffd9; border-radius: 16px; box-shadow: inset 0 1px 0 #fff, inset 0 -1px 0 #cbb5d95c, 0 2px 0 #b89dcc70, 0 6px 16px #56316824; }
 .celeb-stories * { box-sizing: border-box; }
 .celeb-stories a { color: inherit; text-decoration: none; }
 .celeb-stories :is(button, a):focus-visible { outline: 2px solid #825797; outline-offset: 4px; }
-.celeb-stories::before { content: ''; position: absolute; z-index: -1; inset: 0; pointer-events: none; opacity: .3; background: repeating-linear-gradient(0deg, transparent 0 27px, #cabbce44 27px 28px); }
+.celeb-stories::before { content: ''; position: absolute; z-index: -1; inset: 0; border-radius: inherit; pointer-events: none; opacity: .3; background: repeating-linear-gradient(0deg, transparent 0 27px, #cabbce44 27px 28px); }
 .celeb-stories::after { content: '+'; position: absolute; right: 7px; bottom: 1px; color: #b5a3bf; font: 20px monospace; pointer-events: none; }
 .celeb-stories-atmosphere { position: absolute; z-index: -1; inset: 0; overflow: hidden; pointer-events: none; }
 .celeb-stories-atmosphere > span { position: absolute; left: calc(8% + var(--particle-index) * 17%); bottom: -26px; color: #bca1b7; animation: celeb-particle-rise 9s linear infinite; animation-delay: calc(var(--particle-index) * -1.6s); }
@@ -132,7 +132,10 @@
 .public-blog .public-main > .celeb-stories { margin-block: 0; }
 .public-blog .celeb-stories + .celeb-vote-stage { margin-top: 0; margin-bottom: 0; }
 .public-blog .celeb-stories + .public-browser { margin-top: 0; }
-@media (max-width: 899px) { .public-blog .celeb-stories ~ .public-browser { margin-top: 0; } }
+@media (max-width: 899px) {
+  .public-blog .public-main:has(> .celeb-stories) { row-gap: 14px; }
+  .public-blog .celeb-stories ~ .public-browser { margin-top: 0; }
+}
 
 .celeb-admin-body { padding: 18px; }
 .celeb-admin-body > p { font-size: 12px; line-height: 1.6; }

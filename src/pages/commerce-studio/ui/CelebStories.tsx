@@ -8,6 +8,7 @@ import { readSavedProfiles, retainProfile, saveProfileLocally } from '../model/c
 import type { CelebAccount, CelebStoryFeed } from '../model/celebStoryTypes'
 import { getCategoryPath } from '../../../shared/lib/seo'
 import './celeb-stories.css'
+import { SectionConnection } from './SectionConnection'
 
 type Props = { categoryImages: Record<string, string>; accounts?: CelebAccount[] }
 
@@ -127,6 +128,7 @@ export function CelebStories({ categoryImages, accounts = DEFAULT_CELEB_ACCOUNTS
 
   return (
     <section ref={sectionRef} className={`celeb-stories${hasEntered ? ' is-entered' : ''}${!inView ? ' is-offscreen' : ''}${!pageVisible ? ' is-page-hidden' : ''}${motionPaused ? ' is-motion-paused' : ''}`} aria-labelledby="instagram-live-title" style={{ '--celeb-columns': Math.min(accounts.length, 8) } as CSSProperties}>
+      <SectionConnection />
       <div className="celeb-stories-atmosphere" aria-hidden="true">
         {Array.from({ length: 6 }, (_, index) => <span key={index} style={{ '--particle-index': index } as CSSProperties}>{index % 2 ? <Sparkles /> : <Heart />}</span>)}
       </div>
